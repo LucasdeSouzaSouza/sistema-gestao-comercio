@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão - Comércio</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* ========================================== */
+        /* TELA DE LOGIN (NOVO) */
+        /* ========================================== */
+        #tela-login {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .login-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 320px;
+        }
+        .login-box h2 {
+            margin-top: 0;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        .login-box input {
+            width: 90%;
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .login-box button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Oculta o sistema principal antes do login */
+        #sistema-principal {
+            display: none;
+        }
+
+        /* ========================================== */
+        /* CSS ORIGINAL DO SISTEMA */
+        /* ========================================== */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: #333; }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ccc;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+        }
+        .tab-btn.active {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+        .btn-add { background-color: #28a745; }
+        .btn-remove { background-color: #dc3545; }
+        .btn-edit { background-color: #ffc107; color: black; }
+        .btn-delete { background-color: #6c757d; }
+        .btn-venda { background-color: #007bff; font-size: 18px; width: 100%; padding: 15px; margin-top: 10px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th { background-color: #f8f9fa; }
+        .entrada { color: #28a745; font-weight: bold; }
+        .saida { color: #dc3545; font-weight: bold; }
+        
+        .resumo {
+            display: flex;
+            justify-content: space-between;
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .painel-destaque {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+            border: 2px solid #c3e6cb;
+        }
+
+        #detalhes-fiado {
+            margin-top: 20px;
+            display: none;
+            background: #fafafa;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN (NOVO) -->
+<div id="tela-login">
+    <div class="login-box">
+        <h2>🔒 Acesso Restrito</h2>
+        <!-- O evento 'onkeypress' permite logar apertando ENTER no teclado -->
+        <input type="password" id="input-senha" placeholder="Digite a senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
+        <button onclick="acessarSistema()">Entrar no Sistema</button>
+    </div>
+</div>
+
+<!-- O SISTEMA PRINCIPAL (Envolvido nessa nova div que começa invisível) -->
+<div id="sistema-principal">
+    <div class="container">
+        <h1>Gestão do Comércio</h1>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarAba('vendas')">PDV / Vendas</button>
+            <button class="tab-btn" onclick="mudarAba('caixa')">Controle de Caixa</button>
+            <button class="tab-btn" onclick="mudarAba('estoque')">Controle de Estoque</button>
+            <button class="tab-btn" onclick="mudarAba('fiados')">Fiados / Contas</button>
+        </div>
+
+        <!-- SEÇÃO DE VENDAS -->
+        <div id="vendas" class="section active">
+            <div class="form-group">
+                <select id="venda-produto" onchange="resetarPDV()">
+                    <!-- Preenchido pelo JavaScript -->
+                </select>
+                <input type="number" id="venda-qtd" placeholder="Quantidade" step="any" min="0.001" oninput="calcularVenda()">
+                <input type="number" id="venda-valor-desejado" placeholder="Ou R$ Desejado" step="0.01" oninput="calcularPorValor()">
+            </div>
+
+            <div class="resumo">
+                <span>Total a Pagar: <span style="color: #dc3545; font-size: 24px;">R$ <span id="venda-total">0.00</span></span></span>
+            </div>
+
+            <button class="btn-venda" onclick="finalizarVenda()">🛒 Finalizar Venda</button>
+        </div>
+
+        <!-- SEÇÃO DE CAIXA -->
+        <div id="caixa" class="section">
+            <div class="resumo">
+                <span id="total-entradas" class="entrada">Entradas: R$ 0.00</span>
+                <span id="total-saidas" class="saida">Saídas: R$ 0.00</span>
+                <span id="saldo-total">Saldo: R$ 0.00</span>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="desc-caixa" placeholder="Descrição (ex: Conta de Luz, Fornecedor)">
+                <select id="tipo-caixa">
+                    <option value="entrada">Entrada (+)</option>
+                    <option value="saida">Saída (-)</option>
+                </select>
+                <input type="number" id="valor-caixa" placeholder="Valor (R$)" step="0.01">
+                <button class="btn-add" onclick="adicionarCaixa()">Registrar Manual</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-caixa"></tbody>
+            </table>
+        </div>
+
+        <!-- SEÇÃO DE ESTOQUE -->
+        <div id="estoque" class="section">
+            <div class="form-group">
+                <input type="text" id="nome-produto" placeholder="Nome (Ex: Pão Francês, Bolo...)">
+                <input type="number" id="preco-produto" placeholder="Preço de Venda (R$)" step="0.01">
+                <button class="btn-add" onclick="cadastrarProduto()">Cadastrar Produto</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Preço Un.</th>
+                        <th>Qtd Vendida</th> 
+                        <th>Total Arrecadado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-estoque"></tbody>
+            </table>
+        </div>
+
+        <!-- SEÇÃO DE FIADOS -->
+        <div id="fiados" class="section">
+            <div class="resumo">
+                <span>Total na Rua (A Receber): <span style="color: #dc3545;">R$ <span id="total-fiados-rua">0.00</span></span></span>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="fiado-nome" placeholder="Nome do Cliente" list="lista-clientes">
+                <datalist id="lista-clientes"></datalist>
+
+                <select id="fiado-produto" onchange="calcularValorFiado()">
+                    <!-- Preenchido pelo JavaScript -->
+                </select>
+
+                <input type="number" id="fiado-qtd" placeholder="Qtd" step="any" style="flex: 0.5;" oninput="calcularValorFiado()">
+                <input type="number" id="fiado-valor" placeholder="Valor Total (R$)" step="0.01" oninput="calcularQtdFiadoPorValor()">
+                <button class="btn-add" onclick="registrarFiado()">Registrar na Conta</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Total Devido</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-fiados"></tbody>
+            </table>
+
+            <div id="detalhes-fiado"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // SISTEMA DE SEGURANÇA (LOGIN)
+    // ==========================================
+    function acessarSistema() {
+        let senhaDigitada = document.getElementById('input-senha').value;
+        
+        // 👉 ALTERE A SUA SENHA AQUI DENTRO DAS ASPAS:
+        let senhaCorreta = "123456"; 
+
+        if (senhaDigitada === senhaCorreta) {
+            // Se a senha bater, esconde o login e mostra o sistema
+            document.getElementById('tela-login').style.display = 'none';
+            document.getElementById('sistema-principal').style.display = 'block';
+            
+            // Foca automaticamente no campo de vendas para agilizar
+            document.getElementById('venda-produto').focus();
+        } else {
+            alert("Senha Incorreta! Tente novamente.");
+            document.getElementById('input-senha').value = ''; // Limpa o campo
+            document.getElementById('input-senha').focus();
+        }
+    }
+
+    // ==========================================
+    // CARREGAR DADOS SALVOS NO NAVEGADOR
+    // ==========================================
+    let caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
+    let estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
+    let fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
+    let totalVendaAtual = 0; 
+
+    // NAVEGAÇÃO DAS ABAS
+    function mudarAba(aba) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(aba).classList.add('active');
+        event.target.classList.add('active');
+        document.getElementById('detalhes-fiado').style.display = 'none';
+    }
+
+    function atualizarSelects() {
+        let selectVenda = document.getElementById('venda-produto');
+        let selectFiado = document.getElementById('fiado-produto');
+        
+        selectVenda.innerHTML = '<option value="">Selecione um Produto para Vender...</option>';
+        selectFiado.innerHTML = '<option value="">Selecione o Produto...</option>';
+        
+        let produtosOrdenados = estoque.map((produto, index) => {
+            return { nome: produto.nome, preco: produto.preco, originalIndex: index };
+        });
+
+        produtosOrdenados.sort((a, b) => a.nome.localeCompare(b.nome));
+        
+        produtosOrdenados.forEach((produto) => {
+            let preco = produto.preco ? produto.preco.toFixed(2) : "0.00";
+            selectVenda.innerHTML += `<option value="${produto.originalIndex}">${produto.nome} - R$ ${preco}</option>`;
+            selectFiado.innerHTML += `<option value="${produto.originalIndex}">${produto.nome} - R$ ${preco}</option>`;
+        });
+    }
+
+    // ==========================================
+    // SISTEMA DE VENDAS (PDV)
+    // ==========================================
+    function calcularVenda() {
+        let index = document.getElementById('venda-produto').value;
+        let qtd = parseFloat(document.getElementById('venda-qtd').value) || 0;
+        if (index === "") return resetarPDV();
+
+        let preco = estoque[index].preco || 0;
+        totalVendaAtual = preco * qtd;
+        
+        document.getElementById('venda-valor-desejado').value = totalVendaAtual > 0 ? totalVendaAtual.toFixed(2) : '';
+        document.getElementById('venda-total').innerText = totalVendaAtual.toFixed(2);
+    }
+
+    function calcularPorValor() {
+        let index = document.getElementById('venda-produto').value;
+        let valor = parseFloat(document.getElementById('venda-valor-desejado').value) || 0;
+        if (index === "") return resetarPDV();
+
+        let preco = estoque[index].preco || 0;
+        let qtd = preco > 0 ? valor / preco : 0;
+        
+        document.getElementById('venda-qtd').value = qtd > 0 ? Number(qtd.toFixed(3)) : '';
+        totalVendaAtual = valor;
+        document.getElementById('venda-total').innerText = totalVendaAtual.toFixed(2);
+    }
+
+    function resetarPDV() {
+        totalVendaAtual = 0;
+        document.getElementById('venda-valor-desejado').value = "";
+        document.getElementById('venda-qtd').value = "";
+        document.getElementById('venda-total').innerText = "0.00";
+    }
+
+    function finalizarVenda() {
+        let index = document.getElementById('venda-produto').value;
+        let qtd = parseFloat(document.getElementById('venda-qtd').value);
+
+        if (index === "" || isNaN(qtd) || qtd <= 0) {
+            alert('Por favor, selecione um produto e digite a quantidade ou valor.');
+            return;
+        }
+
+        let produto = estoque[index];
+        let total = totalVendaAtual;
+
+        estoque[index].vendidos = (estoque[index].vendidos || 0) + qtd; 
+        let dataAtual = new Date().toLocaleString('pt-BR');
+        let descricaoQtd = Number(qtd.toFixed(3));
+        
+        caixa.push({ 
+            data: dataAtual, 
+            descricao: `Venda: ${descricaoQtd}x ${produto.nome}`, 
+            tipo: 'entrada', 
+            valor: total 
+        });
+
+        atualizarEstoque();
+        atualizarCaixa();
+        
+        alert(`Venda finalizada com sucesso! (R$ ${total.toFixed(2)})`);
+
+        document.getElementById('venda-produto').value = "";
+        resetarPDV();
+    }
+
+    // ==========================================
+    // CONTROLE DE ESTOQUE
+    // ==========================================
+    function atualizarEstoque() {
+        let tbody = document.getElementById('tabela-estoque');
+        tbody.innerHTML = '';
+
+        estoque.forEach((produto, index) => {
+            let preco = produto.preco ? produto.preco : 0;
+            let vendidos = produto.vendidos ? parseFloat(produto.vendidos) : 0;
+            let valorTotalArrecadado = preco * vendidos; 
+            let vendidosExibicao = Number(vendidos.toFixed(3));
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${produto.nome}</strong></td>
+                <td>R$ ${preco.toFixed(2)}</td>
+                <td style="color: #28a745; font-size: 18px; font-weight: bold;">${vendidosExibicao}</td>
+                <td style="color: #007bff; font-weight: bold;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
+                <td>
+                    <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem para iniciar um novo dia">Zerar Dia</button>
+                    <button class="btn-delete" onclick="excluirProduto(${index})">Excluir</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        localStorage.setItem('dadosEstoque', JSON.stringify(estoque));
+        atualizarSelects(); 
+    }
+
+    function cadastrarProduto() {
+        let nome = document.getElementById('nome-produto').value;
+        let preco = parseFloat(document.getElementById('preco-produto').value);
+
+        if (!nome || isNaN(preco) || preco < 0) {
+            alert('Preencha o nome e o preço de venda!');
+            return;
+        }
+
+        estoque.push({ nome: nome, preco: preco, vendidos: 0 });
+        document.getElementById('nome-produto').value = '';
+        document.getElementById('preco-produto').value = '';
+        atualizarEstoque();
+    }
+
+    function zerarVendas(index) {
+        if (confirm(`Deseja zerar a quantidade vendida de "${estoque[index].nome}"?`)) {
+            estoque[index].vendidos = 0;
+            atualizarEstoque();
+        }
+    }
+
+    function excluirProduto(index) {
+        if (confirm(`Tem certeza que deseja remover "${estoque[index].nome}"?`)) {
+            estoque.splice(index, 1);
+            atualizarEstoque();
+        }
+    }
+
+    // ==========================================
+    // CONTROLE DE CAIXA
+    // ==========================================
+    function atualizarCaixa() {
+        let tbody = document.getElementById('tabela-caixa');
+        tbody.innerHTML = '';
+        
+        let totalEntradas = 0;
+        let totalSaidas = 0;
+
+        caixa.forEach((item, index) => {
+            let tr = document.createElement('tr');
+            let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
+            
+            if (item.tipo === 'entrada') totalEntradas += item.valor;
+            else totalSaidas += item.valor;
+
+            tr.innerHTML = `
+                <td>${item.data}</td>
+                <td>${item.descricao}</td>
+                <td class="${classeCor}">${item.tipo.toUpperCase()}</td>
+                <td class="${classeCor}">R$ ${item.valor.toFixed(2)}</td>
+                <td>
+                    <button class="btn-delete" onclick="excluirCaixa(${index})">Apagar</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        let saldo = totalEntradas - totalSaidas;
+        document.getElementById('total-entradas').innerText = `Entradas: R$ ${totalEntradas.toFixed(2)}`;
+        document.getElementById('total-saidas').innerText = `Saídas: R$ ${totalSaidas.toFixed(2)}`;
+        document.getElementById('saldo-total').innerText = `Saldo: R$ ${saldo.toFixed(2)}`;
+        document.getElementById('saldo-total').style.color = saldo >= 0 ? '#28a745' : '#dc3545';
+        
+        localStorage.setItem('dadosCaixa', JSON.stringify(caixa));
+    }
+
+    function adicionarCaixa() {
+        let desc = document.getElementById('desc-caixa').value;
+        let tipo = document.getElementById('tipo-caixa').value;
+        let valor = parseFloat(document.getElementById('valor-caixa').value);
+
+        if (!desc || isNaN(valor) || valor <= 0) {
+            alert('Preencha a descrição e um valor válido!');
+            return;
+        }
+
+        let dataAtual = new Date().toLocaleString('pt-BR');
+        caixa.push({ data: dataAtual, descricao: desc, tipo: tipo, valor: valor });
+        
+        document.getElementById('desc-caixa').value = '';
+        document.getElementById('valor-caixa').value = '';
+        atualizarCaixa();
+    }
+
+    function excluirCaixa(index) {
+        if (confirm('Tem certeza que deseja apagar este registro do caixa?')) {
+            caixa.splice(index, 1);
+            atualizarCaixa();
+        }
+    }
+
+    // ==========================================
+    // SISTEMA DE FIADOS
+    // ==========================================
+    function atualizarFiados() {
+        let tbody = document.getElementById('tabela-fiados');
+        tbody.innerHTML = '';
+        let totalNaRua = 0;
+        
+        let datalist = document.getElementById('lista-clientes');
+        datalist.innerHTML = ''; 
+
+        fiados.forEach((cliente, index) => {
+            totalNaRua += cliente.total;
+            datalist.innerHTML += `<option value="${cliente.nome}">`;
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-size: 18px;"><strong>${cliente.nome}</strong></td>
+                <td style="color: #dc3545; font-size: 18px; font-weight: bold;">R$ ${cliente.total.toFixed(2)}</td>
+                <td>
+                    <button class="btn-edit" onclick="verDetalhesFiado(${index})">Ver Compras</button>
+                    <button class="btn-add" onclick="receberPagamentoFiado(${index})">💲 Receber</button>
+                    <button class="btn-delete" onclick="excluirClienteFiado(${index})">Excluir</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('total-fiados-rua').innerText = totalNaRua.toFixed(2);
+        localStorage.setItem('dadosFiados', JSON.stringify(fiados));
+    }
+
+    function calcularValorFiado() {
+        let index = document.getElementById('fiado-produto').value;
+        let qtd = parseFloat(document.getElementById('fiado-qtd').value) || 0;
+        
+        if (index !== "") {
+            let preco = estoque[index].preco || 0;
+            let total = preco * qtd;
+            document.getElementById('fiado-valor').value = total > 0 ? total.toFixed(2) : '';
+        } else {
+            document.getElementById('fiado-valor').value = '';
+        }
+    }
+
+    function calcularQtdFiadoPorValor() {
+        let index = document.getElementById('fiado-produto').value;
+        let valor = parseFloat(document.getElementById('fiado-valor').value) || 0;
+        
+        if (index !== "") {
+            let preco = estoque[index].preco || 0;
+            let qtd = preco > 0 ? valor / preco : 0;
+            document.getElementById('fiado-qtd').value = qtd > 0 ? Number(qtd.toFixed(3)) : '';
+        } else {
+            document.getElementById('fiado-qtd').value = '';
+        }
+    }
+
+    function registrarFiado() {
+        let nome = document.getElementById('fiado-nome').value.trim();
+        let produtoIndex = document.getElementById('fiado-produto').value;
+        let qtd = parseFloat(document.getElementById('fiado-qtd').value);
+        let valor = parseFloat(document.getElementById('fiado-valor').value);
+
+        if (!nome || produtoIndex === "" || isNaN(qtd) || isNaN(valor) || valor <= 0) {
+            alert('Preencha Nome, Selecione o Produto, coloque a Quantidade ou o Valor!');
+            return;
+        }
+
+        let produtoNome = estoque[produtoIndex].nome;
+        let clienteIndex = fiados.findIndex(c => c.nome.toLowerCase() === nome.toLowerCase());
+        let dataAtual = new Date().toLocaleString('pt-BR');
+        let novaCompra = { data: dataAtual, produto: produtoNome, quantidade: qtd, valor: valor };
+
+        if (clienteIndex >= 0) {
+            fiados[clienteIndex].compras.push(novaCompra);
+            fiados[clienteIndex].total += valor;
+        } else {
+            fiados.push({ nome: nome, total: valor, compras: [novaCompra] });
+        }
+
+        estoque[produtoIndex].vendidos = (estoque[produtoIndex].vendidos || 0) + qtd;
+        atualizarEstoque(); 
+
+        document.getElementById('fiado-produto').value = '';
+        document.getElementById('fiado-qtd').value = '';
+        document.getElementById('fiado-valor').value = '';
+
+        atualizarFiados();
+        document.getElementById('detalhes-fiado').style.display = 'none';
+        alert('Fiado registrado na conta e contabilizado no estoque!');
+    }
+
+    function verDetalhesFiado(index) {
+        let cliente = fiados[index];
+        let div = document.getElementById('detalhes-fiado');
+        
+        let html = `
+            <h3 style="margin-top: 0; color: #333;">Extrato da Conta: ${cliente.nome}</h3>
+            <table style="font-size: 14px;">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        cliente.compras.forEach(c => {
+            let corValor = c.valor < 0 ? 'color: #28a745;' : 'color: #dc3545;';
+            let qtdDisplay = c.quantidade ? Number(c.quantidade.toFixed(3)) : '-';
+            html += `
+                <tr>
+                    <td>${c.data.split(',')[0]}</td>
+                    <td>${c.produto}</td>
+                    <td>${qtdDisplay}</td>
+                    <td style="${corValor} font-weight: bold;">R$ ${c.valor.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+            </table>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                <span style="font-size: 20px; font-weight: bold; color: #dc3545;">Total a Pagar: R$ ${cliente.total.toFixed(2)}</span>
+                <button class="btn-delete" onclick="document.getElementById('detalhes-fiado').style.display='none'">Fechar Extrato</button>
+            </div>
+        `;
+
+        div.innerHTML = html;
+        div.style.display = 'block';
+    }
+
+    function receberPagamentoFiado(index) {
+        let cliente = fiados[index];
+        let valorPagoTexto = prompt(`A conta de ${cliente.nome} está em R$ ${cliente.total.toFixed(2)}.\n\nQual valor ele está pagando agora?`);
+        
+        if (valorPagoTexto === null) return; 
+        
+        let valorPago = parseFloat(valorPagoTexto.replace(',', '.'));
+
+        if (isNaN(valorPago) || valorPago <= 0) {
+            alert('Valor inválido!');
+            return;
+        }
+
+        if (valorPago > cliente.total) {
+            alert(`O valor digitado (R$ ${valorPago.toFixed(2)}) é maior que a dívida (R$ ${cliente.total.toFixed(2)}).`);
+            return;
+        }
+
+        cliente.total -= valorPago;
+
+        let dataAtual = new Date().toLocaleString('pt-BR');
+        cliente.compras.push({
+            data: dataAtual,
+            produto: '✅ Pagamento de Conta',
+            quantidade: '',
+            valor: -valorPago
+        });
+
+        caixa.push({ 
+            data: dataAtual, 
+            descricao: `Pagamento Fiado - Cliente: ${cliente.nome}`, 
+            tipo: 'entrada', 
+            valor: valorPago 
+        });
+
+        if (cliente.total <= 0.01) { 
+            cliente.total = 0;
+            if (confirm(`A conta de ${cliente.nome} foi quitada totalmente! Deseja limpar o histórico para esse cliente sumir da lista?`)) {
+                fiados.splice(index, 1);
+            }
+        }
+
+        atualizarFiados();
+        atualizarCaixa();
+        document.getElementById('detalhes-fiado').style.display = 'none';
+        alert(`Pagamento de R$ ${valorPago.toFixed(2)} recebido com sucesso e adicionado ao Caixa!`);
+    }
+
+    function excluirClienteFiado(index) {
+        if (confirm(`Tem certeza que deseja apagar o cliente "${fiados[index].nome}" e todo o seu histórico de conta?\n(Isso não mexe no seu caixa, apenas apaga o nome da lista de fiados)`)) {
+            fiados.splice(index, 1);
+            atualizarFiados();
+            document.getElementById('detalhes-fiado').style.display = 'none';
+        }
+    }
+
+    // Inicializar telas
+    atualizarCaixa();
+    atualizarEstoque();
+    atualizarFiados();
+</script>
+
+</body>
+</html>
