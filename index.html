@@ -183,6 +183,17 @@
             border-radius: 8px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
+
+        /* Linha separadora de datas no caixa */
+        .linha-divisor-data td {
+            background-color: #dee2e6;
+            text-align: center;
+            font-weight: bold;
+            color: #495057;
+            padding: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
@@ -207,7 +218,7 @@
             <button class="tab-btn" onclick="mudarAba('estoque')">Controle de Estoque</button>
             <button class="tab-btn" onclick="mudarAba('fiados')">Fiados / Contas</button>
             <button class="tab-btn" onclick="mudarAba('despesas')">Despesas</button>
-            <button class="tab-btn" onclick="mudarAba('resumo')">Resumo Mensal</button>
+            <button class="tab-btn" onclick="mudarAba('lucro')">Lucro Mensal</button>
         </div>
 
         <!-- SEÇÃO DE VENDAS -->
@@ -246,7 +257,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Data/Hora</th>
+                        <th>Hora/Data</th>
                         <th>Descrição</th>
                         <th>Tipo</th>
                         <th>Valor</th>
@@ -310,7 +321,7 @@
             <div id="detalhes-fiado"></div>
         </div>
 
-        <!-- NOVA SEÇÃO DE DESPESAS -->
+        <!-- SEÇÃO DE DESPESAS -->
         <div id="despesas" class="section">
             <div class="resumo">
                 <span id="total-despesas-display" class="saida">Total de Despesas: R$ 0.00</span>
@@ -336,11 +347,11 @@
             </table>
         </div>
 
-        <!-- NOVA SEÇÃO DE RESUMO MENSAL -->
-        <div id="resumo" class="section">
+        <!-- SEÇÃO DE LUCRO MENSAL (ATUALIZADA) -->
+        <div id="lucro" class="section">
             <div class="form-group">
-                <label style="font-weight: bold; color: #333;">Filtrar Período: </label>
-                <select id="filtro-mes" onchange="calcularResumoMensal()">
+                <label style="font-weight: bold; color: #333;">Selecione o Mês: </label>
+                <select id="filtro-mes" onchange="calcularLucroMensal()">
                     <!-- Preenchido automaticamente via JS -->
                 </select>
             </div>
@@ -544,7 +555,7 @@
     }
 
     // ==========================================
-    // CONTROLE DE CAIXA E MENSAL
+    // CONTROLE DE CAIXA (ATUALIZADO COM DIVISORES)
     // ==========================================
     function atualizarCaixa() {
         let tbody = document.getElementById('tabela-caixa');
@@ -552,16 +563,32 @@
         
         let totalEntradas = 0;
         let totalSaidas = 0;
+        let dataAtualAgrupamento = '';
 
         caixa.forEach((item, index) => {
+            let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
+            let hora = item.data && item.data.includes(',') ? item.data.split(',')[1].trim() : "";
+
+            // Lógica para adicionar a linha divisória de datas
+            if (dataCurta !== dataAtualAgrupamento) {
+                let trDivisor = document.createElement('tr');
+                trDivisor.className = 'linha-divisor-data';
+                trDivisor.innerHTML = `<td colspan="5">📅 Movimentações do dia: ${dataCurta}</td>`;
+                tbody.appendChild(trDivisor);
+                dataAtualAgrupamento = dataCurta;
+            }
+
             let tr = document.createElement('tr');
             let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
             
             if (item.tipo === 'entrada') totalEntradas += item.valor;
             else totalSaidas += item.valor;
 
+            // Mostra apenas a hora na coluna se existir, caso contrário a data inteira
+            let exibeDataHora = hora !== "" ? hora : dataCurta;
+
             tr.innerHTML = `
-                <td>${item.data}</td>
+                <td>${exibeDataHora}</td>
                 <td>${item.descricao}</td>
                 <td class="${classeCor}">${item.tipo.toUpperCase()}</td>
                 <td class="${classeCor}">R$ ${item.valor.toFixed(2)}</td>
@@ -580,9 +607,8 @@
         
         localStorage.setItem('dadosCaixa', JSON.stringify(caixa));
         
-        // Atualiza os dados do resumo mensal automaticamente
         atualizarOpcoesMeses();
-        calcularResumoMensal();
+        calcularLucroMensal();
     }
 
     function adicionarCaixa() {
@@ -611,7 +637,7 @@
     }
 
     // ==========================================
-    // SISTEMA DE DESPESAS (NOVO)
+    // SISTEMA DE DESPESAS
     // ==========================================
     function atualizarDespesas() {
         let tbody = document.getElementById('tabela-despesas');
@@ -620,7 +646,7 @@
 
         despesas.forEach((item, index) => {
             totalDespesas += item.valor;
-            let dataCurta = item.data.split(',')[0]; // Pega só a data, sem a hora
+            let dataCurta = item.data.split(',')[0]; 
             
             let tr = document.createElement('tr');
             tr.innerHTML = `
@@ -637,9 +663,8 @@
         document.getElementById('total-despesas-display').innerText = `Total de Despesas: R$ ${totalDespesas.toFixed(2)}`;
         localStorage.setItem('dadosDespesas', JSON.stringify(despesas));
         
-        // Atualiza os dados do resumo mensal automaticamente
         atualizarOpcoesMeses();
-        calcularResumoMensal();
+        calcularLucroMensal();
     }
 
     function adicionarDespesa() {
@@ -652,7 +677,6 @@
             return;
         }
 
-        // Formata a data (se o usuário escolheu uma data, converte para DD/MM/YYYY, se não, usa a atual)
         let dataStr = "";
         if(dtInput) {
             let parts = dtInput.split('-');
@@ -678,13 +702,12 @@
     }
 
     // ==========================================
-    // SISTEMA DE RESUMO MENSAL (NOVO)
+    // SISTEMA DE LUCRO MENSAL (ATUALIZADO)
     // ==========================================
     function atualizarOpcoesMeses() {
         let selectMes = document.getElementById('filtro-mes');
         let mesesSet = new Set();
 
-        // Extrai os meses (MM/YYYY) do caixa
         caixa.forEach(c => {
             if(c.data) {
                 let mesAno = c.data.substring(3, 10);
@@ -692,7 +715,6 @@
             }
         });
         
-        // Extrai os meses (MM/YYYY) das despesas
         despesas.forEach(d => {
             if(d.data) {
                 let mesAno = d.data.substring(3, 10);
@@ -700,7 +722,6 @@
             }
         });
 
-        // Ordena para que os meses mais recentes fiquem no topo
         let mesesArray = Array.from(mesesSet).sort((a, b) => {
             let valA = a.split('/').reverse().join('');
             let valB = b.split('/').reverse().join('');
@@ -719,14 +740,13 @@
         }
     }
 
-    function calcularResumoMensal() {
+    function calcularLucroMensal() {
         let mesSelecionado = document.getElementById('filtro-mes').value;
         
         let totalEntradas = 0;
         let totalSaidasCaixa = 0;
         let totalGastoDespesas = 0;
 
-        // Soma Entradas e Saídas do Caixa
         caixa.forEach(c => {
             let mesAno = c.data ? c.data.substring(3, 10) : "";
             if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
@@ -735,7 +755,6 @@
             }
         });
 
-        // Soma Despesas
         despesas.forEach(d => {
             let mesAno = d.data ? d.data.substring(3, 10) : "";
             if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
@@ -752,7 +771,6 @@
         let painelLucro = document.getElementById('painel-lucro');
         painelLucro.innerText = `Lucro Líquido: R$ ${lucroLiquido.toFixed(2)}`;
         
-        // Altera a cor do painel de Lucro se estiver Positivo (Verde) ou Negativo (Vermelho)
         if (lucroLiquido >= 0) {
             painelLucro.style.backgroundColor = '#d4edda';
             painelLucro.style.color = '#155724';
@@ -957,7 +975,7 @@
         }
     }
 
-    // Inicializar telas e atualizar dados do Resumo Mensal
+    // Inicializar telas
     atualizarDespesas();
     atualizarCaixa();
     atualizarEstoque();
