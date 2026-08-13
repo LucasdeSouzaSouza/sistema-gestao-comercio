@@ -13,7 +13,7 @@
         }
 
         /* ========================================== */
-        /* TELA DE LOGIN (NOVO) */
+        /* TELA DE LOGIN */
         /* ========================================== */
         #tela-login {
             position: fixed;
@@ -159,6 +159,8 @@
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .painel-destaque {
             background: #d4edda;
@@ -169,6 +171,7 @@
             font-size: 24px;
             margin-bottom: 15px;
             border: 2px solid #c3e6cb;
+            font-weight: bold;
         }
 
         #detalhes-fiado {
@@ -184,17 +187,16 @@
 </head>
 <body>
 
-<!-- TELA DE LOGIN (NOVO) -->
+<!-- TELA DE LOGIN -->
 <div id="tela-login">
     <div class="login-box">
         <h2>🔒 Acesso Restrito</h2>
-        <!-- O evento 'onkeypress' permite logar apertando ENTER no teclado -->
         <input type="password" id="input-senha" placeholder="Digite a senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
         <button onclick="acessarSistema()">Entrar no Sistema</button>
     </div>
 </div>
 
-<!-- O SISTEMA PRINCIPAL (Envolvido nessa nova div que começa invisível) -->
+<!-- SISTEMA PRINCIPAL -->
 <div id="sistema-principal">
     <div class="container">
         <h1>Gestão do Comércio</h1>
@@ -204,14 +206,14 @@
             <button class="tab-btn" onclick="mudarAba('caixa')">Controle de Caixa</button>
             <button class="tab-btn" onclick="mudarAba('estoque')">Controle de Estoque</button>
             <button class="tab-btn" onclick="mudarAba('fiados')">Fiados / Contas</button>
+            <button class="tab-btn" onclick="mudarAba('despesas')">Despesas</button>
+            <button class="tab-btn" onclick="mudarAba('resumo')">Resumo Mensal</button>
         </div>
 
         <!-- SEÇÃO DE VENDAS -->
         <div id="vendas" class="section active">
             <div class="form-group">
-                <select id="venda-produto" onchange="resetarPDV()">
-                    <!-- Preenchido pelo JavaScript -->
-                </select>
+                <select id="venda-produto" onchange="resetarPDV()"></select>
                 <input type="number" id="venda-qtd" placeholder="Quantidade" step="any" min="0.001" oninput="calcularVenda()">
                 <input type="number" id="venda-valor-desejado" placeholder="Ou R$ Desejado" step="0.01" oninput="calcularPorValor()">
             </div>
@@ -232,7 +234,7 @@
             </div>
 
             <div class="form-group">
-                <input type="text" id="desc-caixa" placeholder="Descrição (ex: Conta de Luz, Fornecedor)">
+                <input type="text" id="desc-caixa" placeholder="Descrição (ex: Troco, Retirada)">
                 <select id="tipo-caixa">
                     <option value="entrada">Entrada (+)</option>
                     <option value="saida">Saída (-)</option>
@@ -287,9 +289,7 @@
                 <input type="text" id="fiado-nome" placeholder="Nome do Cliente" list="lista-clientes">
                 <datalist id="lista-clientes"></datalist>
 
-                <select id="fiado-produto" onchange="calcularValorFiado()">
-                    <!-- Preenchido pelo JavaScript -->
-                </select>
+                <select id="fiado-produto" onchange="calcularValorFiado()"></select>
 
                 <input type="number" id="fiado-qtd" placeholder="Qtd" step="any" style="flex: 0.5;" oninput="calcularValorFiado()">
                 <input type="number" id="fiado-valor" placeholder="Valor Total (R$)" step="0.01" oninput="calcularQtdFiadoPorValor()">
@@ -309,6 +309,52 @@
 
             <div id="detalhes-fiado"></div>
         </div>
+
+        <!-- NOVA SEÇÃO DE DESPESAS -->
+        <div id="despesas" class="section">
+            <div class="resumo">
+                <span id="total-despesas-display" class="saida">Total de Despesas: R$ 0.00</span>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="desc-despesa" placeholder="Descrição (ex: Farinha, Luz, Água)">
+                <input type="number" id="valor-despesa" placeholder="Valor (R$)" step="0.01">
+                <input type="date" id="data-despesa" title="Data da Compra/Pagamento">
+                <button class="btn-add" onclick="adicionarDespesa()">Registrar Despesa</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição da Despesa</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-despesas"></tbody>
+            </table>
+        </div>
+
+        <!-- NOVA SEÇÃO DE RESUMO MENSAL -->
+        <div id="resumo" class="section">
+            <div class="form-group">
+                <label style="font-weight: bold; color: #333;">Filtrar Período: </label>
+                <select id="filtro-mes" onchange="calcularResumoMensal()">
+                    <!-- Preenchido automaticamente via JS -->
+                </select>
+            </div>
+
+            <div class="painel-destaque" id="painel-lucro">
+                Lucro Líquido: R$ 0.00
+            </div>
+
+            <div class="resumo">
+                <span class="entrada" id="resumo-entradas" style="flex: 1;">Total Entradas: R$ 0.00</span>
+                <span class="saida" id="resumo-saidas" style="flex: 1; text-align: right;">Total Saídas/Despesas: R$ 0.00</span>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -318,20 +364,15 @@
     // ==========================================
     function acessarSistema() {
         let senhaDigitada = document.getElementById('input-senha').value;
-        
-        // 👉 ALTERE A SUA SENHA AQUI DENTRO DAS ASPAS:
-        let senhaCorreta = "123456"; 
+        let senhaCorreta = "123456"; // 👉 ALTERE A SUA SENHA AQUI
 
         if (senhaDigitada === senhaCorreta) {
-            // Se a senha bater, esconde o login e mostra o sistema
             document.getElementById('tela-login').style.display = 'none';
             document.getElementById('sistema-principal').style.display = 'block';
-            
-            // Foca automaticamente no campo de vendas para agilizar
             document.getElementById('venda-produto').focus();
         } else {
             alert("Senha Incorreta! Tente novamente.");
-            document.getElementById('input-senha').value = ''; // Limpa o campo
+            document.getElementById('input-senha').value = ''; 
             document.getElementById('input-senha').focus();
         }
     }
@@ -342,6 +383,7 @@
     let caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
     let estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
     let fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
+    let despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
     let totalVendaAtual = 0; 
 
     // NAVEGAÇÃO DAS ABAS
@@ -502,7 +544,7 @@
     }
 
     // ==========================================
-    // CONTROLE DE CAIXA
+    // CONTROLE DE CAIXA E MENSAL
     // ==========================================
     function atualizarCaixa() {
         let tbody = document.getElementById('tabela-caixa');
@@ -537,6 +579,10 @@
         document.getElementById('saldo-total').style.color = saldo >= 0 ? '#28a745' : '#dc3545';
         
         localStorage.setItem('dadosCaixa', JSON.stringify(caixa));
+        
+        // Atualiza os dados do resumo mensal automaticamente
+        atualizarOpcoesMeses();
+        calcularResumoMensal();
     }
 
     function adicionarCaixa() {
@@ -561,6 +607,160 @@
         if (confirm('Tem certeza que deseja apagar este registro do caixa?')) {
             caixa.splice(index, 1);
             atualizarCaixa();
+        }
+    }
+
+    // ==========================================
+    // SISTEMA DE DESPESAS (NOVO)
+    // ==========================================
+    function atualizarDespesas() {
+        let tbody = document.getElementById('tabela-despesas');
+        tbody.innerHTML = '';
+        let totalDespesas = 0;
+
+        despesas.forEach((item, index) => {
+            totalDespesas += item.valor;
+            let dataCurta = item.data.split(',')[0]; // Pega só a data, sem a hora
+            
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${dataCurta}</td>
+                <td><strong>${item.descricao}</strong></td>
+                <td class="saida">R$ ${item.valor.toFixed(2)}</td>
+                <td>
+                    <button class="btn-delete" onclick="excluirDespesa(${index})">Apagar</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('total-despesas-display').innerText = `Total de Despesas: R$ ${totalDespesas.toFixed(2)}`;
+        localStorage.setItem('dadosDespesas', JSON.stringify(despesas));
+        
+        // Atualiza os dados do resumo mensal automaticamente
+        atualizarOpcoesMeses();
+        calcularResumoMensal();
+    }
+
+    function adicionarDespesa() {
+        let desc = document.getElementById('desc-despesa').value;
+        let valor = parseFloat(document.getElementById('valor-despesa').value);
+        let dtInput = document.getElementById('data-despesa').value;
+
+        if (!desc || isNaN(valor) || valor <= 0) {
+            alert('Preencha a descrição e um valor válido!');
+            return;
+        }
+
+        // Formata a data (se o usuário escolheu uma data, converte para DD/MM/YYYY, se não, usa a atual)
+        let dataStr = "";
+        if(dtInput) {
+            let parts = dtInput.split('-');
+            dataStr = `${parts[2]}/${parts[1]}/${parts[0]}, 00:00:00`;
+        } else {
+            dataStr = new Date().toLocaleString('pt-BR');
+        }
+
+        despesas.push({ data: dataStr, descricao: desc, valor: valor });
+        
+        document.getElementById('desc-despesa').value = '';
+        document.getElementById('valor-despesa').value = '';
+        document.getElementById('data-despesa').value = '';
+        
+        atualizarDespesas();
+    }
+
+    function excluirDespesa(index) {
+        if (confirm('Tem certeza que deseja apagar esta despesa?')) {
+            despesas.splice(index, 1);
+            atualizarDespesas();
+        }
+    }
+
+    // ==========================================
+    // SISTEMA DE RESUMO MENSAL (NOVO)
+    // ==========================================
+    function atualizarOpcoesMeses() {
+        let selectMes = document.getElementById('filtro-mes');
+        let mesesSet = new Set();
+
+        // Extrai os meses (MM/YYYY) do caixa
+        caixa.forEach(c => {
+            if(c.data) {
+                let mesAno = c.data.substring(3, 10);
+                if (mesAno.length === 7) mesesSet.add(mesAno);
+            }
+        });
+        
+        // Extrai os meses (MM/YYYY) das despesas
+        despesas.forEach(d => {
+            if(d.data) {
+                let mesAno = d.data.substring(3, 10);
+                if (mesAno.length === 7) mesesSet.add(mesAno);
+            }
+        });
+
+        // Ordena para que os meses mais recentes fiquem no topo
+        let mesesArray = Array.from(mesesSet).sort((a, b) => {
+            let valA = a.split('/').reverse().join('');
+            let valB = b.split('/').reverse().join('');
+            return valB.localeCompare(valA); 
+        });
+
+        let valorAtual = selectMes.value;
+        selectMes.innerHTML = '<option value="todos">Todo o Período</option>';
+
+        mesesArray.forEach(m => {
+            selectMes.innerHTML += `<option value="${m}">${m}</option>`;
+        });
+
+        if(mesesArray.includes(valorAtual)) {
+            selectMes.value = valorAtual;
+        }
+    }
+
+    function calcularResumoMensal() {
+        let mesSelecionado = document.getElementById('filtro-mes').value;
+        
+        let totalEntradas = 0;
+        let totalSaidasCaixa = 0;
+        let totalGastoDespesas = 0;
+
+        // Soma Entradas e Saídas do Caixa
+        caixa.forEach(c => {
+            let mesAno = c.data ? c.data.substring(3, 10) : "";
+            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
+                if (c.tipo === 'entrada') totalEntradas += c.valor;
+                else if (c.tipo === 'saida') totalSaidasCaixa += c.valor;
+            }
+        });
+
+        // Soma Despesas
+        despesas.forEach(d => {
+            let mesAno = d.data ? d.data.substring(3, 10) : "";
+            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
+                totalGastoDespesas += d.valor;
+            }
+        });
+
+        let saidasTotais = totalSaidasCaixa + totalGastoDespesas;
+        let lucroLiquido = totalEntradas - saidasTotais;
+
+        document.getElementById('resumo-entradas').innerText = `Total Entradas: R$ ${totalEntradas.toFixed(2)}`;
+        document.getElementById('resumo-saidas').innerText = `Despesas + Saídas: R$ ${saidasTotais.toFixed(2)}`;
+        
+        let painelLucro = document.getElementById('painel-lucro');
+        painelLucro.innerText = `Lucro Líquido: R$ ${lucroLiquido.toFixed(2)}`;
+        
+        // Altera a cor do painel de Lucro se estiver Positivo (Verde) ou Negativo (Vermelho)
+        if (lucroLiquido >= 0) {
+            painelLucro.style.backgroundColor = '#d4edda';
+            painelLucro.style.color = '#155724';
+            painelLucro.style.borderColor = '#c3e6cb';
+        } else {
+            painelLucro.style.backgroundColor = '#f8d7da';
+            painelLucro.style.color = '#721c24';
+            painelLucro.style.borderColor = '#f5c6cb';
         }
     }
 
@@ -757,7 +957,8 @@
         }
     }
 
-    // Inicializar telas
+    // Inicializar telas e atualizar dados do Resumo Mensal
+    atualizarDespesas();
     atualizarCaixa();
     atualizarEstoque();
     atualizarFiados();
