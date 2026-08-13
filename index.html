@@ -187,10 +187,9 @@
         /* Linha separadora de datas no caixa */
         .linha-divisor-data td {
             background-color: #dee2e6;
-            text-align: center;
             font-weight: bold;
             color: #495057;
-            padding: 8px;
+            padding: 10px 12px;
             font-size: 14px;
             text-transform: uppercase;
         }
@@ -347,7 +346,7 @@
             </table>
         </div>
 
-        <!-- SEÇÃO DE LUCRO MENSAL (ATUALIZADA) -->
+        <!-- SEÇÃO DE LUCRO MENSAL -->
         <div id="lucro" class="section">
             <div class="form-group">
                 <label style="font-weight: bold; color: #333;">Selecione o Mês: </label>
@@ -555,7 +554,7 @@
     }
 
     // ==========================================
-    // CONTROLE DE CAIXA (ATUALIZADO COM DIVISORES)
+    // CONTROLE DE CAIXA (COM LUCRO DO DIA)
     // ==========================================
     function atualizarCaixa() {
         let tbody = document.getElementById('tabela-caixa');
@@ -565,15 +564,35 @@
         let totalSaidas = 0;
         let dataAtualAgrupamento = '';
 
+        // 1. Calcula o lucro de cada dia primeiro
+        let lucrosPorDia = {};
+        caixa.forEach(item => {
+            let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
+            if (!lucrosPorDia[dataCurta]) lucrosPorDia[dataCurta] = 0;
+            
+            if (item.tipo === 'entrada') lucrosPorDia[dataCurta] += item.valor;
+            else if (item.tipo === 'saida') lucrosPorDia[dataCurta] -= item.valor;
+        });
+
+        // 2. Monta a tabela e insere o divisor com o lucro
         caixa.forEach((item, index) => {
             let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
             let hora = item.data && item.data.includes(',') ? item.data.split(',')[1].trim() : "";
 
-            // Lógica para adicionar a linha divisória de datas
             if (dataCurta !== dataAtualAgrupamento) {
+                let lucroDoDia = lucrosPorDia[dataCurta] || 0;
+                let corLucro = lucroDoDia >= 0 ? '#155724' : '#721c24'; // Verde ou Vermelho escuro para destacar no cinza
+                
                 let trDivisor = document.createElement('tr');
                 trDivisor.className = 'linha-divisor-data';
-                trDivisor.innerHTML = `<td colspan="5">📅 Movimentações do dia: ${dataCurta}</td>`;
+                trDivisor.innerHTML = `
+                    <td colspan="5">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span>📅 Movimentações do dia: ${dataCurta}</span>
+                            <span style="color: ${corLucro};">Lucro do dia: R$ ${lucroDoDia.toFixed(2)}</span>
+                        </div>
+                    </td>
+                `;
                 tbody.appendChild(trDivisor);
                 dataAtualAgrupamento = dataCurta;
             }
@@ -584,7 +603,6 @@
             if (item.tipo === 'entrada') totalEntradas += item.valor;
             else totalSaidas += item.valor;
 
-            // Mostra apenas a hora na coluna se existir, caso contrário a data inteira
             let exibeDataHora = hora !== "" ? hora : dataCurta;
 
             tr.innerHTML = `
@@ -702,7 +720,7 @@
     }
 
     // ==========================================
-    // SISTEMA DE LUCRO MENSAL (ATUALIZADO)
+    // SISTEMA DE LUCRO MENSAL
     // ==========================================
     function atualizarOpcoesMeses() {
         let selectMes = document.getElementById('filtro-mes');
