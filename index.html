@@ -2,8 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mercearia Rsouza - Gestão</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mercearia Rsouza</title>
+    
+    <!-- CONFIGURAÇÕES DE APLICATIVO (PWA) -->
+    <meta name="theme-color" content="#0f2027">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MRsouza">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3759/3759041.png">
+    <link rel="manifest" id="manifest-link">
+
     <!-- Importação de Fonte Moderna do Google -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
@@ -32,7 +41,9 @@
             background-color: var(--bg-body);
             color: var(--dark);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
+            /* Evita que a tela pule no celular */
+            overscroll-behavior-y: none; 
         }
 
         ::-webkit-scrollbar { width: 8px; }
@@ -44,31 +55,19 @@
         /* TELA DE LOGIN */
         /* ========================================== */
         #tela-login {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
         }
         .login-box {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 16px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 340px;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            padding: 40px; border-radius: 16px; text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 90%; max-width: 340px;
             animation: fadeInDown 0.5s ease;
         }
         .login-box h2 { margin-top: 0; color: var(--dark); margin-bottom: 5px; font-size: 24px; font-weight: 800; }
         .login-box p { color: var(--gray); margin-bottom: 25px; font-size: 15px; }
-        .login-box input { width: 90%; margin-bottom: 20px; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; text-align: center; transition: all 0.3s; }
+        .login-box input { width: 85%; margin-bottom: 20px; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; text-align: center; transition: all 0.3s; }
         .login-box input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
         .login-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
         .login-box button:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4); }
@@ -79,22 +78,17 @@
         /* CONTAINER PRINCIPAL E CABEÇALHO */
         /* ========================================== */
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: var(--bg-card);
-            padding: 30px 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            max-width: 1000px; margin: 0 auto; background: var(--bg-card);
+            padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .header-title { text-align: center; color: var(--dark); font-weight: 800; font-size: 34px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .header-subtitle { text-align: center; color: var(--success); margin-bottom: 30px; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; }
+        .header-title { text-align: center; color: var(--dark); font-weight: 800; font-size: 30px; margin-bottom: 5px; }
+        .header-subtitle { text-align: center; color: var(--success); margin-bottom: 25px; font-size: 14px; font-weight: 800; }
         
         /* ========================================== */
         /* ABAS DE NAVEGAÇÃO */
         /* ========================================== */
-        .tabs { display: flex; gap: 8px; margin-bottom: 30px; flex-wrap: wrap; background: #f8fafc; padding: 8px; border-radius: 14px; border: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 12px 10px; cursor: pointer; background: transparent; border: none; font-size: 15px; font-weight: 700; color: var(--gray); border-radius: 10px; transition: all 0.3s ease; white-space: nowrap; }
-        .tab-btn:hover { background: #e2e8f0; color: var(--dark); }
+        .tabs { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; background: #f8fafc; padding: 8px; border-radius: 14px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 12px 5px; cursor: pointer; background: transparent; border: none; font-size: 14px; font-weight: 800; color: var(--gray); border-radius: 10px; transition: all 0.3s ease; white-space: nowrap; }
         .tab-btn.active { background: #ffffff; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
         .section { display: none; animation: fadeIn 0.4s ease forwards; }
@@ -105,50 +99,83 @@
         /* ========================================== */
         /* FORMULÁRIOS E INPUTS */
         /* ========================================== */
-        .form-group { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
-        input, select, textarea { padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; flex: 1; min-width: 150px; font-size: 15px; font-family: inherit; color: var(--dark); transition: all 0.3s; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        .form-group { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid var(--border); }
+        input, select, textarea { padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; flex: 1; min-width: 140px; font-size: 15px; font-family: inherit; color: var(--dark); }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
         
-        button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; color: white; font-size: 15px; font-family: inherit; transition: all 0.2s ease; }
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        button:active { transform: translateY(0); }
+        button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 800; color: white; font-size: 15px; font-family: inherit; transition: all 0.2s ease; }
+        button:active { transform: scale(0.98); }
         
-        .btn-add { background-color: var(--success); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
-        .btn-remove { background-color: var(--danger); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
-        .btn-edit { background-color: var(--warning); color: #fff; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+        .btn-add { background-color: var(--success); }
+        .btn-remove { background-color: var(--danger); }
+        .btn-edit { background-color: var(--warning); color: #fff; }
         .btn-delete { background-color: var(--gray); }
+        .btn-dark { background-color: var(--dark); color: #fff; width: 100%; font-size: 18px; padding: 15px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(30, 41, 59, 0.3); }
+        
         .btn-venda { background: linear-gradient(135deg, #10b981, #059669); font-size: 20px; width: 100%; padding: 18px; margin-top: 10px; border-radius: 14px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); text-transform: uppercase; letter-spacing: 1px; }
 
         /* ========================================== */
-        /* TABELAS */
+        /* TABELAS E SCROLL PARA CELULAR */
         /* ========================================== */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); }
-        th, td { padding: 15px 18px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { background-color: #f8fafc; color: var(--gray); text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; }
-        tr:hover td { background-color: #f1f5f9; }
+        .table-container { overflow-x: auto; border-radius: 12px; box-shadow: 0 0 0 1px var(--border); background: #fff; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { padding: 15px 18px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+        th { background-color: #f8fafc; color: var(--gray); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
         .entrada { color: var(--success); font-weight: 800; }
         .saida { color: var(--danger); font-weight: 800; }
-        
-        .linha-divisor-data td { background-color: #f1f5f9; font-weight: 800; color: #334155; padding: 12px 18px; font-size: 14px; text-transform: uppercase; border-top: 2px solid #cbd5e1; }
+        .linha-divisor-data td { background-color: #f1f5f9; font-weight: 800; color: #334155; text-transform: uppercase; border-top: 2px solid #cbd5e1; }
 
         /* ========================================== */
         /* CARDS DE RESUMO */
         /* ========================================== */
-        .resumo { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .resumo span { flex: 1; background: #fff; padding: 20px; border-radius: 14px; font-size: 16px; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; }
+        .resumo { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .resumo span { flex: 1; background: #fff; padding: 15px 10px; border-radius: 14px; font-size: 15px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; }
         .resumo span.entrada { border-bottom: 4px solid var(--success); color: var(--success); }
         .resumo span.saida { border-bottom: 4px solid var(--danger); color: var(--danger); }
         #saldo-total { border-bottom: 4px solid var(--primary); }
-
         #venda-total-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 4px solid var(--warning); }
         #venda-total { color: var(--danger); font-size: 28px; border: none; padding: 0; box-shadow: none; display: inline;}
+        .painel-destaque { background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #064e3b; padding: 25px; border-radius: 16px; text-align: center; font-size: 26px; margin-bottom: 20px; border: 2px solid #a7f3d0; font-weight: 800; }
 
-        .painel-destaque { background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #064e3b; padding: 25px; border-radius: 16px; text-align: center; font-size: 28px; margin-bottom: 20px; border: 2px solid #a7f3d0; font-weight: 800; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.1); transition: all 0.3s; }
-
-        #detalhes-fiado { margin-top: 25px; display: none; background: #f8fafc; padding: 25px; border: 1px solid #cbd5e1; border-radius: 16px; }
+        /* ========================================== */
+        /* MODAL DE FECHAMENTO DE TURNO */
+        /* ========================================== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #fff; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); animation: fadeInDown 0.3s;
+        }
+        .modal-content h3 { margin-top: 0; color: var(--dark); text-align: center; font-size: 24px; font-weight: 800; }
+        .turno-linha { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; font-weight: 700; color: var(--gray); }
+        .turno-linha b { color: var(--dark); }
+        
+        #detalhes-fiado { margin-top: 25px; display: none; background: #f8fafc; padding: 20px; border: 1px solid #cbd5e1; border-radius: 16px; }
     </style>
 </head>
 <body>
+
+<!-- GERA O MANIFESTO DO APLICATIVO AUTOMATICAMENTE -->
+<script>
+    const manifest = {
+        "name": "Mercearia Rsouza",
+        "short_name": "MRsouza",
+        "start_url": window.location.href,
+        "display": "standalone",
+        "background_color": "#f4f7f6",
+        "theme_color": "#0f2027",
+        "icons": [{
+            "src": "https://cdn-icons-png.flaticon.com/512/3759/3759041.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+    document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+</script>
 
 <!-- TELA DE LOGIN -->
 <div id="tela-login">
@@ -156,7 +183,7 @@
         <h2>🏪 Mercearia Rsouza</h2>
         <p>Acesso Restrito ao Sistema</p>
         <input type="password" id="input-senha" placeholder="Digite sua senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
-        <button onclick="acessarSistema()">Entrar</button>
+        <button onclick="acessarSistema()">Entrar no APP</button>
     </div>
 </div>
 
@@ -165,15 +192,15 @@
     <div class="container">
         
         <h1 class="header-title">🛒 Mercearia Rsouza</h1>
-        <p class="header-subtitle">☁️ Sistema Online (Sincronizado na Nuvem)</p>
+        <p class="header-subtitle">🟢 App Online (Nuvem Ativa)</p>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 PDV Vendas</button>
+            <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 Vendas</button>
             <button class="tab-btn" onclick="mudarAba('caixa')">💵 Caixa</button>
             <button class="tab-btn" onclick="mudarAba('estoque')">📦 Estoque</button>
             <button class="tab-btn" onclick="mudarAba('fiados')">📓 Fiados</button>
             <button class="tab-btn" onclick="mudarAba('despesas')">💸 Despesas</button>
-            <button class="tab-btn" onclick="mudarAba('lucro')">📊 Lucro Mensal</button>
+            <button class="tab-btn" onclick="mudarAba('lucro')">📊 Resumo</button>
         </div>
 
         <!-- SEÇÃO DE VENDAS -->
@@ -206,8 +233,10 @@
                 <span id="saldo-total">Saldo Final<br>R$ 0.00</span>
             </div>
 
+            <button class="btn-dark" onclick="abrirFechamento()">🔒 Fechar Turno / Resumo do Dia</button>
+
             <div class="form-group">
-                <input type="text" id="desc-caixa" placeholder="Descrição (ex: Troco, Retirada)" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
+                <input type="text" id="desc-caixa" placeholder="Descrição Manual" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
                 <select id="tipo-caixa" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
                     <option value="entrada">Entrada (+)</option>
                     <option value="saida">Saída (-)</option>
@@ -225,40 +254,44 @@
                 <button class="btn-add" onclick="adicionarCaixa()">Registrar</button>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Hora/Data</th>
-                        <th>Descrição</th>
-                        <th>Tipo</th>
-                        <th>Valor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-caixa"></tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hora/Data</th>
+                            <th>Descrição</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-caixa"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- SEÇÃO DE ESTOQUE -->
         <div id="estoque" class="section">
             <div class="form-group">
-                <input type="text" id="nome-produto" placeholder="Nome (Ex: Pão Francês, Bolo...)" onkeypress="if(event.key === 'Enter') cadastrarProduto()">
-                <input type="number" id="preco-produto" placeholder="Preço de Venda (R$)" step="0.01" onkeypress="if(event.key === 'Enter') cadastrarProduto()">
+                <input type="text" id="nome-produto" placeholder="Nome do Produto" onkeypress="if(event.key === 'Enter') cadastrarProduto()">
+                <input type="number" id="preco-produto" placeholder="Preço (R$)" step="0.01" onkeypress="if(event.key === 'Enter') cadastrarProduto()">
                 <button class="btn-add" onclick="cadastrarProduto()">+ Novo Produto</button>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Produto</th>
-                        <th>Preço Un.</th>
-                        <th>Qtd Vendida</th> 
-                        <th>Total Arrecadado</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-estoque"></tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Preço Un.</th>
+                            <th>Qtd Vendida</th> 
+                            <th>Arrecadado</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-estoque"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- SEÇÃO DE FIADOS -->
@@ -287,16 +320,18 @@
                 <button class="btn-add" onclick="registrarFiado()">Registrar Conta</button>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Total Devido</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-fiados"></tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Total Devido</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-fiados"></tbody>
+                </table>
+            </div>
 
             <div id="detalhes-fiado"></div>
         </div>
@@ -308,7 +343,7 @@
             </div>
             
             <div class="form-group">
-                <input type="text" id="desc-despesa" placeholder="Descrição (ex: Farinha, Luz, Água)" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
+                <input type="text" id="desc-despesa" placeholder="Descrição (ex: Fornecedor, Luz)" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 <input type="number" id="valor-despesa" placeholder="Valor (R$)" step="0.01" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 <input type="date" id="data-despesa" title="Data da Compra/Pagamento" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 
@@ -323,17 +358,19 @@
                 <button class="btn-add" onclick="adicionarDespesa()">Registrar Despesa</button>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Descrição da Despesa</th>
-                        <th>Valor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-despesas"></tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição da Despesa</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-despesas"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- SEÇÃO DE LUCRO MENSAL -->
@@ -353,6 +390,19 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- MODAL DE FECHAMENTO DE TURNO -->
+<div id="modal-turno" class="modal-overlay">
+    <div class="modal-content">
+        <h3>📊 Resumo do Turno</h3>
+        <p style="text-align: center; color: var(--gray); font-size: 14px; margin-top: -5px; margin-bottom: 20px;">Vendas desde o último fechamento</p>
+        
+        <div id="conteudo-turno"></div>
+        
+        <button class="btn-venda" onclick="confirmarFechamento()" style="margin-top: 25px; padding: 15px; font-size: 18px;">🔒 Confirmar Fechamento</button>
+        <button class="btn-delete" onclick="document.getElementById('modal-turno').style.display='none'" style="width: 100%; margin-top: 10px; padding: 15px;">Cancelar</button>
     </div>
 </div>
 
@@ -391,18 +441,15 @@
             fiados = dados.fiados || [];
             despesas = dados.despesas || [];
         } else {
-            // Se for a primeira vez abrindo o sistema, cria o documento vazio na nuvem
             salvarNoFirebase();
         }
 
-        // Desenha todas as tabelas na tela atualizadas
         atualizarEstoqueUI();
         atualizarCaixaUI();
         atualizarDespesasUI();
         atualizarFiadosUI();
     });
 
-    // Função única que salva qualquer alteração na nuvem
     function salvarNoFirebase() {
         db.collection("sistema").doc("dados_loja").set({
             caixa: caixa,
@@ -410,8 +457,7 @@
             fiados: fiados,
             despesas: despesas
         }).catch((error) => {
-            console.error("Erro ao salvar dados na nuvem:", error);
-            alert("Erro de conexão. Verifique sua internet!");
+            console.error("Erro ao salvar:", error);
         });
     }
 
@@ -433,7 +479,6 @@
         }
     }
 
-    // NAVEGAÇÃO DAS ABAS
     function mudarAba(aba) {
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -452,8 +497,6 @@
     function atualizarSelects() {
         let selectVenda = document.getElementById('venda-produto');
         let selectFiado = document.getElementById('fiado-produto');
-        
-        // Guarda o que estava selecionado para não atrapalhar quem tá digitando na hora da sincronização
         let valVenda = selectVenda.value;
         let valFiado = selectFiado.value;
 
@@ -463,7 +506,6 @@
         let produtosOrdenados = estoque.map((produto, index) => {
             return { nome: produto.nome, preco: produto.preco, originalIndex: index };
         });
-
         produtosOrdenados.sort((a, b) => a.nome.localeCompare(b.nome));
         
         produtosOrdenados.forEach((produto) => {
@@ -472,7 +514,6 @@
             selectFiado.innerHTML += `<option value="${produto.originalIndex}">${produto.nome} - R$ ${preco}</option>`;
         });
 
-        // Devolve a seleção
         if (valVenda) selectVenda.value = valVenda;
         if (valFiado) selectFiado.value = valFiado;
     }
@@ -529,19 +570,74 @@
         let dataAtual = new Date().toLocaleString('pt-BR');
         let descricaoQtd = Number(qtd.toFixed(3));
         
-        caixa.push({ 
-            data: dataAtual, 
-            descricao: `Venda: ${descricaoQtd}x ${produto.nome} (${formaPagamento})`, 
-            tipo: 'entrada', 
-            valor: total 
-        });
+        caixa.push({ data: dataAtual, descricao: `Venda: ${descricaoQtd}x ${produto.nome} (${formaPagamento})`, tipo: 'entrada', valor: total });
 
-        salvarNoFirebase(); // O Firebase atualizará as telas automaticamente!
+        salvarNoFirebase(); 
         
         document.getElementById('venda-produto').value = "";
         document.getElementById('venda-pagamento').value = "Dinheiro";
         resetarPDV();
         document.getElementById('venda-produto').focus(); 
+    }
+
+    // ==========================================
+    // FECHAMENTO DE TURNO (NOVO)
+    // ==========================================
+    function abrirFechamento() {
+        let totalDinheiro = 0, totalPix = 0, totalCartao = 0;
+        let totalEntradas = 0, totalSaidas = 0;
+        
+        // Pega apenas as movimentações desde o último "FECHAMENTO DE TURNO REGISTRADO"
+        let indexUltimoFechamento = -1;
+        for (let i = caixa.length - 1; i >= 0; i--) {
+            if (caixa[i].descricao === '🔒 FECHAMENTO DE TURNO REGISTRADO') {
+                indexUltimoFechamento = i;
+                break;
+            }
+        }
+
+        let movimentacoesTurno = caixa.slice(indexUltimoFechamento + 1);
+
+        movimentacoesTurno.forEach(item => {
+            if (item.tipo === 'entrada') {
+                totalEntradas += item.valor;
+                if (item.descricao.includes('Dinheiro')) totalDinheiro += item.valor;
+                else if (item.descricao.includes('PIX') || item.descricao.includes('Pix')) totalPix += item.valor;
+                else if (item.descricao.includes('Cartão') || item.descricao.includes('Débito') || item.descricao.includes('Crédito')) totalCartao += item.valor;
+                else totalDinheiro += item.valor; // Se não tiver tag, assume dinheiro
+            } else if (item.tipo === 'saida') {
+                totalSaidas += item.valor;
+            }
+        });
+
+        let saldoNaGaveta = totalDinheiro - totalSaidas;
+
+        document.getElementById('conteudo-turno').innerHTML = `
+            <div class="turno-linha"><span>💵 Entrou em Dinheiro:</span> <b>R$ ${totalDinheiro.toFixed(2)}</b></div>
+            <div class="turno-linha"><span>❖ Entrou em PIX:</span> <b>R$ ${totalPix.toFixed(2)}</b></div>
+            <div class="turno-linha"><span>💳 Entrou em Cartão:</span> <b>R$ ${totalCartao.toFixed(2)}</b></div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+            <div class="turno-linha"><span>📉 Saídas / Despesas:</span> <b style="color: var(--danger);">- R$ ${totalSaidas.toFixed(2)}</b></div>
+            <div class="turno-linha"><span>📈 Faturamento Total:</span> <b style="color: var(--success);">R$ ${totalEntradas.toFixed(2)}</b></div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+            <div class="turno-linha" style="font-size: 18px; color: var(--dark);"><span>💰 Dinheiro Físico na Gaveta:</span> <b style="color: var(--primary);">R$ ${saldoNaGaveta.toFixed(2)}</b></div>
+        `;
+
+        document.getElementById('modal-turno').style.display = 'flex';
+    }
+
+    function confirmarFechamento() {
+        let dataAtual = new Date().toLocaleString('pt-BR');
+        caixa.push({ 
+            data: dataAtual, 
+            descricao: `🔒 FECHAMENTO DE TURNO REGISTRADO`, 
+            tipo: 'saida', // classificado como saida com valor 0 só pra ter uma cor vermelha discreta
+            valor: 0 
+        });
+        salvarNoFirebase();
+        document.getElementById('modal-turno').style.display = 'none';
     }
 
     // ==========================================
@@ -559,13 +655,13 @@
 
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong style="color: var(--dark); font-size: 16px;">${produto.nome}</strong></td>
+                <td><strong style="color: var(--dark); font-size: 15px;">${produto.nome}</strong></td>
                 <td>R$ ${preco.toFixed(2)}</td>
-                <td style="color: var(--success); font-size: 18px; font-weight: 800;">${vendidosExibicao}</td>
+                <td style="color: var(--success); font-size: 16px; font-weight: 800;">${vendidosExibicao}</td>
                 <td style="color: var(--primary); font-weight: 800;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
                 <td>
-                    <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem para iniciar um novo dia">Zerar Dia</button>
-                    <button class="btn-delete" onclick="excluirProduto(${index})">Excluir</button>
+                    <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem" style="padding: 6px; font-size: 12px;">Zerar</button>
+                    <button class="btn-delete" onclick="excluirProduto(${index})" style="padding: 6px; font-size: 12px;">Excluir</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -578,10 +674,7 @@
         let nome = document.getElementById('nome-produto').value;
         let preco = parseFloat(document.getElementById('preco-produto').value);
 
-        if (!nome || isNaN(preco) || preco < 0) {
-            alert('Preencha o nome e o preço de venda!');
-            return;
-        }
+        if (!nome || isNaN(preco) || preco < 0) { alert('Preencha o nome e o preço de venda!'); return; }
 
         estoque.push({ nome: nome, preco: preco, vendidos: 0 });
         document.getElementById('nome-produto').value = '';
@@ -612,15 +705,12 @@
         let tbody = document.getElementById('tabela-caixa');
         tbody.innerHTML = '';
         
-        let totalEntradas = 0;
-        let totalSaidas = 0;
-        let dataAtualAgrupamento = '';
-
+        let totalEntradas = 0, totalSaidas = 0, dataAtualAgrupamento = '';
         let lucrosPorDia = {};
+        
         caixa.forEach(item => {
             let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
             if (!lucrosPorDia[dataCurta]) lucrosPorDia[dataCurta] = 0;
-            
             if (item.tipo === 'entrada') lucrosPorDia[dataCurta] += item.valor;
             else if (item.tipo === 'saida') lucrosPorDia[dataCurta] -= item.valor;
         });
@@ -632,17 +722,9 @@
             if (dataCurta !== dataAtualAgrupamento) {
                 let lucroDoDia = lucrosPorDia[dataCurta] || 0;
                 let corLucro = lucroDoDia >= 0 ? 'var(--success)' : 'var(--danger)'; 
-                
                 let trDivisor = document.createElement('tr');
                 trDivisor.className = 'linha-divisor-data';
-                trDivisor.innerHTML = `
-                    <td colspan="5">
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <span>📅 ${dataCurta}</span>
-                            <span style="color: ${corLucro}; font-size: 15px;">Saldo do Dia: R$ ${lucroDoDia.toFixed(2)}</span>
-                        </div>
-                    </td>
-                `;
+                trDivisor.innerHTML = `<td colspan="5"><div style="display: flex; justify-content: space-between; align-items: center; width: 100%;"><span>📅 ${dataCurta}</span><span style="color: ${corLucro}; font-size: 15px;">Saldo do Dia: R$ ${lucroDoDia.toFixed(2)}</span></div></td>`;
                 tbody.appendChild(trDivisor);
                 dataAtualAgrupamento = dataCurta;
             }
@@ -654,15 +736,16 @@
             else totalSaidas += item.valor;
 
             let exibeDataHora = hora !== "" ? hora : dataCurta;
+            
+            // Destaque visual se for fechamento de turno
+            let bgStyle = item.descricao === '🔒 FECHAMENTO DE TURNO REGISTRADO' ? 'background-color: #fffbeb;' : '';
 
             tr.innerHTML = `
-                <td style="color: var(--gray); font-weight: 600;">${exibeDataHora}</td>
-                <td style="font-weight: 600; color: var(--dark);">${item.descricao}</td>
-                <td class="${classeCor}">${item.tipo.toUpperCase()}</td>
-                <td class="${classeCor}">R$ ${item.valor.toFixed(2)}</td>
-                <td>
-                    <button class="btn-delete" onclick="excluirCaixa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button>
-                </td>
+                <td style="color: var(--gray); font-weight: 600; ${bgStyle}">${exibeDataHora}</td>
+                <td style="font-weight: 600; color: var(--dark); ${bgStyle}">${item.descricao}</td>
+                <td class="${classeCor}" style="${bgStyle}">${item.tipo.toUpperCase()}</td>
+                <td class="${classeCor}" style="${bgStyle}">R$ ${item.valor.toFixed(2)}</td>
+                <td style="${bgStyle}"><button class="btn-delete" onclick="excluirCaixa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
             `;
             tbody.appendChild(tr);
         });
@@ -683,10 +766,7 @@
         let valor = parseFloat(document.getElementById('valor-caixa').value);
         let formaPagamento = document.getElementById('caixa-pagamento').value;
 
-        if (!desc || isNaN(valor) || valor <= 0) {
-            alert('Preencha a descrição e um valor válido!');
-            return;
-        }
+        if (!desc || isNaN(valor) || valor <= 0) { alert('Preencha a descrição e um valor válido!'); return; }
 
         let descFinal = desc + ` (${formaPagamento})`;
         let dataAtual = new Date().toLocaleString('pt-BR');
@@ -724,9 +804,7 @@
                 <td style="color: var(--gray); font-weight: 600;">${dataCurta}</td>
                 <td style="color: var(--dark); font-weight: 700;">${item.descricao}</td>
                 <td class="saida">R$ ${item.valor.toFixed(2)}</td>
-                <td>
-                    <button class="btn-delete" onclick="excluirDespesa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button>
-                </td>
+                <td><button class="btn-delete" onclick="excluirDespesa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
             `;
             tbody.appendChild(tr);
         });
@@ -743,18 +821,9 @@
         let dtInput = document.getElementById('data-despesa').value;
         let formaPagamento = document.getElementById('despesa-pagamento').value;
 
-        if (!desc || isNaN(valor) || valor <= 0) {
-            alert('Preencha a descrição e um valor válido!');
-            return;
-        }
+        if (!desc || isNaN(valor) || valor <= 0) { alert('Preencha a descrição e um valor válido!'); return; }
 
-        let dataStr = "";
-        if(dtInput) {
-            let parts = dtInput.split('-');
-            dataStr = `${parts[2]}/${parts[1]}/${parts[0]}, 00:00:00`;
-        } else {
-            dataStr = new Date().toLocaleString('pt-BR');
-        }
+        let dataStr = dtInput ? `${dtInput.split('-')[2]}/${dtInput.split('-')[1]}/${dtInput.split('-')[0]}, 00:00:00` : new Date().toLocaleString('pt-BR');
 
         let descFinal = desc + ` (${formaPagamento})`;
         despesas.push({ data: dataStr, descricao: descFinal, valor: valor });
@@ -782,44 +851,25 @@
         let selectMes = document.getElementById('filtro-mes');
         let mesesSet = new Set();
 
-        caixa.forEach(c => {
-            if(c.data) {
-                let mesAno = c.data.substring(3, 10);
-                if (mesAno.length === 7) mesesSet.add(mesAno);
-            }
-        });
-        
-        despesas.forEach(d => {
-            if(d.data) {
-                let mesAno = d.data.substring(3, 10);
-                if (mesAno.length === 7) mesesSet.add(mesAno);
-            }
-        });
+        caixa.forEach(c => { if(c.data) { let mesAno = c.data.substring(3, 10); if (mesAno.length === 7) mesesSet.add(mesAno); } });
+        despesas.forEach(d => { if(d.data) { let mesAno = d.data.substring(3, 10); if (mesAno.length === 7) mesesSet.add(mesAno); } });
 
         let mesesArray = Array.from(mesesSet).sort((a, b) => {
-            let valA = a.split('/').reverse().join('');
-            let valB = b.split('/').reverse().join('');
-            return valB.localeCompare(valA); 
+            return b.split('/').reverse().join('').localeCompare(a.split('/').reverse().join('')); 
         });
 
         let valorAtual = selectMes.value;
         selectMes.innerHTML = '<option value="todos">Todo o Período</option>';
 
-        mesesArray.forEach(m => {
-            selectMes.innerHTML += `<option value="${m}">${m}</option>`;
-        });
+        mesesArray.forEach(m => { selectMes.innerHTML += `<option value="${m}">${m}</option>`; });
 
-        if(mesesArray.includes(valorAtual)) {
-            selectMes.value = valorAtual;
-        }
+        if(mesesArray.includes(valorAtual)) selectMes.value = valorAtual;
     }
 
     function calcularLucroMensal() {
         let mesSelecionado = document.getElementById('filtro-mes').value;
         
-        let totalEntradas = 0;
-        let totalSaidasCaixa = 0;
-        let totalGastoDespesas = 0;
+        let totalEntradas = 0, totalSaidasCaixa = 0, totalGastoDespesas = 0;
 
         caixa.forEach(c => {
             let mesAno = c.data ? c.data.substring(3, 10) : "";
@@ -831,9 +881,7 @@
 
         despesas.forEach(d => {
             let mesAno = d.data ? d.data.substring(3, 10) : "";
-            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
-                totalGastoDespesas += d.valor;
-            }
+            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) totalGastoDespesas += d.valor;
         });
 
         let saidasTotais = totalSaidasCaixa + totalGastoDespesas;
@@ -865,7 +913,6 @@
         let totalNaRua = 0;
         
         let datalist = document.getElementById('lista-clientes');
-        let valorAtualCliente = document.getElementById('fiado-nome').value;
         datalist.innerHTML = ''; 
 
         fiados.forEach((cliente, index) => {
@@ -874,12 +921,12 @@
 
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="font-size: 18px;"><strong style="color: var(--dark);">${cliente.nome}</strong></td>
-                <td style="color: var(--danger); font-size: 18px; font-weight: 800;">R$ ${cliente.total.toFixed(2)}</td>
+                <td style="font-size: 16px;"><strong style="color: var(--dark);">${cliente.nome}</strong></td>
+                <td style="color: var(--danger); font-size: 16px; font-weight: 800;">R$ ${cliente.total.toFixed(2)}</td>
                 <td>
-                    <button class="btn-edit" onclick="verDetalhesFiado(${index})">Ver Compras</button>
-                    <button class="btn-add" onclick="receberPagamentoFiado(${index})">💲 Receber</button>
-                    <button class="btn-delete" onclick="excluirClienteFiado(${index})">Excluir</button>
+                    <button class="btn-edit" onclick="verDetalhesFiado(${index})" style="padding: 6px; font-size: 12px; margin-bottom:4px;">Ver Compras</button>
+                    <button class="btn-add" onclick="receberPagamentoFiado(${index})" style="padding: 6px; font-size: 12px; margin-bottom:4px;">💲 Receber</button>
+                    <button class="btn-delete" onclick="excluirClienteFiado(${index})" style="padding: 6px; font-size: 12px;">Excluir</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -887,7 +934,6 @@
 
         document.getElementById('total-fiados-rua').innerText = totalNaRua.toFixed(2);
         
-        // Mantém a caixinha de detalhes aberta e atualizada se estiver visível
         if (document.getElementById('detalhes-fiado').style.display === 'block') {
             let clienteAbertoNome = document.querySelector('#detalhes-fiado h3').innerText.replace('Extrato: ', '');
             let clienteIndex = fiados.findIndex(c => c.nome === clienteAbertoNome);
@@ -929,14 +975,11 @@
         let formaPagamento = document.getElementById('fiado-pagamento').value;
 
         if (!nome || produtoIndex === "" || isNaN(qtd) || isNaN(valor) || valor <= 0) {
-            alert('Preencha Nome, Selecione o Produto, coloque a Quantidade ou o Valor!');
-            return;
+            alert('Preencha Nome, Produto, Qtd ou Valor!'); return;
         }
 
         let produtoNome = estoque[produtoIndex].nome;
-        if (formaPagamento !== "A Prazo") {
-            produtoNome += ` (${formaPagamento})`;
-        }
+        if (formaPagamento !== "A Prazo") produtoNome += ` (${formaPagamento})`;
 
         let clienteIndex = fiados.findIndex(c => c.nome.toLowerCase() === nome.toLowerCase());
         let dataAtual = new Date().toLocaleString('pt-BR');
@@ -966,36 +1009,24 @@
         
         let html = `
             <h3 style="margin-top: 0; color: var(--dark);">Extrato: ${cliente.nome}</h3>
-            <table style="font-size: 14px; box-shadow: none; border: 1px solid var(--border);">
-                <thead>
-                    <tr>
-                        <th style="background: #e2e8f0;">Data</th>
-                        <th style="background: #e2e8f0;">Produto</th>
-                        <th style="background: #e2e8f0;">Qtd</th>
-                        <th style="background: #e2e8f0;">Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div style="overflow-x: auto;">
+                <table style="font-size: 14px; box-shadow: none; border: 1px solid var(--border); min-width: 300px;">
+                    <thead><tr><th style="background: #e2e8f0;">Data</th><th style="background: #e2e8f0;">Produto</th><th style="background: #e2e8f0;">Qtd</th><th style="background: #e2e8f0;">Valor</th></tr></thead>
+                    <tbody>
         `;
 
         cliente.compras.forEach(c => {
             let corValor = c.valor < 0 ? 'color: var(--success);' : 'color: var(--danger);';
             let qtdDisplay = c.quantidade ? Number(c.quantidade.toFixed(3)) : '-';
-            html += `
-                <tr>
-                    <td style="color: var(--gray);">${c.data.split(',')[0]}</td>
-                    <td style="font-weight: 600;">${c.produto}</td>
-                    <td>${qtdDisplay}</td>
-                    <td style="${corValor} font-weight: 800;">R$ ${c.valor.toFixed(2)}</td>
-                </tr>
-            `;
+            html += `<tr><td style="color: var(--gray);">${c.data.split(',')[0]}</td><td style="font-weight: 600;">${c.produto}</td><td>${qtdDisplay}</td><td style="${corValor} font-weight: 800;">R$ ${c.valor.toFixed(2)}</td></tr>`;
         });
 
         html += `
-                </tbody>
-            </table>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-                <span style="font-size: 22px; font-weight: 800; color: var(--danger);">Total a Pagar: R$ ${cliente.total.toFixed(2)}</span>
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+                <span style="font-size: 20px; font-weight: 800; color: var(--danger);">Total a Pagar: R$ ${cliente.total.toFixed(2)}</span>
                 <button class="btn-delete" onclick="document.getElementById('detalhes-fiado').style.display='none'">Fechar Extrato</button>
             </div>
         `;
@@ -1006,45 +1037,25 @@
 
     function receberPagamentoFiado(index) {
         let cliente = fiados[index];
-        let valorPagoTexto = prompt(`A conta de ${cliente.nome} está em R$ ${cliente.total.toFixed(2)}.\n\nQual valor ele está pagando agora?`);
-        
+        let valorPagoTexto = prompt(`A conta de ${cliente.nome} está em R$ ${cliente.total.toFixed(2)}.\nQual valor ele está pagando agora?`);
         if (valorPagoTexto === null) return; 
         
         let valorPago = parseFloat(valorPagoTexto.replace(',', '.'));
-
-        if (isNaN(valorPago) || valorPago <= 0) {
-            alert('Valor inválido!');
-            return;
-        }
-
-        if (valorPago > cliente.total) {
-            alert(`O valor digitado (R$ ${valorPago.toFixed(2)}) é maior que a dívida (R$ ${cliente.total.toFixed(2)}).`);
-            return;
-        }
+        if (isNaN(valorPago) || valorPago <= 0) { alert('Valor inválido!'); return; }
+        if (valorPago > cliente.total) { alert(`Valor maior que a dívida.`); return; }
 
         let formaPagamento = prompt(`Forma de pagamento (Dinheiro, PIX, Cartão):`, `Dinheiro`);
         if (formaPagamento === null) formaPagamento = "Dinheiro"; 
 
         cliente.total -= valorPago;
-
         let dataAtual = new Date().toLocaleString('pt-BR');
-        cliente.compras.push({
-            data: dataAtual,
-            produto: `✅ Pagamento (${formaPagamento})`,
-            quantidade: '',
-            valor: -valorPago
-        });
-
-        caixa.push({ 
-            data: dataAtual, 
-            descricao: `Pagamento Fiado - ${cliente.nome} (${formaPagamento})`, 
-            tipo: 'entrada', 
-            valor: valorPago 
-        });
+        
+        cliente.compras.push({ data: dataAtual, produto: `✅ Pagamento (${formaPagamento})`, quantidade: '', valor: -valorPago });
+        caixa.push({ data: dataAtual, descricao: `Pagamento Fiado - ${cliente.nome} (${formaPagamento})`, tipo: 'entrada', valor: valorPago });
 
         if (cliente.total <= 0.01) { 
             cliente.total = 0;
-            if (confirm(`A conta de ${cliente.nome} foi quitada totalmente! Deseja limpar o histórico para esse cliente sumir da lista?`)) {
+            if (confirm(`A conta de ${cliente.nome} foi quitada! Deseja limpar o histórico para esse cliente sumir da lista?`)) {
                 fiados.splice(index, 1);
             }
         }
@@ -1054,13 +1065,12 @@
     }
 
     function excluirClienteFiado(index) {
-        if (confirm(`Tem certeza que deseja apagar o cliente "${fiados[index].nome}" e todo o seu histórico de conta?\n(Isso não mexe no seu caixa, apenas apaga o nome da lista de fiados)`)) {
+        if (confirm(`Tem certeza que deseja apagar o cliente "${fiados[index].nome}" e todo o seu histórico?`)) {
             fiados.splice(index, 1);
             document.getElementById('detalhes-fiado').style.display = 'none';
             salvarNoFirebase();
         }
     }
-
 </script>
 
 </body>
