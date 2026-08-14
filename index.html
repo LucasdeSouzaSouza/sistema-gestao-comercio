@@ -153,8 +153,13 @@
         .resumo span.entrada { border-bottom: 4px solid var(--success); color: var(--success); }
         .resumo span.saida { border-bottom: 4px solid var(--danger); color: var(--danger); }
         #saldo-total { border-bottom: 4px solid var(--primary); }
-        #venda-total-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 4px solid var(--warning); }
+        
+        #venda-total-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 4px solid var(--danger); }
         #venda-total { color: var(--danger); font-size: 28px; border: none; padding: 0; box-shadow: none; display: inline;}
+        
+        #venda-troco-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 4px solid var(--success); }
+        #venda-troco { color: var(--success); font-size: 28px; border: none; padding: 0; box-shadow: none; display: inline;}
+        
         .painel-destaque { background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #064e3b; padding: 25px; border-radius: 16px; text-align: center; font-size: 26px; margin-bottom: 20px; border: 2px solid #a7f3d0; font-weight: 800; }
 
         /* ========================================== */
@@ -253,10 +258,14 @@
                     <option value="Débito">Cartão de Débito</option>
                     <option value="Crédito">Cartão de Crédito</option>
                 </select>
+                
+                <!-- CAMPO NOVO: VALOR RECEBIDO PARA TROCO -->
+                <input type="number" id="venda-valor-recebido" placeholder="Valor Recebido (Para Troco)" step="0.01" oninput="calcularTroco()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
             </div>
 
             <div class="resumo">
                 <span id="venda-total-container">Total a Pagar: <b style="color: var(--danger);">R$ <span id="venda-total">0.00</span></b></span>
+                <span id="venda-troco-container">Troco a Devolver: <b style="color: var(--success);">R$ <span id="venda-troco">0.00</span></b></span>
             </div>
 
             <button class="btn-venda" onclick="finalizarVenda()">💳 Finalizar Venda</button>
@@ -715,7 +724,7 @@
     }
 
     // ==========================================
-    // SISTEMA DE VENDAS (PDV)
+    // SISTEMA DE VENDAS (PDV) E TROCO
     // ==========================================
     function calcularVenda() {
         let index = document.getElementById('venda-produto').value;
@@ -727,6 +736,7 @@
         
         document.getElementById('venda-valor-desejado').value = totalVendaAtual > 0 ? totalVendaAtual.toFixed(2) : '';
         document.getElementById('venda-total').innerText = totalVendaAtual.toFixed(2);
+        calcularTroco();
     }
 
     function calcularPorValor() {
@@ -740,13 +750,27 @@
         document.getElementById('venda-qtd').value = qtd > 0 ? Number(qtd.toFixed(3)) : '';
         totalVendaAtual = valor;
         document.getElementById('venda-total').innerText = totalVendaAtual.toFixed(2);
+        calcularTroco();
+    }
+    
+    function calcularTroco() {
+        let recebido = parseFloat(document.getElementById('venda-valor-recebido').value) || 0;
+        let troco = recebido - totalVendaAtual;
+        
+        if (troco < 0 || totalVendaAtual === 0) {
+            document.getElementById('venda-troco').innerText = "0.00";
+        } else {
+            document.getElementById('venda-troco').innerText = troco.toFixed(2);
+        }
     }
 
     function resetarPDV() {
         totalVendaAtual = 0;
         document.getElementById('venda-valor-desejado').value = "";
         document.getElementById('venda-qtd').value = "";
+        document.getElementById('venda-valor-recebido').value = "";
         document.getElementById('venda-total').innerText = "0.00";
+        document.getElementById('venda-troco').innerText = "0.00";
     }
 
     function finalizarVenda() {
@@ -861,8 +885,8 @@
                 <td style="color: var(--success); font-size: 16px; font-weight: 800;">${vendidosExibicao}</td>
                 <td style="color: var(--primary); font-weight: 800;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
                 <td>
-                    <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem" style="padding: 6px; font-size: 12px;">Zerar</button>
-                    <button class="btn-delete" onclick="excluirProduto(${index})" style="padding: 6px; font-size: 12px;">Excluir</button>
+                    <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem" style="padding: 6px 12px; font-size: 12px;">Zerar</button>
+                    <button class="btn-delete" onclick="excluirProduto(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1124,10 +1148,10 @@
                 <td style="font-size: 16px;"><strong style="color: var(--dark);">${cliente.nome}</strong></td>
                 <td style="color: var(--danger); font-size: 16px; font-weight: 800;">R$ ${cliente.total.toFixed(2)}</td>
                 <td>
-                    <button class="btn-dark" onclick="prepararNovaCompraFiado(${index})" style="background-color: var(--primary); padding: 6px; font-size: 12px; margin-bottom:4px;">➕ Adicionar</button>
-                    <button class="btn-edit" onclick="verDetalhesFiado(${index})" style="padding: 6px; font-size: 12px; margin-bottom:4px;">Ver Compras</button>
-                    <button class="btn-add" onclick="receberPagamentoFiado(${index})" style="padding: 6px; font-size: 12px; margin-bottom:4px;">💲 Receber</button>
-                    <button class="btn-delete" onclick="excluirClienteFiado(${index})" style="padding: 6px; font-size: 12px;">Excluir</button>
+                    <button onclick="prepararNovaCompraFiado(${index})" style="background-color: var(--primary); color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; margin-bottom: 4px; cursor: pointer; font-weight: bold;">➕ Adicionar</button>
+                    <button class="btn-edit" onclick="verDetalhesFiado(${index})" style="padding: 6px 12px; font-size: 12px; margin-bottom:4px;">Ver Compras</button>
+                    <button class="btn-add" onclick="receberPagamentoFiado(${index})" style="padding: 6px 12px; font-size: 12px; margin-bottom:4px;">💲 Receber</button>
+                    <button class="btn-delete" onclick="excluirClienteFiado(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1142,7 +1166,6 @@
         }
     }
     
-    // NOVA FUNÇÃO: PREPARAR COMPRA RÁPIDA DE FIADO
     function prepararNovaCompraFiado(index) {
         let cliente = fiados[index];
         let campoNome = document.getElementById('fiado-nome');
@@ -1150,7 +1173,6 @@
         campoNome.value = cliente.nome;
         document.getElementById('fiado-produto').focus();
         
-        // Efeito visual rápido para mostrar que o campo foi preenchido
         campoNome.style.borderColor = "var(--primary)";
         campoNome.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.2)";
         setTimeout(() => {
@@ -1158,7 +1180,6 @@
             campoNome.style.boxShadow = "none";
         }, 1500);
         
-        // Rola a tela suavemente para o formulário de cadastro
         document.getElementById('fiados').scrollIntoView({ behavior: 'smooth' });
     }
 
