@@ -120,7 +120,7 @@
         /* FORMULÁRIOS E INPUTS */
         /* ========================================== */
         .form-group { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid var(--border); }
-        input, select, textarea { padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; flex: 1; min-width: 140px; font-size: 15px; font-family: inherit; color: var(--dark); }
+        input, select, textarea { padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; flex: 1; min-width: 140px; font-size: 15px; font-family: inherit; color: var(--dark); transition: all 0.3s; }
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
         
         button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 800; color: white; font-size: 15px; font-family: inherit; transition: all 0.2s ease; }
@@ -592,19 +592,15 @@
         }
     }
     
-    // NOVA FUNÇÃO DE LOGOUT
     function fazerLogout() {
         if(confirm(`Tem certeza que deseja sair do sistema, ${usuarioLogado}?`)) {
-            // Limpa o estado da sessão atual
             usuarioLogado = "";
             document.getElementById('tag-usuario-logado').innerText = "";
-            document.getElementById('input-senha').value = ""; // Limpa o campo de senha
+            document.getElementById('input-senha').value = ""; 
             
-            // Troca as telas para esconder o sistema e mostrar o login
             document.getElementById('sistema-principal').style.display = 'none';
             document.getElementById('tela-login').style.display = 'flex';
             
-            // Joga o menu de volta para a aba principal para quando logar novamente
             mudarAba('vendas');
             document.getElementById('input-usuario').focus();
         }
@@ -1128,6 +1124,7 @@
                 <td style="font-size: 16px;"><strong style="color: var(--dark);">${cliente.nome}</strong></td>
                 <td style="color: var(--danger); font-size: 16px; font-weight: 800;">R$ ${cliente.total.toFixed(2)}</td>
                 <td>
+                    <button class="btn-dark" onclick="prepararNovaCompraFiado(${index})" style="background-color: var(--primary); padding: 6px; font-size: 12px; margin-bottom:4px;">➕ Adicionar</button>
                     <button class="btn-edit" onclick="verDetalhesFiado(${index})" style="padding: 6px; font-size: 12px; margin-bottom:4px;">Ver Compras</button>
                     <button class="btn-add" onclick="receberPagamentoFiado(${index})" style="padding: 6px; font-size: 12px; margin-bottom:4px;">💲 Receber</button>
                     <button class="btn-delete" onclick="excluirClienteFiado(${index})" style="padding: 6px; font-size: 12px;">Excluir</button>
@@ -1143,6 +1140,26 @@
             let clienteIndex = fiados.findIndex(c => c.nome === clienteAbertoNome);
             if(clienteIndex >= 0) verDetalhesFiado(clienteIndex);
         }
+    }
+    
+    // NOVA FUNÇÃO: PREPARAR COMPRA RÁPIDA DE FIADO
+    function prepararNovaCompraFiado(index) {
+        let cliente = fiados[index];
+        let campoNome = document.getElementById('fiado-nome');
+        
+        campoNome.value = cliente.nome;
+        document.getElementById('fiado-produto').focus();
+        
+        // Efeito visual rápido para mostrar que o campo foi preenchido
+        campoNome.style.borderColor = "var(--primary)";
+        campoNome.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.2)";
+        setTimeout(() => {
+            campoNome.style.borderColor = "#cbd5e1";
+            campoNome.style.boxShadow = "none";
+        }, 1500);
+        
+        // Rola a tela suavemente para o formulário de cadastro
+        document.getElementById('fiados').scrollIntoView({ behavior: 'smooth' });
     }
 
     function calcularValorFiado() {
