@@ -51,7 +51,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* ========================================== */
-        /* TELA DE LOGIN */
+        /* TELA DE LOGIN COM MULTI-USUÁRIOS */
         /* ========================================== */
         #tela-login {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -65,10 +65,23 @@
             animation: fadeInDown 0.5s ease;
         }
         .login-box h2 { margin-top: 0; color: var(--dark); margin-bottom: 5px; font-size: 24px; font-weight: 800; }
-        .login-box p { color: var(--gray); margin-bottom: 25px; font-size: 15px; }
-        .login-box input { width: 85%; margin-bottom: 20px; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; text-align: center; transition: all 0.3s; }
-        .login-box input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
-        .login-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
+        .login-box p { color: var(--gray); margin-bottom: 20px; font-size: 15px; }
+        
+        .login-box select, .login-box input { 
+            width: 90%; margin-bottom: 15px; padding: 14px; 
+            border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; 
+            text-align: center; font-family: inherit; color: var(--dark);
+            transition: all 0.3s; 
+        }
+        .login-box select { cursor: pointer; }
+        .login-box select:focus, .login-box input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+        
+        .login-box button { 
+            width: 100%; padding: 14px; background: var(--primary); color: white; 
+            border: none; border-radius: 10px; cursor: pointer; font-size: 16px; 
+            font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px;
+            transition: all 0.3s; 
+        }
         .login-box button:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4); }
 
         #sistema-principal { display: none; }
@@ -153,6 +166,13 @@
         .turno-linha b { color: var(--dark); }
         
         #detalhes-fiado { margin-top: 25px; display: none; background: #f8fafc; padding: 20px; border: 1px solid #cbd5e1; border-radius: 16px; }
+        
+        /* Tag de usuário no cabeçalho */
+        #tag-usuario-logado {
+            display: inline-block; background-color: var(--primary); color: white;
+            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;
+            margin-left: 10px; vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -180,8 +200,15 @@
 <div id="tela-login">
     <div class="login-box">
         <h2>🏪 Mercearia Rsouza</h2>
-        <p>Acesso Restrito ao Sistema</p>
-        <input type="password" id="input-senha" placeholder="Digite sua senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
+        <p>Identifique-se para entrar</p>
+        
+        <select id="input-usuario">
+            <option value="lucas">Lucas</option>
+            <option value="luana">Luana</option>
+            <option value="raimundo">Raimundo</option>
+        </select>
+        
+        <input type="password" id="input-senha" placeholder="Digite a senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
         <button onclick="acessarSistema()">Entrar no APP</button>
     </div>
 </div>
@@ -191,7 +218,7 @@
     <div class="container">
         
         <h1 class="header-title">🛒 Mercearia Rsouza</h1>
-        <p class="header-subtitle">🟢 App Online (Nuvem Ativa)</p>
+        <p class="header-subtitle">🟢 App Online (Nuvem Ativa) <span id="tag-usuario-logado"></span></p>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 Vendas</button>
@@ -428,6 +455,7 @@
     let fiados = [];
     let despesas = [];
     let totalVendaAtual = 0; 
+    let usuarioLogado = ""; // Nova variável para rastrear quem está usando o sistema
 
     // ==========================================
     // ESCUTAR BANCO DE DADOS E RESGATAR LOCAIS
@@ -442,7 +470,6 @@
             fiados = dados.fiados || [];
             despesas = dados.despesas || [];
             
-            // VERIFICAÇÃO DE RESGATE: Se a nuvem está vazia, mas o computador tem dados, recupera!
             let localEstoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             if (estoque.length === 0 && localEstoque.length > 0) {
                 caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
@@ -452,7 +479,6 @@
                 puxouLocal = true;
             }
         } else {
-            // Se a nuvem nem existe ainda, puxa os dados do computador
             caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
             estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
@@ -460,10 +486,7 @@
             puxouLocal = true;
         }
 
-        if (puxouLocal) {
-            salvarNoFirebase();
-            alert("✅ Ufa! Seus dados antigos foram recuperados da memória e enviados para a nuvem com sucesso!");
-        }
+        if (puxouLocal) salvarNoFirebase();
 
         atualizarEstoqueUI();
         atualizarCaixaUI();
@@ -483,13 +506,25 @@
     }
 
     // ==========================================
-    // SISTEMA DE SEGURANÇA (LOGIN)
+    // SISTEMA DE SEGURANÇA (LOGIN MULTI-USUÁRIOS)
     // ==========================================
     function acessarSistema() {
+        let usuarioSelecionado = document.getElementById('input-usuario').value;
+        let selectElement = document.getElementById('input-usuario');
+        let nomeUsuario = selectElement.options[selectElement.selectedIndex].text;
         let senhaDigitada = document.getElementById('input-senha').value;
-        let senhaCorreta = "123456"; // 👉 ALTERE A SUA SENHA AQUI
+        
+        // 👉 ALTERE AS SENHAS INDIVIDUAIS AQUI
+        const senhas = {
+            "lucas": "123456",
+            "luana": "luana123",
+            "raimundo": "raimundo123"
+        };
 
-        if (senhaDigitada === senhaCorreta) {
+        if (senhaDigitada === senhas[usuarioSelecionado]) {
+            usuarioLogado = nomeUsuario;
+            document.getElementById('tag-usuario-logado').innerText = "👤 " + usuarioLogado;
+            
             document.getElementById('tela-login').style.display = 'none';
             document.getElementById('sistema-principal').style.display = 'block';
             document.getElementById('venda-produto').focus();
@@ -591,7 +626,12 @@
         let dataAtual = new Date().toLocaleString('pt-BR');
         let descricaoQtd = Number(qtd.toFixed(3));
         
-        caixa.push({ data: dataAtual, descricao: `Venda: ${descricaoQtd}x ${produto.nome} (${formaPagamento})`, tipo: 'entrada', valor: total });
+        caixa.push({ 
+            data: dataAtual, 
+            descricao: `Venda: ${descricaoQtd}x ${produto.nome} (${formaPagamento}) - ${usuarioLogado}`, 
+            tipo: 'entrada', 
+            valor: total 
+        });
 
         salvarNoFirebase(); 
         
@@ -602,7 +642,7 @@
     }
 
     // ==========================================
-    // FECHAMENTO DE TURNO (NOVO)
+    // FECHAMENTO DE TURNO
     // ==========================================
     function abrirFechamento() {
         let totalDinheiro = 0, totalPix = 0, totalCartao = 0;
@@ -610,7 +650,7 @@
         
         let indexUltimoFechamento = -1;
         for (let i = caixa.length - 1; i >= 0; i--) {
-            if (caixa[i].descricao === '🔒 FECHAMENTO DE TURNO REGISTRADO') {
+            if (caixa[i].descricao.includes('🔒 FECHAMENTO DE TURNO REGISTRADO')) {
                 indexUltimoFechamento = i;
                 break;
             }
@@ -652,7 +692,7 @@
         let dataAtual = new Date().toLocaleString('pt-BR');
         caixa.push({ 
             data: dataAtual, 
-            descricao: `🔒 FECHAMENTO DE TURNO REGISTRADO`, 
+            descricao: `🔒 FECHAMENTO DE TURNO REGISTRADO - ${usuarioLogado}`, 
             tipo: 'saida', 
             valor: 0 
         });
@@ -758,7 +798,7 @@
 
             let exibeDataHora = hora !== "" ? hora : dataCurta;
             
-            let bgStyle = item.descricao === '🔒 FECHAMENTO DE TURNO REGISTRADO' ? 'background-color: #fffbeb;' : '';
+            let bgStyle = item.descricao.includes('🔒 FECHAMENTO DE TURNO REGISTRADO') ? 'background-color: #fffbeb;' : '';
 
             tr.innerHTML = `
                 <td style="color: var(--gray); font-weight: 600; ${bgStyle}">${exibeDataHora}</td>
@@ -788,7 +828,7 @@
 
         if (!desc || isNaN(valor) || valor <= 0) { alert('Preencha a descrição e um valor válido!'); return; }
 
-        let descFinal = desc + ` (${formaPagamento})`;
+        let descFinal = desc + ` (${formaPagamento}) - ${usuarioLogado}`;
         let dataAtual = new Date().toLocaleString('pt-BR');
         caixa.push({ data: dataAtual, descricao: descFinal, tipo: tipo, valor: valor });
         
@@ -845,7 +885,7 @@
 
         let dataStr = dtInput ? `${dtInput.split('-')[2]}/${dtInput.split('-')[1]}/${dtInput.split('-')[0]}, 00:00:00` : new Date().toLocaleString('pt-BR');
 
-        let descFinal = desc + ` (${formaPagamento})`;
+        let descFinal = desc + ` (${formaPagamento}) - ${usuarioLogado}`;
         despesas.push({ data: dataStr, descricao: descFinal, valor: valor });
         
         document.getElementById('desc-despesa').value = '';
@@ -1000,6 +1040,7 @@
 
         let produtoNome = estoque[produtoIndex].nome;
         if (formaPagamento !== "A Prazo") produtoNome += ` (${formaPagamento})`;
+        produtoNome += ` - ${usuarioLogado}`;
 
         let clienteIndex = fiados.findIndex(c => c.nome.toLowerCase() === nome.toLowerCase());
         let dataAtual = new Date().toLocaleString('pt-BR');
@@ -1070,8 +1111,8 @@
         cliente.total -= valorPago;
         let dataAtual = new Date().toLocaleString('pt-BR');
         
-        cliente.compras.push({ data: dataAtual, produto: `✅ Pagamento (${formaPagamento})`, quantidade: '', valor: -valorPago });
-        caixa.push({ data: dataAtual, descricao: `Pagamento Fiado - ${cliente.nome} (${formaPagamento})`, tipo: 'entrada', valor: valorPago });
+        cliente.compras.push({ data: dataAtual, produto: `✅ Pagamento (${formaPagamento}) - ${usuarioLogado}`, quantidade: '', valor: -valorPago });
+        caixa.push({ data: dataAtual, descricao: `Pagamento Fiado - ${cliente.nome} (${formaPagamento}) - ${usuarioLogado}`, tipo: 'entrada', valor: valorPago });
 
         if (cliente.total <= 0.01) { 
             cliente.total = 0;
