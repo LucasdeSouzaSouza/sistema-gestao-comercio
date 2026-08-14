@@ -42,7 +42,6 @@
             color: var(--dark);
             margin: 0;
             padding: 15px;
-            /* Evita que a tela pule no celular */
             overscroll-behavior-y: none; 
         }
 
@@ -431,17 +430,39 @@
     let totalVendaAtual = 0; 
 
     // ==========================================
-    // ESCUTAR BANCO DE DADOS EM TEMPO REAL
+    // ESCUTAR BANCO DE DADOS E RESGATAR LOCAIS
     // ==========================================
     db.collection("sistema").doc("dados_loja").onSnapshot((doc) => {
+        let puxouLocal = false;
+
         if (doc.exists) {
             let dados = doc.data();
             caixa = dados.caixa || [];
             estoque = dados.estoque || [];
             fiados = dados.fiados || [];
             despesas = dados.despesas || [];
+            
+            // VERIFICAÇÃO DE RESGATE: Se a nuvem está vazia, mas o computador tem dados, recupera!
+            let localEstoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
+            if (estoque.length === 0 && localEstoque.length > 0) {
+                caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
+                estoque = localEstoque;
+                fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
+                despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
+                puxouLocal = true;
+            }
         } else {
+            // Se a nuvem nem existe ainda, puxa os dados do computador
+            caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
+            estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
+            fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
+            despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
+            puxouLocal = true;
+        }
+
+        if (puxouLocal) {
             salvarNoFirebase();
+            alert("✅ Ufa! Seus dados antigos foram recuperados da memória e enviados para a nuvem com sucesso!");
         }
 
         atualizarEstoqueUI();
@@ -587,7 +608,6 @@
         let totalDinheiro = 0, totalPix = 0, totalCartao = 0;
         let totalEntradas = 0, totalSaidas = 0;
         
-        // Pega apenas as movimentações desde o último "FECHAMENTO DE TURNO REGISTRADO"
         let indexUltimoFechamento = -1;
         for (let i = caixa.length - 1; i >= 0; i--) {
             if (caixa[i].descricao === '🔒 FECHAMENTO DE TURNO REGISTRADO') {
@@ -604,7 +624,7 @@
                 if (item.descricao.includes('Dinheiro')) totalDinheiro += item.valor;
                 else if (item.descricao.includes('PIX') || item.descricao.includes('Pix')) totalPix += item.valor;
                 else if (item.descricao.includes('Cartão') || item.descricao.includes('Débito') || item.descricao.includes('Crédito')) totalCartao += item.valor;
-                else totalDinheiro += item.valor; // Se não tiver tag, assume dinheiro
+                else totalDinheiro += item.valor; 
             } else if (item.tipo === 'saida') {
                 totalSaidas += item.valor;
             }
@@ -622,7 +642,7 @@
             <div class="turno-linha"><span>📈 Faturamento Total:</span> <b style="color: var(--success);">R$ ${totalEntradas.toFixed(2)}</b></div>
             
             <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
-            <div class="turno-linha" style="font-size: 18px; color: var(--dark);"><span>💰 Dinheiro Físico na Gaveta:</span> <b style="color: var(--primary);">R$ ${saldoNaGaveta.toFixed(2)}</b></div>
+            <div class="turno-linha" style="font-size: 18px; color: var(--dark);"><span>💰 Dinheiro na Gaveta:</span> <b style="color: var(--primary);">R$ ${saldoNaGaveta.toFixed(2)}</b></div>
         `;
 
         document.getElementById('modal-turno').style.display = 'flex';
@@ -633,11 +653,12 @@
         caixa.push({ 
             data: dataAtual, 
             descricao: `🔒 FECHAMENTO DE TURNO REGISTRADO`, 
-            tipo: 'saida', // classificado como saida com valor 0 só pra ter uma cor vermelha discreta
+            tipo: 'saida', 
             valor: 0 
         });
         salvarNoFirebase();
         document.getElementById('modal-turno').style.display = 'none';
+        alert('Fechamento de turno registrado com sucesso!');
     }
 
     // ==========================================
@@ -737,7 +758,6 @@
 
             let exibeDataHora = hora !== "" ? hora : dataCurta;
             
-            // Destaque visual se for fechamento de turno
             let bgStyle = item.descricao === '🔒 FECHAMENTO DE TURNO REGISTRADO' ? 'background-color: #fffbeb;' : '';
 
             tr.innerHTML = `
