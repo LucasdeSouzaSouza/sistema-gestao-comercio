@@ -7,20 +7,24 @@
     <!-- Importação de Fonte Moderna do Google -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- SDKS DO FIREBASE (NUVEM) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
     <style>
         /* ========================================== */
         /* VARIÁVEIS DE CORES E ESTILO GLOBAL */
         /* ========================================== */
         :root {
-            --primary: #2563eb;      /* Azul moderno */
-            --success: #10b981;      /* Verde vibrante */
-            --danger: #ef4444;       /* Vermelho suave */
-            --warning: #f59e0b;      /* Laranja/Amarelo */
-            --dark: #1e293b;         /* Texto Escuro */
-            --gray: #64748b;         /* Texto Secundário */
-            --bg-body: #f4f7f6;      /* Fundo da tela */
-            --bg-card: #ffffff;      /* Fundo dos painéis */
-            --border: #e2e8f0;       /* Cor das linhas */
+            --primary: #2563eb;      
+            --success: #10b981;      
+            --danger: #ef4444;       
+            --warning: #f59e0b;      
+            --dark: #1e293b;         
+            --gray: #64748b;         
+            --bg-body: #f4f7f6;      
+            --bg-card: #ffffff;      
+            --border: #e2e8f0;       
         }
 
         body {
@@ -31,14 +35,13 @@
             padding: 20px;
         }
 
-        /* Estilização da barra de rolagem */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* ========================================== */
-        /* TELA DE LOGIN (NOVO DESIGN) */
+        /* TELA DE LOGIN */
         /* ========================================== */
         #tela-login {
             position: fixed;
@@ -63,52 +66,12 @@
             max-width: 340px;
             animation: fadeInDown 0.5s ease;
         }
-        .login-box h2 {
-            margin-top: 0;
-            color: var(--dark);
-            margin-bottom: 5px;
-            font-size: 24px;
-            font-weight: 800;
-        }
-        .login-box p {
-            color: var(--gray);
-            margin-bottom: 25px;
-            font-size: 15px;
-        }
-        .login-box input {
-            width: 90%;
-            margin-bottom: 20px;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 16px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        .login-box input:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-        }
-        .login-box button {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-        }
-        .login-box button:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
-        }
+        .login-box h2 { margin-top: 0; color: var(--dark); margin-bottom: 5px; font-size: 24px; font-weight: 800; }
+        .login-box p { color: var(--gray); margin-bottom: 25px; font-size: 15px; }
+        .login-box input { width: 90%; margin-bottom: 20px; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; text-align: center; transition: all 0.3s; }
+        .login-box input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+        .login-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
+        .login-box button:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4); }
 
         #sistema-principal { display: none; }
 
@@ -123,63 +86,17 @@
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .header-title {
-            text-align: center;
-            color: var(--dark);
-            font-weight: 800;
-            font-size: 34px;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-        .header-subtitle {
-            text-align: center;
-            color: var(--gray);
-            margin-bottom: 30px;
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
+        .header-title { text-align: center; color: var(--dark); font-weight: 800; font-size: 34px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .header-subtitle { text-align: center; color: var(--success); margin-bottom: 30px; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; }
         
         /* ========================================== */
         /* ABAS DE NAVEGAÇÃO */
         /* ========================================== */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            background: #f8fafc;
-            padding: 8px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px 10px;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--gray);
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-        .tab-btn:hover {
-            background: #e2e8f0;
-            color: var(--dark);
-        }
-        .tab-btn.active {
-            background: #ffffff;
-            color: var(--primary);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
+        .tabs { display: flex; gap: 8px; margin-bottom: 30px; flex-wrap: wrap; background: #f8fafc; padding: 8px; border-radius: 14px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 12px 10px; cursor: pointer; background: transparent; border: none; font-size: 15px; font-weight: 700; color: var(--gray); border-radius: 10px; transition: all 0.3s ease; white-space: nowrap; }
+        .tab-btn:hover { background: #e2e8f0; color: var(--dark); }
+        .tab-btn.active { background: #ffffff; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-        /* Animação ao trocar de aba */
         .section { display: none; animation: fadeIn 0.4s ease forwards; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -188,48 +105,11 @@
         /* ========================================== */
         /* FORMULÁRIOS E INPUTS */
         /* ========================================== */
-        .form-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-        }
-        input, select {
-            padding: 12px 15px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            flex: 1;
-            min-width: 150px;
-            font-size: 15px;
-            font-family: inherit;
-            color: var(--dark);
-            transition: all 0.3s;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
+        .form-group { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
+        input, select, textarea { padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; flex: 1; min-width: 150px; font-size: 15px; font-family: inherit; color: var(--dark); transition: all 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
         
-        /* ========================================== */
-        /* BOTÕES */
-        /* ========================================== */
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 700;
-            color: white;
-            font-size: 15px;
-            font-family: inherit;
-            transition: all 0.2s ease;
-        }
+        button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; color: white; font-size: 15px; font-family: inherit; transition: all 0.2s ease; }
         button:hover { transform: translateY(-2px); filter: brightness(1.1); }
         button:active { transform: translateY(0); }
         
@@ -237,117 +117,35 @@
         .btn-remove { background-color: var(--danger); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
         .btn-edit { background-color: var(--warning); color: #fff; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
         .btn-delete { background-color: var(--gray); }
-        
-        .btn-venda { 
-            background: linear-gradient(135deg, #10b981, #059669);
-            font-size: 20px; 
-            width: 100%; 
-            padding: 18px; 
-            margin-top: 10px; 
-            border-radius: 14px;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .btn-venda { background: linear-gradient(135deg, #10b981, #059669); font-size: 20px; width: 100%; padding: 18px; margin-top: 10px; border-radius: 14px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); text-transform: uppercase; letter-spacing: 1px; }
 
         /* ========================================== */
         /* TABELAS */
         /* ========================================== */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 0 1px var(--border);
-        }
-        th, td {
-            padding: 15px 18px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        th { 
-            background-color: #f8fafc; 
-            color: var(--gray);
-            text-transform: uppercase;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); }
+        th, td { padding: 15px 18px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: #f8fafc; color: var(--gray); text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; }
         tr:hover td { background-color: #f1f5f9; }
         .entrada { color: var(--success); font-weight: 800; }
         .saida { color: var(--danger); font-weight: 800; }
         
-        /* Linha separadora de datas no caixa */
-        .linha-divisor-data td {
-            background-color: #f1f5f9;
-            font-weight: 800;
-            color: #334155;
-            padding: 12px 18px;
-            font-size: 14px;
-            text-transform: uppercase;
-            border-top: 2px solid #cbd5e1;
-        }
+        .linha-divisor-data td { background-color: #f1f5f9; font-weight: 800; color: #334155; padding: 12px 18px; font-size: 14px; text-transform: uppercase; border-top: 2px solid #cbd5e1; }
 
         /* ========================================== */
-        /* CARDS DE RESUMO (DASHBOARD) */
+        /* CARDS DE RESUMO */
         /* ========================================== */
-        .resumo {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .resumo span {
-            flex: 1;
-            background: #fff;
-            padding: 20px;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 700;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            text-align: center;
-        }
+        .resumo { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .resumo span { flex: 1; background: #fff; padding: 20px; border-radius: 14px; font-size: 16px; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; }
         .resumo span.entrada { border-bottom: 4px solid var(--success); color: var(--success); }
         .resumo span.saida { border-bottom: 4px solid var(--danger); color: var(--danger); }
         #saldo-total { border-bottom: 4px solid var(--primary); }
 
-        #venda-total-container {
-            flex-direction: row;
-            font-size: 22px;
-            color: var(--dark);
-            border-bottom: 4px solid var(--warning);
-        }
+        #venda-total-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 4px solid var(--warning); }
         #venda-total { color: var(--danger); font-size: 28px; border: none; padding: 0; box-shadow: none; display: inline;}
 
-        .painel-destaque {
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-            color: #064e3b;
-            padding: 25px;
-            border-radius: 16px;
-            text-align: center;
-            font-size: 28px;
-            margin-bottom: 20px;
-            border: 2px solid #a7f3d0;
-            font-weight: 800;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.1);
-            transition: all 0.3s;
-        }
+        .painel-destaque { background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #064e3b; padding: 25px; border-radius: 16px; text-align: center; font-size: 28px; margin-bottom: 20px; border: 2px solid #a7f3d0; font-weight: 800; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.1); transition: all 0.3s; }
 
-        #detalhes-fiado {
-            margin-top: 25px;
-            display: none;
-            background: #f8fafc;
-            padding: 25px;
-            border: 1px solid #cbd5e1;
-            border-radius: 16px;
-        }
+        #detalhes-fiado { margin-top: 25px; display: none; background: #f8fafc; padding: 25px; border: 1px solid #cbd5e1; border-radius: 16px; }
     </style>
 </head>
 <body>
@@ -367,7 +165,7 @@
     <div class="container">
         
         <h1 class="header-title">🛒 Mercearia Rsouza</h1>
-        <p class="header-subtitle">Sistema de Gestão Integrado</p>
+        <p class="header-subtitle">☁️ Sistema Online (Sincronizado na Nuvem)</p>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 PDV Vendas</button>
@@ -560,6 +358,64 @@
 
 <script>
     // ==========================================
+    // INICIALIZAÇÃO DO FIREBASE (NUVEM)
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyDZ2XsFMp2GPIvY3LiTJWr9cxsgkrmrKGQ",
+        authDomain: "mercearia-rsouza.firebaseapp.com",
+        projectId: "mercearia-rsouza",
+        storageBucket: "mercearia-rsouza.firebasestorage.app",
+        messagingSenderId: "12907669313",
+        appId: "1:12907669313:web:7e687653a8ebe9bbfea3c0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ==========================================
+    // VARIÁVEIS DO SISTEMA
+    // ==========================================
+    let caixa = [];
+    let estoque = [];
+    let fiados = [];
+    let despesas = [];
+    let totalVendaAtual = 0; 
+
+    // ==========================================
+    // ESCUTAR BANCO DE DADOS EM TEMPO REAL
+    // ==========================================
+    db.collection("sistema").doc("dados_loja").onSnapshot((doc) => {
+        if (doc.exists) {
+            let dados = doc.data();
+            caixa = dados.caixa || [];
+            estoque = dados.estoque || [];
+            fiados = dados.fiados || [];
+            despesas = dados.despesas || [];
+        } else {
+            // Se for a primeira vez abrindo o sistema, cria o documento vazio na nuvem
+            salvarNoFirebase();
+        }
+
+        // Desenha todas as tabelas na tela atualizadas
+        atualizarEstoqueUI();
+        atualizarCaixaUI();
+        atualizarDespesasUI();
+        atualizarFiadosUI();
+    });
+
+    // Função única que salva qualquer alteração na nuvem
+    function salvarNoFirebase() {
+        db.collection("sistema").doc("dados_loja").set({
+            caixa: caixa,
+            estoque: estoque,
+            fiados: fiados,
+            despesas: despesas
+        }).catch((error) => {
+            console.error("Erro ao salvar dados na nuvem:", error);
+            alert("Erro de conexão. Verifique sua internet!");
+        });
+    }
+
+    // ==========================================
     // SISTEMA DE SEGURANÇA (LOGIN)
     // ==========================================
     function acessarSistema() {
@@ -576,15 +432,6 @@
             document.getElementById('input-senha').focus();
         }
     }
-
-    // ==========================================
-    // CARREGAR DADOS SALVOS NO NAVEGADOR
-    // ==========================================
-    let caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
-    let estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
-    let fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
-    let despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
-    let totalVendaAtual = 0; 
 
     // NAVEGAÇÃO DAS ABAS
     function mudarAba(aba) {
@@ -606,6 +453,10 @@
         let selectVenda = document.getElementById('venda-produto');
         let selectFiado = document.getElementById('fiado-produto');
         
+        // Guarda o que estava selecionado para não atrapalhar quem tá digitando na hora da sincronização
+        let valVenda = selectVenda.value;
+        let valFiado = selectFiado.value;
+
         selectVenda.innerHTML = '<option value="">Selecione um Produto...</option>';
         selectFiado.innerHTML = '<option value="">Selecione o Produto...</option>';
         
@@ -620,6 +471,10 @@
             selectVenda.innerHTML += `<option value="${produto.originalIndex}">${produto.nome} - R$ ${preco}</option>`;
             selectFiado.innerHTML += `<option value="${produto.originalIndex}">${produto.nome} - R$ ${preco}</option>`;
         });
+
+        // Devolve a seleção
+        if (valVenda) selectVenda.value = valVenda;
+        if (valFiado) selectFiado.value = valFiado;
     }
 
     // ==========================================
@@ -681,20 +536,18 @@
             valor: total 
         });
 
-        atualizarEstoque();
-        atualizarCaixa();
+        salvarNoFirebase(); // O Firebase atualizará as telas automaticamente!
         
         document.getElementById('venda-produto').value = "";
         document.getElementById('venda-pagamento').value = "Dinheiro";
         resetarPDV();
-        
         document.getElementById('venda-produto').focus(); 
     }
 
     // ==========================================
     // CONTROLE DE ESTOQUE
     // ==========================================
-    function atualizarEstoque() {
+    function atualizarEstoqueUI() {
         let tbody = document.getElementById('tabela-estoque');
         tbody.innerHTML = '';
 
@@ -718,7 +571,6 @@
             tbody.appendChild(tr);
         });
 
-        localStorage.setItem('dadosEstoque', JSON.stringify(estoque));
         atualizarSelects(); 
     }
 
@@ -734,29 +586,29 @@
         estoque.push({ nome: nome, preco: preco, vendidos: 0 });
         document.getElementById('nome-produto').value = '';
         document.getElementById('preco-produto').value = '';
-        atualizarEstoque();
-
+        
+        salvarNoFirebase();
         document.getElementById('nome-produto').focus();
     }
 
     function zerarVendas(index) {
         if (confirm(`Deseja zerar a quantidade vendida de "${estoque[index].nome}"?`)) {
             estoque[index].vendidos = 0;
-            atualizarEstoque();
+            salvarNoFirebase();
         }
     }
 
     function excluirProduto(index) {
         if (confirm(`Tem certeza que deseja remover "${estoque[index].nome}"?`)) {
             estoque.splice(index, 1);
-            atualizarEstoque();
+            salvarNoFirebase();
         }
     }
 
     // ==========================================
     // CONTROLE DE CAIXA
     // ==========================================
-    function atualizarCaixa() {
+    function atualizarCaixaUI() {
         let tbody = document.getElementById('tabela-caixa');
         tbody.innerHTML = '';
         
@@ -821,8 +673,6 @@
         document.getElementById('saldo-total').innerHTML = `Saldo Final<br>R$ ${saldo.toFixed(2)}`;
         document.getElementById('saldo-total').style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
         
-        localStorage.setItem('dadosCaixa', JSON.stringify(caixa));
-        
         atualizarOpcoesMeses();
         calcularLucroMensal();
     }
@@ -845,22 +695,22 @@
         document.getElementById('desc-caixa').value = '';
         document.getElementById('valor-caixa').value = '';
         document.getElementById('caixa-pagamento').value = 'Dinheiro';
-        atualizarCaixa();
-
+        
+        salvarNoFirebase();
         document.getElementById('desc-caixa').focus();
     }
 
     function excluirCaixa(index) {
         if (confirm('Tem certeza que deseja apagar este registro do caixa?')) {
             caixa.splice(index, 1);
-            atualizarCaixa();
+            salvarNoFirebase();
         }
     }
 
     // ==========================================
     // SISTEMA DE DESPESAS
     // ==========================================
-    function atualizarDespesas() {
+    function atualizarDespesasUI() {
         let tbody = document.getElementById('tabela-despesas');
         tbody.innerHTML = '';
         let totalDespesas = 0;
@@ -882,7 +732,6 @@
         });
 
         document.getElementById('total-despesas-display').innerHTML = `Total de Despesas<br>R$ ${totalDespesas.toFixed(2)}`;
-        localStorage.setItem('dadosDespesas', JSON.stringify(despesas));
         
         atualizarOpcoesMeses();
         calcularLucroMensal();
@@ -915,15 +764,14 @@
         document.getElementById('data-despesa').value = '';
         document.getElementById('despesa-pagamento').value = 'Dinheiro';
         
-        atualizarDespesas();
-
+        salvarNoFirebase();
         document.getElementById('desc-despesa').focus();
     }
 
     function excluirDespesa(index) {
         if (confirm('Tem certeza que deseja apagar esta despesa?')) {
             despesas.splice(index, 1);
-            atualizarDespesas();
+            salvarNoFirebase();
         }
     }
 
@@ -1011,12 +859,13 @@
     // ==========================================
     // SISTEMA DE FIADOS
     // ==========================================
-    function atualizarFiados() {
+    function atualizarFiadosUI() {
         let tbody = document.getElementById('tabela-fiados');
         tbody.innerHTML = '';
         let totalNaRua = 0;
         
         let datalist = document.getElementById('lista-clientes');
+        let valorAtualCliente = document.getElementById('fiado-nome').value;
         datalist.innerHTML = ''; 
 
         fiados.forEach((cliente, index) => {
@@ -1037,7 +886,13 @@
         });
 
         document.getElementById('total-fiados-rua').innerText = totalNaRua.toFixed(2);
-        localStorage.setItem('dadosFiados', JSON.stringify(fiados));
+        
+        // Mantém a caixinha de detalhes aberta e atualizada se estiver visível
+        if (document.getElementById('detalhes-fiado').style.display === 'block') {
+            let clienteAbertoNome = document.querySelector('#detalhes-fiado h3').innerText.replace('Extrato: ', '');
+            let clienteIndex = fiados.findIndex(c => c.nome === clienteAbertoNome);
+            if(clienteIndex >= 0) verDetalhesFiado(clienteIndex);
+        }
     }
 
     function calcularValorFiado() {
@@ -1095,16 +950,13 @@
         }
 
         estoque[produtoIndex].vendidos = (estoque[produtoIndex].vendidos || 0) + qtd;
-        atualizarEstoque(); 
 
         document.getElementById('fiado-produto').value = '';
         document.getElementById('fiado-qtd').value = '';
         document.getElementById('fiado-valor').value = '';
         document.getElementById('fiado-pagamento').value = 'A Prazo';
 
-        atualizarFiados();
-        document.getElementById('detalhes-fiado').style.display = 'none';
-        
+        salvarNoFirebase();
         document.getElementById('fiado-nome').focus();
     }
 
@@ -1197,24 +1049,18 @@
             }
         }
 
-        atualizarFiados();
-        atualizarCaixa();
         document.getElementById('detalhes-fiado').style.display = 'none';
+        salvarNoFirebase();
     }
 
     function excluirClienteFiado(index) {
         if (confirm(`Tem certeza que deseja apagar o cliente "${fiados[index].nome}" e todo o seu histórico de conta?\n(Isso não mexe no seu caixa, apenas apaga o nome da lista de fiados)`)) {
             fiados.splice(index, 1);
-            atualizarFiados();
             document.getElementById('detalhes-fiado').style.display = 'none';
+            salvarNoFirebase();
         }
     }
 
-    // Inicializar telas
-    atualizarDespesas();
-    atualizarCaixa();
-    atualizarEstoque();
-    atualizarFiados();
 </script>
 
 </body>
