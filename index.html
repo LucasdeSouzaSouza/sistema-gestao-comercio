@@ -68,7 +68,7 @@
         .login-box p { color: var(--gray); margin-bottom: 20px; font-size: 15px; }
         
         .login-box select, .login-box input { 
-            width: 90%; margin-bottom: 15px; padding: 14px; 
+            width: 85%; margin-bottom: 15px; padding: 14px; 
             border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; 
             text-align: center; font-family: inherit; color: var(--dark);
             transition: all 0.3s; 
@@ -203,9 +203,7 @@
         <p>Identifique-se para entrar</p>
         
         <select id="input-usuario">
-            <option value="lucas">Lucas</option>
-            <option value="luana">Luana</option>
-            <option value="raimundo">Raimundo</option>
+            <option value="">Carregando usuários...</option>
         </select>
         
         <input type="password" id="input-senha" placeholder="Digite a senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
@@ -227,6 +225,7 @@
             <button class="tab-btn" onclick="mudarAba('fiados')">📓 Fiados</button>
             <button class="tab-btn" onclick="mudarAba('despesas')">💸 Despesas</button>
             <button class="tab-btn" onclick="mudarAba('lucro')">📊 Resumo</button>
+            <button class="tab-btn" onclick="mudarAba('usuarios')" style="color: var(--primary);">👥 Usuários</button>
         </div>
 
         <!-- SEÇÃO DE VENDAS -->
@@ -416,6 +415,32 @@
             </div>
         </div>
 
+        <!-- SEÇÃO DE GERENCIAMENTO DE USUÁRIOS -->
+        <div id="usuarios" class="section">
+            <div class="resumo">
+                <span id="total-usuarios-display" style="border-bottom: 4px solid var(--primary); color: var(--primary);">Total de Usuários<br>0</span>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="novo-usuario-nome" placeholder="Nome do Funcionário/Usuário" onkeypress="if(event.key === 'Enter') cadastrarUsuario()">
+                <input type="text" id="novo-usuario-senha" placeholder="Senha de Acesso" onkeypress="if(event.key === 'Enter') cadastrarUsuario()">
+                <button class="btn-add" onclick="cadastrarUsuario()">+ Adicionar Usuário</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome de Acesso</th>
+                            <th>Senha Cadastrada</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-usuarios"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -454,14 +479,20 @@
     let estoque = [];
     let fiados = [];
     let despesas = [];
+    let usuarios = [
+        { nome: "Lucas", senha: "123456" },
+        { nome: "Luana", senha: "luana123" },
+        { nome: "Raimundo", senha: "raimundo123" }
+    ]; // Estes são os perfis iniciais que vão ser gravados na nuvem.
+    
     let totalVendaAtual = 0; 
-    let usuarioLogado = ""; // Nova variável para rastrear quem está usando o sistema
+    let usuarioLogado = ""; 
 
     // ==========================================
     // ESCUTAR BANCO DE DADOS E RESGATAR LOCAIS
     // ==========================================
     db.collection("sistema").doc("dados_loja").onSnapshot((doc) => {
-        let puxouLocal = false;
+        let precisaSalvarNuvem = false;
 
         if (doc.exists) {
             let dados = doc.data();
@@ -470,28 +501,36 @@
             fiados = dados.fiados || [];
             despesas = dados.despesas || [];
             
+            if (dados.usuarios && dados.usuarios.length > 0) {
+                usuarios = dados.usuarios;
+            } else {
+                precisaSalvarNuvem = true; // Salva o trio de usuarios iniciais na nuvem se nao tiver nenhum
+            }
+            
             let localEstoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             if (estoque.length === 0 && localEstoque.length > 0) {
                 caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
                 estoque = localEstoque;
                 fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
                 despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
-                puxouLocal = true;
+                precisaSalvarNuvem = true;
             }
         } else {
             caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
             estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
-            puxouLocal = true;
+            precisaSalvarNuvem = true;
         }
 
-        if (puxouLocal) salvarNoFirebase();
+        if (precisaSalvarNuvem) salvarNoFirebase();
 
         atualizarEstoqueUI();
         atualizarCaixaUI();
         atualizarDespesasUI();
         atualizarFiadosUI();
+        atualizarUsuariosUI();
+        atualizarDropdownLogin();
     });
 
     function salvarNoFirebase() {
@@ -499,7 +538,8 @@
             caixa: caixa,
             estoque: estoque,
             fiados: fiados,
-            despesas: despesas
+            despesas: despesas,
+            usuarios: usuarios
         }).catch((error) => {
             console.error("Erro ao salvar:", error);
         });
@@ -508,21 +548,26 @@
     // ==========================================
     // SISTEMA DE SEGURANÇA (LOGIN MULTI-USUÁRIOS)
     // ==========================================
+    function atualizarDropdownLogin() {
+        let select = document.getElementById('input-usuario');
+        let valorAtual = select.value;
+        select.innerHTML = '';
+        
+        usuarios.forEach(u => {
+            select.innerHTML += `<option value="${u.nome}">${u.nome}</option>`;
+        });
+        
+        if (valorAtual) select.value = valorAtual;
+    }
+
     function acessarSistema() {
-        let usuarioSelecionado = document.getElementById('input-usuario').value;
-        let selectElement = document.getElementById('input-usuario');
-        let nomeUsuario = selectElement.options[selectElement.selectedIndex].text;
+        let nomeSelecionado = document.getElementById('input-usuario').value;
         let senhaDigitada = document.getElementById('input-senha').value;
         
-        // 👉 ALTERE AS SENHAS INDIVIDUAIS AQUI
-        const senhas = {
-            "lucas": "123456",
-            "luana": "luana123",
-            "raimundo": "raimundo123"
-        };
+        let perfilUsuario = usuarios.find(u => u.nome === nomeSelecionado);
 
-        if (senhaDigitada === senhas[usuarioSelecionado]) {
-            usuarioLogado = nomeUsuario;
+        if (perfilUsuario && senhaDigitada === perfilUsuario.senha) {
+            usuarioLogado = perfilUsuario.nome;
             document.getElementById('tag-usuario-logado').innerText = "👤 " + usuarioLogado;
             
             document.getElementById('tela-login').style.display = 'none';
@@ -535,6 +580,74 @@
         }
     }
 
+    // ==========================================
+    // GERENCIAMENTO DE USUÁRIOS
+    // ==========================================
+    function atualizarUsuariosUI() {
+        let tbody = document.getElementById('tabela-usuarios');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        usuarios.forEach((u, index) => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong style="color: var(--dark); font-size: 16px;">${u.nome}</strong></td>
+                <td style="color: var(--gray); font-family: monospace; font-size: 15px;">${u.senha}</td>
+                <td>
+                    <button class="btn-delete" onclick="excluirUsuario(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        let painelDisplay = document.getElementById('total-usuarios-display');
+        if (painelDisplay) painelDisplay.innerHTML = `Total de Usuários<br>${usuarios.length}`;
+    }
+
+    function cadastrarUsuario() {
+        let nome = document.getElementById('novo-usuario-nome').value.trim();
+        let senha = document.getElementById('novo-usuario-senha').value.trim();
+
+        if (!nome || !senha) {
+            alert('Preencha o nome e a senha do novo usuário!');
+            return;
+        }
+
+        let existe = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
+        if (existe) {
+            alert('Já existe um usuário cadastrado com esse exato nome!');
+            return;
+        }
+
+        usuarios.push({ nome: nome, senha: senha });
+        document.getElementById('novo-usuario-nome').value = '';
+        document.getElementById('novo-usuario-senha').value = '';
+        
+        salvarNoFirebase();
+        document.getElementById('novo-usuario-nome').focus();
+        alert(`Usuário ${nome} criado com sucesso!`);
+    }
+
+    function excluirUsuario(index) {
+        if (usuarios.length <= 1) {
+            alert("Você não pode apagar o único usuário do sistema, senão não conseguirá mais entrar na loja!");
+            return;
+        }
+        
+        if (usuarios[index].nome === usuarioLogado) {
+            alert("Segurança: Você não pode excluir o seu próprio perfil enquanto está logado com ele!");
+            return;
+        }
+
+        if (confirm(`Tem certeza que deseja apagar o acesso de "${usuarios[index].nome}"?\nEle não conseguirá mais entrar no sistema.`)) {
+            usuarios.splice(index, 1);
+            salvarNoFirebase();
+        }
+    }
+
+    // ==========================================
+    // NAVEGAÇÃO E RECURSOS GERAIS
+    // ==========================================
     function mudarAba(aba) {
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -548,6 +661,7 @@
         if(aba === 'estoque') document.getElementById('nome-produto').focus();
         if(aba === 'fiados') document.getElementById('fiado-nome').focus();
         if(aba === 'despesas') document.getElementById('desc-despesa').focus();
+        if(aba === 'usuarios') document.getElementById('novo-usuario-nome').focus();
     }
 
     function atualizarSelects() {
