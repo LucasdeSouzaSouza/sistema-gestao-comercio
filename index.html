@@ -3,17 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestão - Comércio</title>
+    <title>Mercearia Rsouza - Gestão</title>
+    <!-- Importação de Fonte Moderna do Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
+        /* ========================================== */
+        /* VARIÁVEIS DE CORES E ESTILO GLOBAL */
+        /* ========================================== */
+        :root {
+            --primary: #2563eb;      /* Azul moderno */
+            --success: #10b981;      /* Verde vibrante */
+            --danger: #ef4444;       /* Vermelho suave */
+            --warning: #f59e0b;      /* Laranja/Amarelo */
+            --dark: #1e293b;         /* Texto Escuro */
+            --gray: #64748b;         /* Texto Secundário */
+            --bg-body: #f4f7f6;      /* Fundo da tela */
+            --bg-card: #ffffff;      /* Fundo dos painéis */
+            --border: #e2e8f0;       /* Cor das linhas */
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--dark);
             margin: 0;
             padding: 20px;
         }
 
+        /* Estilização da barra de rolagem */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         /* ========================================== */
-        /* TELA DE LOGIN */
+        /* TELA DE LOGIN (NOVO DESIGN) */
         /* ========================================== */
         #tela-login {
             position: fixed;
@@ -21,177 +46,307 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #2c3e50;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
         }
         .login-box {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: 8px;
+            border-radius: 16px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             width: 100%;
-            max-width: 320px;
+            max-width: 340px;
+            animation: fadeInDown 0.5s ease;
         }
         .login-box h2 {
             margin-top: 0;
-            color: #333;
+            color: var(--dark);
+            margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .login-box p {
+            color: var(--gray);
             margin-bottom: 25px;
+            font-size: 15px;
         }
         .login-box input {
             width: 90%;
             margin-bottom: 20px;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
             font-size: 16px;
             text-align: center;
+            transition: all 0.3s;
+        }
+        .login-box input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
         }
         .login-box button {
             width: 100%;
-            padding: 12px;
-            background-color: #007bff;
+            padding: 14px;
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
         }
         .login-box button:hover {
-            background-color: #0056b3;
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
         }
 
-        /* Oculta o sistema principal antes do login */
-        #sistema-principal {
-            display: none;
-        }
+        #sistema-principal { display: none; }
 
         /* ========================================== */
-        /* CSS ORIGINAL DO SISTEMA */
+        /* CONTAINER PRINCIPAL E CABEÇALHO */
         /* ========================================== */
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: var(--bg-card);
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        h1 { text-align: center; color: #333; }
+        .header-title {
+            text-align: center;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 34px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .header-subtitle {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
         
+        /* ========================================== */
+        /* ABAS DE NAVEGAÇÃO */
+        /* ========================================== */
         .tabs {
             display: flex;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #ccc;
+            gap: 8px;
+            margin-bottom: 30px;
             flex-wrap: wrap;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
         }
         .tab-btn {
-            padding: 10px 20px;
+            flex: 1;
+            padding: 12px 10px;
             cursor: pointer;
-            background: none;
+            background: transparent;
             border: none;
-            font-size: 16px;
-            font-weight: bold;
-            color: #666;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .tab-btn:hover {
+            background: #e2e8f0;
+            color: var(--dark);
         }
         .tab-btn.active {
-            color: #007bff;
-            border-bottom: 3px solid #007bff;
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        .section { display: none; }
-        .section.active { display: block; }
 
+        /* Animação ao trocar de aba */
+        .section { display: none; animation: fadeIn 0.4s ease forwards; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ========================================== */
+        /* FORMULÁRIOS E INPUTS */
+        /* ========================================== */
         .form-group {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 20px;
             align-items: center;
             flex-wrap: wrap;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
         }
         input, select {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
             flex: 1;
             min-width: 150px;
-            font-size: 16px;
+            font-size: 15px;
+            font-family: inherit;
+            color: var(--dark);
+            transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
         
+        /* ========================================== */
+        /* BOTÕES */
+        /* ========================================== */
         button {
-            padding: 10px 15px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 700;
             color: white;
-            font-size: 14px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s ease;
         }
-        .btn-add { background-color: #28a745; }
-        .btn-remove { background-color: #dc3545; }
-        .btn-edit { background-color: #ffc107; color: black; }
-        .btn-delete { background-color: #6c757d; }
-        .btn-venda { background-color: #007bff; font-size: 18px; width: 100%; padding: 15px; margin-top: 10px; }
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        button:active { transform: translateY(0); }
+        
+        .btn-add { background-color: var(--success); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .btn-remove { background-color: var(--danger); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
+        .btn-edit { background-color: var(--warning); color: #fff; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+        .btn-delete { background-color: var(--gray); }
+        
+        .btn-venda { 
+            background: linear-gradient(135deg, #10b981, #059669);
+            font-size: 20px; 
+            width: 100%; 
+            padding: 18px; 
+            margin-top: 10px; 
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
+        /* ========================================== */
+        /* TABELAS */
+        /* ========================================== */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 15px;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px var(--border);
         }
         th, td {
-            padding: 12px;
+            padding: 15px 18px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--border);
         }
-        th { background-color: #f8f9fa; }
-        .entrada { color: #28a745; font-weight: bold; }
-        .saida { color: #dc3545; font-weight: bold; }
+        th { 
+            background-color: #f8fafc; 
+            color: var(--gray);
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        tr:hover td { background-color: #f1f5f9; }
+        .entrada { color: var(--success); font-weight: 800; }
+        .saida { color: var(--danger); font-weight: 800; }
         
+        /* Linha separadora de datas no caixa */
+        .linha-divisor-data td {
+            background-color: #f1f5f9;
+            font-weight: 800;
+            color: #334155;
+            padding: 12px 18px;
+            font-size: 14px;
+            text-transform: uppercase;
+            border-top: 2px solid #cbd5e1;
+        }
+
+        /* ========================================== */
+        /* CARDS DE RESUMO (DASHBOARD) */
+        /* ========================================== */
         .resumo {
             display: flex;
-            justify-content: space-between;
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 4px;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 10px;
         }
-        .painel-destaque {
-            background: #d4edda;
-            color: #155724;
+        .resumo span {
+            flex: 1;
+            background: #fff;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
             text-align: center;
-            font-size: 24px;
-            margin-bottom: 15px;
-            border: 2px solid #c3e6cb;
-            font-weight: bold;
+        }
+        .resumo span.entrada { border-bottom: 4px solid var(--success); color: var(--success); }
+        .resumo span.saida { border-bottom: 4px solid var(--danger); color: var(--danger); }
+        #saldo-total { border-bottom: 4px solid var(--primary); }
+
+        #venda-total-container {
+            flex-direction: row;
+            font-size: 22px;
+            color: var(--dark);
+            border-bottom: 4px solid var(--warning);
+        }
+        #venda-total { color: var(--danger); font-size: 28px; border: none; padding: 0; box-shadow: none; display: inline;}
+
+        .painel-destaque {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: #064e3b;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            border: 2px solid #a7f3d0;
+            font-weight: 800;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.1);
+            transition: all 0.3s;
         }
 
         #detalhes-fiado {
-            margin-top: 20px;
+            margin-top: 25px;
             display: none;
-            background: #fafafa;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        /* Linha separadora de datas no caixa */
-        .linha-divisor-data td {
-            background-color: #dee2e6;
-            font-weight: bold;
-            color: #495057;
-            padding: 10px 12px;
-            font-size: 14px;
-            text-transform: uppercase;
+            background: #f8fafc;
+            padding: 25px;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
         }
     </style>
 </head>
@@ -200,24 +355,27 @@
 <!-- TELA DE LOGIN -->
 <div id="tela-login">
     <div class="login-box">
-        <h2>🔒 Acesso Restrito</h2>
-        <input type="password" id="input-senha" placeholder="Digite a senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
-        <button onclick="acessarSistema()">Entrar no Sistema</button>
+        <h2>🏪 Mercearia Rsouza</h2>
+        <p>Acesso Restrito ao Sistema</p>
+        <input type="password" id="input-senha" placeholder="Digite sua senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
+        <button onclick="acessarSistema()">Entrar</button>
     </div>
 </div>
 
 <!-- SISTEMA PRINCIPAL -->
 <div id="sistema-principal">
     <div class="container">
-        <h1>Gestão do Comércio</h1>
+        
+        <h1 class="header-title">🛒 Mercearia Rsouza</h1>
+        <p class="header-subtitle">Sistema de Gestão Integrado</p>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="mudarAba('vendas')">PDV / Vendas</button>
-            <button class="tab-btn" onclick="mudarAba('caixa')">Controle de Caixa</button>
-            <button class="tab-btn" onclick="mudarAba('estoque')">Controle de Estoque</button>
-            <button class="tab-btn" onclick="mudarAba('fiados')">Fiados / Contas</button>
-            <button class="tab-btn" onclick="mudarAba('despesas')">Despesas</button>
-            <button class="tab-btn" onclick="mudarAba('lucro')">Lucro Mensal</button>
+            <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 PDV Vendas</button>
+            <button class="tab-btn" onclick="mudarAba('caixa')">💵 Caixa</button>
+            <button class="tab-btn" onclick="mudarAba('estoque')">📦 Estoque</button>
+            <button class="tab-btn" onclick="mudarAba('fiados')">📓 Fiados</button>
+            <button class="tab-btn" onclick="mudarAba('despesas')">💸 Despesas</button>
+            <button class="tab-btn" onclick="mudarAba('lucro')">📊 Lucro Mensal</button>
         </div>
 
         <!-- SEÇÃO DE VENDAS -->
@@ -236,18 +394,18 @@
             </div>
 
             <div class="resumo">
-                <span>Total a Pagar: <span style="color: #dc3545; font-size: 24px;">R$ <span id="venda-total">0.00</span></span></span>
+                <span id="venda-total-container">Total a Pagar: <b style="color: var(--danger);">R$ <span id="venda-total">0.00</span></b></span>
             </div>
 
-            <button class="btn-venda" onclick="finalizarVenda()">🛒 Finalizar Venda</button>
+            <button class="btn-venda" onclick="finalizarVenda()">💳 Finalizar Venda</button>
         </div>
 
         <!-- SEÇÃO DE CAIXA -->
         <div id="caixa" class="section">
             <div class="resumo">
-                <span id="total-entradas" class="entrada">Entradas: R$ 0.00</span>
-                <span id="total-saidas" class="saida">Saídas: R$ 0.00</span>
-                <span id="saldo-total">Saldo: R$ 0.00</span>
+                <span id="total-entradas" class="entrada">Entradas<br>R$ 0.00</span>
+                <span id="total-saidas" class="saida">Saídas<br>R$ 0.00</span>
+                <span id="saldo-total">Saldo Final<br>R$ 0.00</span>
             </div>
 
             <div class="form-group">
@@ -258,7 +416,6 @@
                 </select>
                 <input type="number" id="valor-caixa" placeholder="Valor (R$)" step="0.01" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
                 
-                <!-- Forma de pagamento no Caixa -->
                 <select id="caixa-pagamento" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
                     <option value="Dinheiro">Dinheiro</option>
                     <option value="PIX">PIX</option>
@@ -267,7 +424,7 @@
                     <option value="Outro">Outro</option>
                 </select>
 
-                <button class="btn-add" onclick="adicionarCaixa()">Registrar Manual</button>
+                <button class="btn-add" onclick="adicionarCaixa()">Registrar</button>
             </div>
 
             <table>
@@ -289,7 +446,7 @@
             <div class="form-group">
                 <input type="text" id="nome-produto" placeholder="Nome (Ex: Pão Francês, Bolo...)" onkeypress="if(event.key === 'Enter') cadastrarProduto()">
                 <input type="number" id="preco-produto" placeholder="Preço de Venda (R$)" step="0.01" onkeypress="if(event.key === 'Enter') cadastrarProduto()">
-                <button class="btn-add" onclick="cadastrarProduto()">Cadastrar Produto</button>
+                <button class="btn-add" onclick="cadastrarProduto()">+ Novo Produto</button>
             </div>
 
             <table>
@@ -309,7 +466,7 @@
         <!-- SEÇÃO DE FIADOS -->
         <div id="fiados" class="section">
             <div class="resumo">
-                <span>Total na Rua (A Receber): <span style="color: #dc3545;">R$ <span id="total-fiados-rua">0.00</span></span></span>
+                <span style="border-bottom: 4px solid var(--danger); color: var(--danger);">Total na Rua (A Receber)<br><b>R$ <span id="total-fiados-rua" style="border: none; padding: 0; box-shadow: none; display: inline;">0.00</span></b></span>
             </div>
 
             <div class="form-group">
@@ -321,7 +478,6 @@
                 <input type="number" id="fiado-qtd" placeholder="Qtd" step="any" style="flex: 0.5;" oninput="calcularValorFiado()" onkeypress="if(event.key === 'Enter') registrarFiado()">
                 <input type="number" id="fiado-valor" placeholder="Valor Total (R$)" step="0.01" oninput="calcularQtdFiadoPorValor()" onkeypress="if(event.key === 'Enter') registrarFiado()">
                 
-                <!-- Forma de registro no Fiado -->
                 <select id="fiado-pagamento" onkeypress="if(event.key === 'Enter') registrarFiado()">
                     <option value="A Prazo">A Prazo / Fiado</option>
                     <option value="Promissória">Promissória</option>
@@ -330,7 +486,7 @@
                     <option value="Cartão">Cartão</option>
                 </select>
 
-                <button class="btn-add" onclick="registrarFiado()">Registrar na Conta</button>
+                <button class="btn-add" onclick="registrarFiado()">Registrar Conta</button>
             </div>
 
             <table>
@@ -350,7 +506,7 @@
         <!-- SEÇÃO DE DESPESAS -->
         <div id="despesas" class="section">
             <div class="resumo">
-                <span id="total-despesas-display" class="saida">Total de Despesas: R$ 0.00</span>
+                <span id="total-despesas-display" class="saida">Total de Despesas<br>R$ 0.00</span>
             </div>
             
             <div class="form-group">
@@ -358,7 +514,6 @@
                 <input type="number" id="valor-despesa" placeholder="Valor (R$)" step="0.01" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 <input type="date" id="data-despesa" title="Data da Compra/Pagamento" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 
-                <!-- Forma de pagamento da Despesa -->
                 <select id="despesa-pagamento" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                     <option value="Dinheiro">Dinheiro</option>
                     <option value="PIX">PIX</option>
@@ -385,11 +540,9 @@
 
         <!-- SEÇÃO DE LUCRO MENSAL -->
         <div id="lucro" class="section">
-            <div class="form-group">
-                <label style="font-weight: bold; color: #333;">Selecione o Mês: </label>
-                <select id="filtro-mes" onchange="calcularLucroMensal()">
-                    <!-- Preenchido automaticamente via JS -->
-                </select>
+            <div class="form-group" style="justify-content: center;">
+                <label style="font-weight: 800; color: var(--dark); font-size: 18px;">📅 Filtrar Mês: </label>
+                <select id="filtro-mes" onchange="calcularLucroMensal()" style="max-width: 250px; font-weight: bold;"></select>
             </div>
 
             <div class="painel-destaque" id="painel-lucro">
@@ -397,8 +550,8 @@
             </div>
 
             <div class="resumo">
-                <span class="entrada" id="resumo-entradas" style="flex: 1;">Total Entradas: R$ 0.00</span>
-                <span class="saida" id="resumo-saidas" style="flex: 1; text-align: right;">Total Saídas/Despesas: R$ 0.00</span>
+                <span class="entrada" id="resumo-entradas">Total Entradas<br>R$ 0.00</span>
+                <span class="saida" id="resumo-saidas">Despesas + Saídas<br>R$ 0.00</span>
             </div>
         </div>
 
@@ -442,7 +595,6 @@
         event.target.classList.add('active');
         document.getElementById('detalhes-fiado').style.display = 'none';
         
-        // Foca automaticamente no primeiro campo dependendo da aba
         if(aba === 'vendas') document.getElementById('venda-produto').focus();
         if(aba === 'caixa') document.getElementById('desc-caixa').focus();
         if(aba === 'estoque') document.getElementById('nome-produto').focus();
@@ -454,7 +606,7 @@
         let selectVenda = document.getElementById('venda-produto');
         let selectFiado = document.getElementById('fiado-produto');
         
-        selectVenda.innerHTML = '<option value="">Selecione um Produto para Vender...</option>';
+        selectVenda.innerHTML = '<option value="">Selecione um Produto...</option>';
         selectFiado.innerHTML = '<option value="">Selecione o Produto...</option>';
         
         let produtosOrdenados = estoque.map((produto, index) => {
@@ -554,10 +706,10 @@
 
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${produto.nome}</strong></td>
+                <td><strong style="color: var(--dark); font-size: 16px;">${produto.nome}</strong></td>
                 <td>R$ ${preco.toFixed(2)}</td>
-                <td style="color: #28a745; font-size: 18px; font-weight: bold;">${vendidosExibicao}</td>
-                <td style="color: #007bff; font-weight: bold;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
+                <td style="color: var(--success); font-size: 18px; font-weight: 800;">${vendidosExibicao}</td>
+                <td style="color: var(--primary); font-weight: 800;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
                 <td>
                     <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem para iniciar um novo dia">Zerar Dia</button>
                     <button class="btn-delete" onclick="excluirProduto(${index})">Excluir</button>
@@ -627,15 +779,15 @@
 
             if (dataCurta !== dataAtualAgrupamento) {
                 let lucroDoDia = lucrosPorDia[dataCurta] || 0;
-                let corLucro = lucroDoDia >= 0 ? '#155724' : '#721c24'; 
+                let corLucro = lucroDoDia >= 0 ? 'var(--success)' : 'var(--danger)'; 
                 
                 let trDivisor = document.createElement('tr');
                 trDivisor.className = 'linha-divisor-data';
                 trDivisor.innerHTML = `
                     <td colspan="5">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <span>📅 Movimentações do dia: ${dataCurta}</span>
-                            <span style="color: ${corLucro};">Lucro do dia: R$ ${lucroDoDia.toFixed(2)}</span>
+                            <span>📅 ${dataCurta}</span>
+                            <span style="color: ${corLucro}; font-size: 15px;">Saldo do Dia: R$ ${lucroDoDia.toFixed(2)}</span>
                         </div>
                     </td>
                 `;
@@ -652,22 +804,22 @@
             let exibeDataHora = hora !== "" ? hora : dataCurta;
 
             tr.innerHTML = `
-                <td>${exibeDataHora}</td>
-                <td>${item.descricao}</td>
+                <td style="color: var(--gray); font-weight: 600;">${exibeDataHora}</td>
+                <td style="font-weight: 600; color: var(--dark);">${item.descricao}</td>
                 <td class="${classeCor}">${item.tipo.toUpperCase()}</td>
                 <td class="${classeCor}">R$ ${item.valor.toFixed(2)}</td>
                 <td>
-                    <button class="btn-delete" onclick="excluirCaixa(${index})">Apagar</button>
+                    <button class="btn-delete" onclick="excluirCaixa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
 
         let saldo = totalEntradas - totalSaidas;
-        document.getElementById('total-entradas').innerText = `Entradas: R$ ${totalEntradas.toFixed(2)}`;
-        document.getElementById('total-saidas').innerText = `Saídas: R$ ${totalSaidas.toFixed(2)}`;
-        document.getElementById('saldo-total').innerText = `Saldo: R$ ${saldo.toFixed(2)}`;
-        document.getElementById('saldo-total').style.color = saldo >= 0 ? '#28a745' : '#dc3545';
+        document.getElementById('total-entradas').innerHTML = `Entradas<br>R$ ${totalEntradas.toFixed(2)}`;
+        document.getElementById('total-saidas').innerHTML = `Saídas<br>R$ ${totalSaidas.toFixed(2)}`;
+        document.getElementById('saldo-total').innerHTML = `Saldo Final<br>R$ ${saldo.toFixed(2)}`;
+        document.getElementById('saldo-total').style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
         
         localStorage.setItem('dadosCaixa', JSON.stringify(caixa));
         
@@ -719,17 +871,17 @@
             
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${dataCurta}</td>
-                <td><strong>${item.descricao}</strong></td>
+                <td style="color: var(--gray); font-weight: 600;">${dataCurta}</td>
+                <td style="color: var(--dark); font-weight: 700;">${item.descricao}</td>
                 <td class="saida">R$ ${item.valor.toFixed(2)}</td>
                 <td>
-                    <button class="btn-delete" onclick="excluirDespesa(${index})">Apagar</button>
+                    <button class="btn-delete" onclick="excluirDespesa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
 
-        document.getElementById('total-despesas-display').innerText = `Total de Despesas: R$ ${totalDespesas.toFixed(2)}`;
+        document.getElementById('total-despesas-display').innerHTML = `Total de Despesas<br>R$ ${totalDespesas.toFixed(2)}`;
         localStorage.setItem('dadosDespesas', JSON.stringify(despesas));
         
         atualizarOpcoesMeses();
@@ -839,20 +991,20 @@
         let saidasTotais = totalSaidasCaixa + totalGastoDespesas;
         let lucroLiquido = totalEntradas - saidasTotais;
 
-        document.getElementById('resumo-entradas').innerText = `Total Entradas: R$ ${totalEntradas.toFixed(2)}`;
-        document.getElementById('resumo-saidas').innerText = `Despesas + Saídas: R$ ${saidasTotais.toFixed(2)}`;
+        document.getElementById('resumo-entradas').innerHTML = `Total Entradas<br>R$ ${totalEntradas.toFixed(2)}`;
+        document.getElementById('resumo-saidas').innerHTML = `Despesas + Saídas<br>R$ ${saidasTotais.toFixed(2)}`;
         
         let painelLucro = document.getElementById('painel-lucro');
         painelLucro.innerText = `Lucro Líquido: R$ ${lucroLiquido.toFixed(2)}`;
         
         if (lucroLiquido >= 0) {
-            painelLucro.style.backgroundColor = '#d4edda';
-            painelLucro.style.color = '#155724';
-            painelLucro.style.borderColor = '#c3e6cb';
+            painelLucro.style.background = 'linear-gradient(135deg, #ecfdf5, #d1fae5)';
+            painelLucro.style.color = '#065f46';
+            painelLucro.style.borderColor = '#a7f3d0';
         } else {
-            painelLucro.style.backgroundColor = '#f8d7da';
-            painelLucro.style.color = '#721c24';
-            painelLucro.style.borderColor = '#f5c6cb';
+            painelLucro.style.background = 'linear-gradient(135deg, #fef2f2, #fee2e2)';
+            painelLucro.style.color = '#991b1b';
+            painelLucro.style.borderColor = '#fecaca';
         }
     }
 
@@ -873,8 +1025,8 @@
 
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="font-size: 18px;"><strong>${cliente.nome}</strong></td>
-                <td style="color: #dc3545; font-size: 18px; font-weight: bold;">R$ ${cliente.total.toFixed(2)}</td>
+                <td style="font-size: 18px;"><strong style="color: var(--dark);">${cliente.nome}</strong></td>
+                <td style="color: var(--danger); font-size: 18px; font-weight: 800;">R$ ${cliente.total.toFixed(2)}</td>
                 <td>
                     <button class="btn-edit" onclick="verDetalhesFiado(${index})">Ver Compras</button>
                     <button class="btn-add" onclick="receberPagamentoFiado(${index})">💲 Receber</button>
@@ -927,8 +1079,6 @@
         }
 
         let produtoNome = estoque[produtoIndex].nome;
-        
-        // Se a forma for diferente de "A Prazo", adiciona a tag na descrição do produto para controle
         if (formaPagamento !== "A Prazo") {
             produtoNome += ` (${formaPagamento})`;
         }
@@ -963,28 +1113,28 @@
         let div = document.getElementById('detalhes-fiado');
         
         let html = `
-            <h3 style="margin-top: 0; color: #333;">Extrato da Conta: ${cliente.nome}</h3>
-            <table style="font-size: 14px;">
+            <h3 style="margin-top: 0; color: var(--dark);">Extrato: ${cliente.nome}</h3>
+            <table style="font-size: 14px; box-shadow: none; border: 1px solid var(--border);">
                 <thead>
                     <tr>
-                        <th>Data</th>
-                        <th>Produto</th>
-                        <th>Qtd</th>
-                        <th>Valor</th>
+                        <th style="background: #e2e8f0;">Data</th>
+                        <th style="background: #e2e8f0;">Produto</th>
+                        <th style="background: #e2e8f0;">Qtd</th>
+                        <th style="background: #e2e8f0;">Valor</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
 
         cliente.compras.forEach(c => {
-            let corValor = c.valor < 0 ? 'color: #28a745;' : 'color: #dc3545;';
+            let corValor = c.valor < 0 ? 'color: var(--success);' : 'color: var(--danger);';
             let qtdDisplay = c.quantidade ? Number(c.quantidade.toFixed(3)) : '-';
             html += `
                 <tr>
-                    <td>${c.data.split(',')[0]}</td>
-                    <td>${c.produto}</td>
+                    <td style="color: var(--gray);">${c.data.split(',')[0]}</td>
+                    <td style="font-weight: 600;">${c.produto}</td>
                     <td>${qtdDisplay}</td>
-                    <td style="${corValor} font-weight: bold;">R$ ${c.valor.toFixed(2)}</td>
+                    <td style="${corValor} font-weight: 800;">R$ ${c.valor.toFixed(2)}</td>
                 </tr>
             `;
         });
@@ -992,8 +1142,8 @@
         html += `
                 </tbody>
             </table>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                <span style="font-size: 20px; font-weight: bold; color: #dc3545;">Total a Pagar: R$ ${cliente.total.toFixed(2)}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                <span style="font-size: 22px; font-weight: 800; color: var(--danger);">Total a Pagar: R$ ${cliente.total.toFixed(2)}</span>
                 <button class="btn-delete" onclick="document.getElementById('detalhes-fiado').style.display='none'">Fechar Extrato</button>
             </div>
         `;
