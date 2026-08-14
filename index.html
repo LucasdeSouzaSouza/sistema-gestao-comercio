@@ -96,6 +96,14 @@
         .header-title { text-align: center; color: var(--dark); font-weight: 800; font-size: 30px; margin-bottom: 5px; }
         .header-subtitle { text-align: center; color: var(--success); margin-bottom: 25px; font-size: 14px; font-weight: 800; }
         
+        /* Botão de Sair */
+        .btn-sair { 
+            background-color: var(--danger); color: white; border: none; padding: 4px 10px; 
+            border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; 
+            margin-left: 10px; vertical-align: middle; transition: all 0.2s ease; 
+        }
+        .btn-sair:hover { background-color: #b91c1c; transform: scale(0.95); }
+
         /* ========================================== */
         /* ABAS DE NAVEGAÇÃO */
         /* ========================================== */
@@ -216,7 +224,11 @@
     <div class="container">
         
         <h1 class="header-title">🛒 Mercearia Rsouza</h1>
-        <p class="header-subtitle">🟢 App Online (Nuvem Ativa) <span id="tag-usuario-logado"></span></p>
+        <p class="header-subtitle">
+            🟢 App Online (Nuvem Ativa) 
+            <span id="tag-usuario-logado"></span>
+            <button class="btn-sair" onclick="fazerLogout()" title="Sair do sistema">🚪 Sair</button>
+        </p>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 Vendas</button>
@@ -483,7 +495,7 @@
         { nome: "Lucas", senha: "123456" },
         { nome: "Luana", senha: "luana123" },
         { nome: "Raimundo", senha: "raimundo123" }
-    ]; // Estes são os perfis iniciais que vão ser gravados na nuvem.
+    ]; 
     
     let totalVendaAtual = 0; 
     let usuarioLogado = ""; 
@@ -504,7 +516,7 @@
             if (dados.usuarios && dados.usuarios.length > 0) {
                 usuarios = dados.usuarios;
             } else {
-                precisaSalvarNuvem = true; // Salva o trio de usuarios iniciais na nuvem se nao tiver nenhum
+                precisaSalvarNuvem = true; 
             }
             
             let localEstoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
@@ -546,7 +558,7 @@
     }
 
     // ==========================================
-    // SISTEMA DE SEGURANÇA (LOGIN MULTI-USUÁRIOS)
+    // SISTEMA DE SEGURANÇA (LOGIN MULTI-USUÁRIOS E SAÍDA)
     // ==========================================
     function atualizarDropdownLogin() {
         let select = document.getElementById('input-usuario');
@@ -577,6 +589,24 @@
             alert("Senha Incorreta! Tente novamente.");
             document.getElementById('input-senha').value = ''; 
             document.getElementById('input-senha').focus();
+        }
+    }
+    
+    // NOVA FUNÇÃO DE LOGOUT
+    function fazerLogout() {
+        if(confirm(`Tem certeza que deseja sair do sistema, ${usuarioLogado}?`)) {
+            // Limpa o estado da sessão atual
+            usuarioLogado = "";
+            document.getElementById('tag-usuario-logado').innerText = "";
+            document.getElementById('input-senha').value = ""; // Limpa o campo de senha
+            
+            // Troca as telas para esconder o sistema e mostrar o login
+            document.getElementById('sistema-principal').style.display = 'none';
+            document.getElementById('tela-login').style.display = 'flex';
+            
+            // Joga o menu de volta para a aba principal para quando logar novamente
+            mudarAba('vendas');
+            document.getElementById('input-usuario').focus();
         }
     }
 
