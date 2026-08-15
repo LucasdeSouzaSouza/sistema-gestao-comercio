@@ -274,11 +274,9 @@
         <div id="caixa" class="section">
             <div class="resumo">
                 <span id="total-entradas" class="entrada">Entradas<br>R$ 0.00</span>
-                <span id="total-saidas" class="saida">Saídas<br>R$ 0.00</span>
                 <span id="saldo-total">Saldo Final<br>R$ 0.00</span>
             </div>
 
-            <!-- Botão mantido, formulário de entrada manual removido conforme solicitado -->
             <button class="btn-dark" onclick="abrirFechamento()">🔒 Fechar Turno / Resumo do Dia</button>
 
             <div class="table-container">
@@ -953,7 +951,6 @@
 
         let saldo = totalEntradas - totalSaidas;
         document.getElementById('total-entradas').innerHTML = `Entradas<br>R$ ${totalEntradas.toFixed(2)}`;
-        document.getElementById('total-saidas').innerHTML = `Saídas<br>R$ ${totalSaidas.toFixed(2)}`;
         document.getElementById('saldo-total').innerHTML = `Saldo Final<br>R$ ${saldo.toFixed(2)}`;
         document.getElementById('saldo-total').style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
         
