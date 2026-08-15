@@ -259,7 +259,6 @@
                     <option value="Crédito">Cartão de Crédito</option>
                 </select>
                 
-                <!-- CAMPO NOVO: VALOR RECEBIDO PARA TROCO -->
                 <input type="number" id="venda-valor-recebido" placeholder="Valor Recebido (Para Troco)" step="0.01" oninput="calcularTroco()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
             </div>
 
@@ -279,26 +278,8 @@
                 <span id="saldo-total">Saldo Final<br>R$ 0.00</span>
             </div>
 
+            <!-- Botão mantido, formulário de entrada manual removido conforme solicitado -->
             <button class="btn-dark" onclick="abrirFechamento()">🔒 Fechar Turno / Resumo do Dia</button>
-
-            <div class="form-group">
-                <input type="text" id="desc-caixa" placeholder="Descrição Manual" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
-                <select id="tipo-caixa" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
-                    <option value="entrada">Entrada (+)</option>
-                    <option value="saida">Saída (-)</option>
-                </select>
-                <input type="number" id="valor-caixa" placeholder="Valor (R$)" step="0.01" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
-                
-                <select id="caixa-pagamento" onkeypress="if(event.key === 'Enter') adicionarCaixa()">
-                    <option value="Dinheiro">Dinheiro</option>
-                    <option value="PIX">PIX</option>
-                    <option value="Débito">Cartão de Débito</option>
-                    <option value="Crédito">Cartão de Crédito</option>
-                    <option value="Outro">Outro</option>
-                </select>
-
-                <button class="btn-add" onclick="adicionarCaixa()">Registrar</button>
-            </div>
 
             <div class="table-container">
                 <table>
@@ -500,11 +481,7 @@
     let estoque = [];
     let fiados = [];
     let despesas = [];
-    let usuarios = [
-        { nome: "Lucas", senha: "123456" },
-        { nome: "Luana", senha: "luana123" },
-        { nome: "Raimundo", senha: "raimundo123" }
-    ]; 
+    let usuarios = []; 
     
     let totalVendaAtual = 0; 
     let usuarioLogado = ""; 
@@ -525,22 +502,23 @@
             if (dados.usuarios && dados.usuarios.length > 0) {
                 usuarios = dados.usuarios;
             } else {
+                usuarios = [
+                    { nome: "Lucas", senha: "123456" },
+                    { nome: "Luana", senha: "luana123" },
+                    { nome: "Raimundo", senha: "raimundo123" }
+                ];
                 precisaSalvarNuvem = true; 
-            }
-            
-            let localEstoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
-            if (estoque.length === 0 && localEstoque.length > 0) {
-                caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
-                estoque = localEstoque;
-                fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
-                despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
-                precisaSalvarNuvem = true;
             }
         } else {
             caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
             estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
+            usuarios = [
+                { nome: "Lucas", senha: "123456" },
+                { nome: "Luana", senha: "luana123" },
+                { nome: "Raimundo", senha: "raimundo123" }
+            ];
             precisaSalvarNuvem = true;
         }
 
@@ -692,7 +670,6 @@
         document.getElementById('detalhes-fiado').style.display = 'none';
         
         if(aba === 'vendas') document.getElementById('venda-produto').focus();
-        if(aba === 'caixa') document.getElementById('desc-caixa').focus();
         if(aba === 'estoque') document.getElementById('nome-produto').focus();
         if(aba === 'fiados') document.getElementById('fiado-nome').focus();
         if(aba === 'despesas') document.getElementById('desc-despesa').focus();
@@ -984,26 +961,6 @@
         calcularLucroMensal();
     }
 
-    function adicionarCaixa() {
-        let desc = document.getElementById('desc-caixa').value;
-        let tipo = document.getElementById('tipo-caixa').value;
-        let valor = parseFloat(document.getElementById('valor-caixa').value);
-        let formaPagamento = document.getElementById('caixa-pagamento').value;
-
-        if (!desc || isNaN(valor) || valor <= 0) { alert('Preencha a descrição e um valor válido!'); return; }
-
-        let descFinal = desc + ` (${formaPagamento}) - ${usuarioLogado}`;
-        let dataAtual = new Date().toLocaleString('pt-BR');
-        caixa.push({ data: dataAtual, descricao: descFinal, tipo: tipo, valor: valor });
-        
-        document.getElementById('desc-caixa').value = '';
-        document.getElementById('valor-caixa').value = '';
-        document.getElementById('caixa-pagamento').value = 'Dinheiro';
-        
-        salvarNoFirebase();
-        document.getElementById('desc-caixa').focus();
-    }
-
     function excluirCaixa(index) {
         if (confirm('Tem certeza que deseja apagar este registro do caixa?')) {
             caixa.splice(index, 1);
@@ -1148,7 +1105,7 @@
                 <td style="font-size: 16px;"><strong style="color: var(--dark);">${cliente.nome}</strong></td>
                 <td style="color: var(--danger); font-size: 16px; font-weight: 800;">R$ ${cliente.total.toFixed(2)}</td>
                 <td>
-                    <button onclick="prepararNovaCompraFiado(${index})" style="background-color: var(--primary); color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; margin-bottom: 4px; cursor: pointer; font-weight: bold;">➕ Adicionar</button>
+                    <button onclick="prepararNovaCompraFiado(${index})" style="background-color: var(--primary); color: white; border: none; border-radius: 10px; padding: 6px 12px; font-size: 12px; margin-bottom: 4px; cursor: pointer; font-weight: 800;">➕ Adicionar</button>
                     <button class="btn-edit" onclick="verDetalhesFiado(${index})" style="padding: 6px 12px; font-size: 12px; margin-bottom:4px;">Ver Compras</button>
                     <button class="btn-add" onclick="receberPagamentoFiado(${index})" style="padding: 6px 12px; font-size: 12px; margin-bottom:4px;">💲 Receber</button>
                     <button class="btn-delete" onclick="excluirClienteFiado(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
