@@ -507,6 +507,15 @@
                 ];
                 precisaSalvarNuvem = true; 
             }
+            
+            let localEstoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
+            if (estoque.length === 0 && localEstoque.length > 0) {
+                caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
+                estoque = localEstoque;
+                fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
+                despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
+                precisaSalvarNuvem = true;
+            }
         } else {
             caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
             estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
@@ -1208,14 +1217,28 @@
             <h3 style="margin-top: 0; color: var(--dark);">Extrato: ${cliente.nome}</h3>
             <div style="overflow-x: auto;">
                 <table style="font-size: 14px; box-shadow: none; border: 1px solid var(--border); min-width: 300px;">
-                    <thead><tr><th style="background: #e2e8f0;">Data</th><th style="background: #e2e8f0;">Produto</th><th style="background: #e2e8f0;">Qtd</th><th style="background: #e2e8f0;">Valor</th></tr></thead>
+                    <thead><tr>
+                        <th style="background: #e2e8f0;">Data</th>
+                        <th style="background: #e2e8f0;">Produto</th>
+                        <th style="background: #e2e8f0;">Qtd</th>
+                        <th style="background: #e2e8f0;">Valor</th>
+                        <th style="background: #e2e8f0; text-align: center;">Ação</th>
+                    </tr></thead>
                     <tbody>
         `;
 
-        cliente.compras.forEach(c => {
+        cliente.compras.forEach((c, compraIndex) => {
             let corValor = c.valor < 0 ? 'color: var(--success);' : 'color: var(--danger);';
             let qtdDisplay = c.quantidade ? Number(c.quantidade.toFixed(3)) : '-';
-            html += `<tr><td style="color: var(--gray);">${c.data.split(',')[0]}</td><td style="font-weight: 600;">${c.produto}</td><td>${qtdDisplay}</td><td style="${corValor} font-weight: 800;">R$ ${c.valor.toFixed(2)}</td></tr>`;
+            html += `<tr>
+                <td style="color: var(--gray);">${c.data.split(',')[0]}</td>
+                <td style="font-weight: 600;">${c.produto}</td>
+                <td>${qtdDisplay}</td>
+                <td style="${corValor} font-weight: 800;">R$ ${c.valor.toFixed(2)}</td>
+                <td style="text-align: center;">
+                    <button onclick="excluirItemFiado(${index}, ${compraIndex})" style="background: var(--danger); color: white; border: none; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: 800; font-size: 12px;" title="Apagar este item da conta">🗑️ Excluir</button>
+                </td>
+            </tr>`;
         });
 
         html += `
@@ -1230,6 +1253,38 @@
 
         div.innerHTML = html;
         div.style.display = 'block';
+    }
+
+    // NOVA FUNÇÃO: EXCLUIR ITEM INDIVIDUAL DO FIADO
+    function excluirItemFiado(clienteIndex, compraIndex) {
+        let cliente = fiados[clienteIndex];
+        let item = cliente.compras[compraIndex];
+
+        if (confirm(`Tem certeza que deseja apagar o item "${item.produto}" (R$ ${item.valor.toFixed(2)}) da conta de ${cliente.nome}?`)) {
+            // Ajusta o total da dívida do cliente
+            cliente.total -= item.valor;
+            
+            // Tenta abater a quantidade vendida no estoque para manter tudo certinho
+            if (item.quantidade) {
+                let nomeBusca = item.produto.split(' (')[0].split(' - ')[0].trim();
+                let prod = estoque.find(p => p.nome.trim() === nomeBusca);
+                if (prod) {
+                    prod.vendidos -= item.quantidade;
+                    if (prod.vendidos < 0) prod.vendidos = 0;
+                }
+            }
+
+            // Remove o item da lista
+            cliente.compras.splice(compraIndex, 1);
+
+            // Se apagou todas as compras, a conta zera e o cliente some da lista
+            if (cliente.compras.length === 0) {
+                fiados.splice(clienteIndex, 1);
+                document.getElementById('detalhes-fiado').style.display = 'none';
+            }
+
+            salvarNoFirebase();
+        }
     }
 
     function receberPagamentoFiado(index) {
