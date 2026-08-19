@@ -16,14 +16,14 @@
     <!-- Importação de Fonte Moderna do Google -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- SDKS DO FIREBASE (NUVEM) E CHART.JS (GRÁFICOS) -->
+    <!-- SDKS DO FIREBASE E CHART.JS -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         /* ========================================== */
-        /* VARIÁVEIS DE CORES E ESTILO GLOBAL (MODERNO) */
+        /* VARIÁVEIS DE CORES E ESTILO GLOBAL */
         /* ========================================== */
         :root {
             --primary: #4f46e5;      
@@ -103,7 +103,6 @@
         .header-subtitle { text-align: center; color: var(--gray); margin-bottom: 30px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px;}
         .status-nuvem { color: var(--success); background: #d1fae5; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
         
-        /* Botão de Sair */
         .btn-sair { 
             background-color: #fee2e2; color: var(--danger); border: 2px solid transparent; padding: 6px 12px; 
             border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; 
@@ -130,7 +129,6 @@
         .form-group { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; flex-wrap: wrap; background: #f8fafc; padding: 20px; border-radius: 20px; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
         input, select, textarea { padding: 14px 16px; border: 2px solid var(--border); border-radius: 12px; flex: 1; min-width: 140px; font-size: 15px; font-weight: 600; font-family: inherit; color: var(--dark); transition: all 0.3s ease; background: #fff;}
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15); }
-        input::placeholder { color: var(--gray-light); font-weight: 500;}
         
         button { padding: 14px 24px; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; color: white; font-size: 15px; font-family: inherit; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px;}
         button:active { transform: scale(0.97); }
@@ -191,7 +189,6 @@
         
         .painel-destaque { background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #065f46; padding: 30px; border-radius: 20px; text-align: center; font-size: 30px; margin-bottom: 25px; border: 2px solid #a7f3d0; font-weight: 900; box-shadow: var(--shadow-sm);}
 
-        /* Estilos do Dashboard (Novos) */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 25px; }
         .dash-card { background: #fff; padding: 25px; border-radius: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
         .dash-card h3 { margin-top: 0; color: var(--dark); font-size: 18px; font-weight: 800; border-bottom: 2px solid var(--bg-body); padding-bottom: 10px; margin-bottom: 15px;}
@@ -224,7 +221,6 @@
         
         #detalhes-fiado { margin-top: 30px; display: none; background: #fff; padding: 25px; border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-lg);}
         
-        /* Tag de usuário no cabeçalho */
         #tag-usuario-logado {
             display: inline-block; background-color: var(--primary); color: white;
             padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 800;
@@ -480,7 +476,7 @@
             </div>
         </div>
 
-        <!-- NOVA SEÇÃO: DASHBOARD DE GESTÃO (LUCRO MENSAL) -->
+        <!-- DASHBOARD DE GESTÃO -->
         <div id="lucro" class="section">
             <div class="form-group" style="justify-content: space-between; background: transparent; border: none; box-shadow: none; padding: 0;">
                 <div style="display:flex; align-items: center; gap: 10px;">
@@ -601,8 +597,6 @@
     let totalVendaAtual = 0; 
     let usuarioLogado = ""; 
     let diasAbertosCaixa = new Set([new Date().toLocaleDateString('pt-BR')]);
-    
-    // Variável global para armazenar a instância do gráfico
     let graficoPagamentosInstancia = null;
 
     window.onload = () => {
@@ -648,7 +642,18 @@
         atualizarDropdownLogin(); 
     });
 
+    // ==========================================
+    // MUDANÇA IMPORTANTE: BACKUP LOCAL + MERGE VERDADEIRO
+    // ==========================================
     function salvarNoFirebase() {
+        // 1. Salva tudo na memória do navegador primeiro (Backup Físico)
+        localStorage.setItem('dadosCaixa', JSON.stringify(caixa));
+        localStorage.setItem('dadosEstoque', JSON.stringify(estoque));
+        localStorage.setItem('dadosFiados', JSON.stringify(fiados));
+        localStorage.setItem('dadosDespesas', JSON.stringify(despesas));
+        localStorage.setItem('dadosCofre', JSON.stringify(cofre));
+
+        // 2. Manda pra nuvem mesclando os dados (Protege contra o celular desatualizado)
         db.collection("sistema").doc("dados_loja").set({
             caixa: caixa,
             estoque: estoque,
@@ -656,7 +661,7 @@
             despesas: despesas,
             cofre: cofre, 
             usuarios: usuarios
-        }).catch((error) => {
+        }, { merge: true }).catch((error) => {
             console.error("Erro ao salvar:", error);
         });
     }
@@ -667,7 +672,6 @@
     function atualizarDropdownLogin() {
         let select = document.getElementById('input-usuario');
         if(!select) return;
-        
         let valorAtual = select.value;
         select.innerHTML = '';
         usuarios.forEach(u => { select.innerHTML += `<option value="${u.nome}">${u.nome}</option>`; });
@@ -718,7 +722,6 @@
         if(aba === 'usuarios') document.getElementById('novo-usuario-nome').focus();
         if(aba === 'cofre') document.getElementById('desc-cofre').focus();
         
-        // Se abrir a aba de lucro/dashboard, redesenha o grafico
         if(aba === 'lucro') calcularLucroMensal();
     }
 
@@ -744,7 +747,7 @@
             tr.innerHTML = `
                 <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}<br><span style="font-size:12px">${hora}</span></td>
                 <td style="font-weight: 800; color: var(--dark);">${item.descricao}</td>
-                <td style="color: var(--gray); font-weight: 600;">👤 ${item.usuario}</td>
+                <td style="color: var(--gray); font-weight: 600;">👤 ${item.usuario || 'Desconhecido'}</td>
                 <td class="${classeCor}">${iconTipo}</td>
                 <td class="${classeCor}" style="font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
                 <td><button class="btn-delete" onclick="excluirCofre(${index})" style="padding: 6px 12px; font-size: 12px;">Desfazer</button></td>
@@ -815,9 +818,6 @@
         if (valFiado) selectFiado.value = valFiado;
     }
 
-    // ==========================================
-    // SISTEMA DE VENDAS (PDV) E TROCO
-    // ==========================================
     function calcularVenda() {
         let index = document.getElementById('venda-produto').value;
         let qtd = parseFloat(document.getElementById('venda-qtd').value) || 0;
@@ -958,19 +958,15 @@
     }
 
     function exportarExcel() {
-        // Cria um arquivo CSV simples que pode ser aberto no Excel
         let csv = "Data/Hora;Motivo/Descricao;Tipo;Valor\n";
-        
         caixa.forEach(c => {
-            let descStr = c.descricao.replace(/;/g, " "); // tira ponto e virgula pra não quebrar a tabela
-            let valStr = c.valor.toFixed(2).replace('.', ','); // Coloca virgula nos centavos padrão Brasil
+            let descStr = c.descricao.replace(/;/g, " "); 
+            let valStr = c.valor.toFixed(2).replace('.', ','); 
             csv += `${c.data};${descStr};${c.tipo.toUpperCase()};R$ ${valStr}\n`;
         });
-        
         let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
         let link = document.createElement("a");
         let url = URL.createObjectURL(blob);
-        
         link.setAttribute("href", url);
         link.setAttribute("download", `Relatorio_Mercearia_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.csv`);
         link.style.visibility = 'hidden';
@@ -980,12 +976,11 @@
     }
 
     // ==========================================
-    // CONTROLE DE ESTOQUE
+    // CONTROLE DE ESTOQUE E CAIXA
     // ==========================================
     function atualizarEstoqueUI() {
         let tbody = document.getElementById('tabela-estoque');
         tbody.innerHTML = '';
-
         estoque.forEach((produto, index) => {
             let preco = produto.preco ? produto.preco : 0;
             let vendidos = produto.vendidos ? parseFloat(produto.vendidos) : 0;
@@ -1005,20 +1000,16 @@
             `;
             tbody.appendChild(tr);
         });
-
         atualizarSelects(); 
     }
 
     function cadastrarProduto() {
         let nome = document.getElementById('nome-produto').value;
         let preco = parseFloat(document.getElementById('preco-produto').value);
-
         if (!nome || isNaN(preco) || preco < 0) { alert('Preencha o nome e o preço de venda!'); return; }
-
         estoque.push({ nome: nome, preco: preco, vendidos: 0 });
         document.getElementById('nome-produto').value = '';
         document.getElementById('preco-produto').value = '';
-        
         salvarNoFirebase();
         document.getElementById('nome-produto').focus();
     }
@@ -1037,9 +1028,6 @@
         }
     }
 
-    // ==========================================
-    // CONTROLE DE CAIXA DO DIA (COM SANFONA / COLLAPSE)
-    // ==========================================
     function toggleDiaCaixa(dataCurta) {
         if(diasAbertosCaixa.has(dataCurta)) {
             diasAbertosCaixa.delete(dataCurta);
@@ -1052,7 +1040,6 @@
     function atualizarCaixaUI() {
         let tbody = document.getElementById('tabela-caixa');
         tbody.innerHTML = '';
-        
         let totalEntradas = 0, totalSaidas = 0, dataAtualAgrupamento = '';
         let lucrosPorDia = {};
         
@@ -1115,8 +1102,6 @@
         document.getElementById('saldo-total').style.color = saldo >= 0 ? 'var(--dark)' : 'var(--danger)';
         
         atualizarOpcoesMeses();
-        
-        // Se a tela de dashboard estiver aberta, atualiza ela tb
         if (document.getElementById('lucro').classList.contains('active')) {
             calcularLucroMensal();
         }
@@ -1173,7 +1158,6 @@
         if (formaPagamento === "Dinheiro") {
             caixa.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc} - ${usuarioLogado}`, tipo: 'saida', valor: valor });
         }
-        
         if (formaPagamento === "Cofre") {
             cofre.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc}`, tipo: 'saida', valor: valor, usuario: usuarioLogado });
         }
@@ -1195,7 +1179,7 @@
     }
 
     // ==========================================
-    // NOVO: DASHBOARD E RELATÓRIOS INTELIGENTES
+    // DASHBOARD E RELATÓRIOS INTELIGENTES
     // ==========================================
     function atualizarOpcoesMeses() {
         let selectMes = document.getElementById('filtro-mes');
@@ -1210,15 +1194,12 @@
 
         let valorAtual = selectMes.value;
         selectMes.innerHTML = '<option value="todos">Todo o Período</option>';
-
         mesesArray.forEach(m => { selectMes.innerHTML += `<option value="${m}">${m}</option>`; });
-
         if(mesesArray.includes(valorAtual)) selectMes.value = valorAtual;
     }
 
     function calcularLucroMensal() {
         let mesSelecionado = document.getElementById('filtro-mes').value;
-        
         let totalEntradas = 0, totalSaidasCaixa = 0, totalGastoDespesas = 0;
         let pagDinheiro = 0, pagPix = 0, pagCartao = 0;
 
@@ -1227,14 +1208,11 @@
             if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
                 if (c.tipo === 'entrada') {
                     totalEntradas += c.valor;
-                    
-                    // Conta as formas de pagamento apenas nas entradas
                     if(c.descricao.includes('Dinheiro')) pagDinheiro += c.valor;
                     else if(c.descricao.includes('PIX') || c.descricao.includes('Pix')) pagPix += c.valor;
                     else if(c.descricao.includes('Cartão') || c.descricao.includes('Débito') || c.descricao.includes('Crédito')) pagCartao += c.valor;
-                    else pagDinheiro += c.valor; // Se não especificou, presume dinheiro
-                }
-                else if (c.tipo === 'saida') {
+                    else pagDinheiro += c.valor; 
+                } else if (c.tipo === 'saida') {
                     totalSaidasCaixa += c.valor;
                 }
             }
@@ -1245,7 +1223,6 @@
             if (mesSelecionado === 'todos' || mesAno === mesSelecionado) totalGastoDespesas += d.valor;
         });
 
-        // Para evitar duplicidade de subtração quando a despesa sai do caixa:
         let saidasPuramenteDoCaixa = 0;
         caixa.forEach(c => {
             let mesAno = c.data ? c.data.substring(3, 10) : "";
@@ -1257,7 +1234,6 @@
         let saidasTotais = saidasPuramenteDoCaixa + totalGastoDespesas;
         let lucroLiquido = totalEntradas - saidasTotais;
 
-        // Atualiza Cards Principais
         document.getElementById('resumo-entradas').innerHTML = `Faturamento Bruto<br><b style="font-size: 24px;">R$ ${totalEntradas.toFixed(2)}</b>`;
         document.getElementById('resumo-saidas').innerHTML = `Despesas Gerais<br><b style="font-size: 24px;">R$ ${saidasTotais.toFixed(2)}</b>`;
         
@@ -1274,12 +1250,10 @@
             painelLucro.style.borderColor = '#fecaca';
         }
 
-        // 1. Atualizar Ranking Top 5
         let rankingUL = document.getElementById('ranking-produtos');
         rankingUL.innerHTML = '';
-        // Faz uma cópia do estoque e ordena do mais vendido pro menor
         let estoqueOrdenado = [...estoque].sort((a, b) => (b.vendidos || 0) - (a.vendidos || 0));
-        let top5 = estoqueOrdenado.slice(0, 5); // Pega só os 5 primeiros
+        let top5 = estoqueOrdenado.slice(0, 5); 
         
         if(top5.length === 0 || top5[0].vendidos === 0) {
             rankingUL.innerHTML = '<li><span class="rank-nome">Nenhuma venda registrada ainda.</span></li>';
@@ -1291,10 +1265,8 @@
             });
         }
 
-        // 2. Atualizar Gráfico Pizza
         renderizarGraficoPagamentos(pagDinheiro, pagPix, pagCartao);
 
-        // 3. Atualizar Barra de Saúde (Fiados)
         let totalFiadosPendentes = 0;
         fiados.forEach(f => totalFiadosPendentes += f.total);
         
@@ -1306,12 +1278,8 @@
             healthBar.style.width = `${Math.min(porcentagemFiado, 100)}%`;
             healthText.innerText = `R$ ${totalFiadosPendentes.toFixed(2)} pendentes (${porcentagemFiado.toFixed(1)}% do faturamento)`;
             
-            // Muda cor se a dívida na rua for mais de 30% do que entra
-            if(porcentagemFiado > 30) {
-                healthBar.classList.add('health-bar-danger');
-            } else {
-                healthBar.classList.remove('health-bar-danger');
-            }
+            if(porcentagemFiado > 30) healthBar.classList.add('health-bar-danger');
+            else healthBar.classList.remove('health-bar-danger');
         } else {
             healthBar.style.width = '0%';
             healthText.innerText = `R$ ${totalFiadosPendentes.toFixed(2)} pendentes na rua.`;
@@ -1323,19 +1291,12 @@
         if(!canvas) return;
         let ctx = canvas.getContext('2d');
         
-        if (graficoPagamentosInstancia) {
-            graficoPagamentosInstancia.destroy();
-        }
+        if (graficoPagamentosInstancia) graficoPagamentosInstancia.destroy();
 
-        // Só renderiza se tiver algum valor
         if(dinheiro === 0 && pix === 0 && cartao === 0) {
-            // Se tudo for zero, desenha um cinza
             graficoPagamentosInstancia = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: ['Sem vendas'],
-                    datasets: [{ data: [1], backgroundColor: ['#e2e8f0'], borderWidth: 0 }]
-                },
+                data: { labels: ['Sem vendas'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'], borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
             return;
@@ -1345,20 +1306,9 @@
             type: 'doughnut',
             data: {
                 labels: ['Dinheiro', 'PIX', 'Cartão'],
-                datasets: [{
-                    data: [dinheiro, pix, cartao],
-                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
+                datasets: [{ data: [dinheiro, pix, cartao], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'], borderWidth: 0, hoverOffset: 4 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { font: { family: 'Nunito', weight: 'bold' } } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { family: 'Nunito', weight: 'bold' } } } } }
         });
     }
 
