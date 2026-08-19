@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mercearia Rsouza</title>
     
-    <!-- CONFIGURAÇÕES DE APLICATIVO (PWA) -->
+    <!-- CONFIGURAÇÕES DE APLICATIVO (PWA) COM ÍCONE NOVO -->
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MRsouza">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3759/3759041.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2838/2838895.png">
     <link rel="manifest" id="manifest-link">
 
     <!-- Importação de Fonte Moderna do Google -->
@@ -242,7 +242,7 @@
         "background_color": "#f3f4f6",
         "theme_color": "#4f46e5",
         "icons": [{
-            "src": "https://cdn-icons-png.flaticon.com/512/3759/3759041.png",
+            "src": "https://cdn-icons-png.flaticon.com/512/2838/2838895.png",
             "sizes": "512x512",
             "type": "image/png"
         }]
@@ -916,7 +916,7 @@
     function abrirFechamento() {
         let totalDinheiro = 0, totalPix = 0, totalCartao = 0;
         let totalEntradas = 0, totalSaidas = 0;
-        let saidasGaveta = 0; // Para calcular o dinheiro vivo retirado
+        let saidasGaveta = 0; 
         
         let indexUltimoFechamento = -1;
         for (let i = caixa.length - 1; i >= 0; i--) {
@@ -937,14 +937,12 @@
                 else totalDinheiro += item.valor; 
             } else if (item.tipo === 'saida') {
                 totalSaidas += item.valor;
-                // Considera saída da gaveta apenas se for Dinheiro ou Despesa
                 if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:')) {
                     saidasGaveta += item.valor;
                 }
             }
         });
 
-        // O Saldo na Gaveta ignora as saídas do PIX/Cartão (que não saem fisicamente da gaveta)
         let saldoNaGaveta = totalDinheiro - saidasGaveta;
 
         document.getElementById('conteudo-turno').innerHTML = `
@@ -1061,7 +1059,7 @@
         tbody.innerHTML = '';
         let totalEntradas = 0, totalSaidas = 0, dataAtualAgrupamento = '';
         let lucrosPorDia = {};
-        let saldoGaveta = 0; // Armazena apenas dinheiro físico
+        let saldoGaveta = 0; 
         
         caixa.forEach(item => {
             let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
@@ -1103,14 +1101,11 @@
             
             if (item.tipo === 'entrada') {
                 totalEntradas += item.valor;
-                // Soma no saldo da Gaveta se for especificado como Dinheiro, 
-                // ou se for entrada padrão não especificada como PIX/Cartão
                 if (item.descricao.includes('Dinheiro') || (!item.descricao.includes('PIX') && !item.descricao.includes('Pix') && !item.descricao.includes('Cartão') && !item.descricao.includes('Débito') && !item.descricao.includes('Crédito'))) {
                     saldoGaveta += item.valor;
                 }
             } else if (item.tipo === 'saida') {
                 totalSaidas += item.valor;
-                // Deduz da Gaveta apenas saídas em dinheiro físico ou despesas
                 if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:')) {
                     saldoGaveta -= item.valor;
                 }
@@ -1129,7 +1124,6 @@
             tbody.appendChild(tr);
         });
 
-        // Atualização da UI para focar na Gaveta real
         document.getElementById('total-entradas').innerHTML = `Entradas (Geral)<br><b style="font-size: 26px;">R$ ${totalEntradas.toFixed(2)}</b>`;
         document.getElementById('saldo-total').innerHTML = `Dinheiro na Gaveta<br><b style="font-size: 26px;">R$ ${saldoGaveta.toFixed(2)}</b>`;
         document.getElementById('saldo-total').style.color = saldoGaveta >= 0 ? 'var(--dark)' : 'var(--danger)';
