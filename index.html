@@ -16,9 +16,10 @@
     <!-- Importação de Fonte Moderna do Google -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- SDKS DO FIREBASE (NUVEM) -->
+    <!-- SDKS DO FIREBASE (NUVEM) E CHART.JS (GRÁFICOS) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         /* ========================================== */
@@ -164,7 +165,6 @@
         .entrada { color: var(--success); font-weight: 800; }
         .saida { color: var(--danger); font-weight: 800; }
         
-        /* Nova formatação da linha de data agrupada para ser clicável */
         .linha-divisor-data td { 
             background-color: #f8fafc; font-weight: 800; color: #334155; 
             text-transform: uppercase; border-top: 3px solid var(--border); 
@@ -173,7 +173,7 @@
         .linha-divisor-data:hover td { background-color: #e2e8f0; }
 
         /* ========================================== */
-        /* CARDS DE RESUMO */
+        /* CARDS DE RESUMO & DASHBOARD */
         /* ========================================== */
         .resumo { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
         .resumo span { flex: 1; background: #fff; padding: 20px 15px; border-radius: 18px; font-size: 16px; font-weight: 800; box-shadow: var(--shadow-sm); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; }
@@ -190,6 +190,21 @@
         #venda-troco { color: var(--success); font-size: 32px; border: none; padding: 0; box-shadow: none; display: inline; font-weight: 900;}
         
         .painel-destaque { background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #065f46; padding: 30px; border-radius: 20px; text-align: center; font-size: 30px; margin-bottom: 25px; border: 2px solid #a7f3d0; font-weight: 900; box-shadow: var(--shadow-sm);}
+
+        /* Estilos do Dashboard (Novos) */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 25px; }
+        .dash-card { background: #fff; padding: 25px; border-radius: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+        .dash-card h3 { margin-top: 0; color: var(--dark); font-size: 18px; font-weight: 800; border-bottom: 2px solid var(--bg-body); padding-bottom: 10px; margin-bottom: 15px;}
+        
+        .ranking-list { list-style: none; padding: 0; margin: 0; }
+        .ranking-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border); font-weight: 700; color: var(--gray); font-size: 15px;}
+        .ranking-list li:last-child { border-bottom: none; }
+        .ranking-list li span.rank-nome { color: var(--dark); }
+        .ranking-list li span.rank-qtd { color: var(--primary); font-weight: 900; background: #e0e7ff; padding: 2px 8px; border-radius: 12px;}
+        
+        .health-bar-bg { width: 100%; background: #e2e8f0; height: 24px; border-radius: 12px; overflow: hidden; position: relative;}
+        .health-bar-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.5s ease;}
+        .health-bar-danger { background: var(--danger) !important; }
 
         /* ========================================== */
         /* MODAL DE FECHAMENTO DE TURNO */
@@ -216,7 +231,6 @@
             margin-left: 10px; vertical-align: middle; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
         }
 
-        /* Destaque para a aba Cofre */
         .alerta-cofre { text-align: center; color: var(--warning); font-weight: 800; font-size: 14px; margin-top: -15px; margin-bottom: 20px; background: #fffbeb; padding: 10px; border-radius: 12px; border: 1px solid #fde68a;}
     </style>
 </head>
@@ -274,7 +288,7 @@
             <button class="tab-btn" onclick="mudarAba('estoque')">📦 Estoque</button>
             <button class="tab-btn" onclick="mudarAba('fiados')">📓 Fiados</button>
             <button class="tab-btn" onclick="mudarAba('despesas')">💸 Despesas</button>
-            <button class="tab-btn" onclick="mudarAba('lucro')">📊 Resumo</button>
+            <button class="tab-btn" onclick="mudarAba('lucro')">📊 Gestão/Painel</button>
             <button class="tab-btn" onclick="mudarAba('usuarios')" style="color: var(--primary);">👥 Equipe</button>
         </div>
 
@@ -328,7 +342,7 @@
             </div>
         </div>
 
-        <!-- NOVA SEÇÃO: COFRE (NOTAS DE PAPEL) -->
+        <!-- SEÇÃO: COFRE (NOTAS DE PAPEL) -->
         <div id="cofre" class="section">
             <div class="alerta-cofre">⚠️ Controle exclusivo para Dinheiro em Espécie (Notas de Papel guardadas). Não contabiliza moedas.</div>
             
@@ -466,11 +480,14 @@
             </div>
         </div>
 
-        <!-- SEÇÃO DE LUCRO MENSAL -->
+        <!-- NOVA SEÇÃO: DASHBOARD DE GESTÃO (LUCRO MENSAL) -->
         <div id="lucro" class="section">
-            <div class="form-group" style="justify-content: center; background: #fff; border: none; box-shadow: none;">
-                <label style="font-weight: 800; color: var(--dark); font-size: 18px;">📅 Analisar Mês: </label>
-                <select id="filtro-mes" onchange="calcularLucroMensal()" style="max-width: 250px; font-weight: 800; border-color: var(--primary); color: var(--primary);"></select>
+            <div class="form-group" style="justify-content: space-between; background: transparent; border: none; box-shadow: none; padding: 0;">
+                <div style="display:flex; align-items: center; gap: 10px;">
+                    <label style="font-weight: 800; color: var(--dark); font-size: 18px;">📅 Analisar: </label>
+                    <select id="filtro-mes" onchange="calcularLucroMensal()" style="max-width: 200px; font-weight: 800; border-color: var(--primary); color: var(--primary);"></select>
+                </div>
+                <button class="btn-dark" onclick="exportarExcel()" style="width: auto; margin-bottom: 0; padding: 12px 20px; font-size: 14px; background-color: #0f172a;">📥 Exportar Planilha (Excel)</button>
             </div>
 
             <div class="painel-destaque" id="painel-lucro">
@@ -478,8 +495,38 @@
             </div>
 
             <div class="resumo">
-                <span class="entrada" id="resumo-entradas">Total Entradas<br><b style="font-size: 24px;">R$ 0.00</b></span>
-                <span class="saida" id="resumo-saidas">Despesas + Saídas<br><b style="font-size: 24px;">R$ 0.00</b></span>
+                <span class="entrada" id="resumo-entradas">Faturamento Bruto<br><b style="font-size: 24px;">R$ 0.00</b></span>
+                <span class="saida" id="resumo-saidas">Despesas Gerais<br><b style="font-size: 24px;">R$ 0.00</b></span>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- RANKING TOP 5 -->
+                <div class="dash-card">
+                    <h3>🏆 Top 5 Produtos (Geral)</h3>
+                    <ul id="ranking-produtos" class="ranking-list">
+                        <li><span>Carregando dados...</span></li>
+                    </ul>
+                </div>
+
+                <!-- GRÁFICO FORMAS DE PAGAMENTO -->
+                <div class="dash-card">
+                    <h3>💳 Formas de Pagamento</h3>
+                    <div style="height: 200px; position: relative;">
+                        <canvas id="graficoPagamentos"></canvas>
+                    </div>
+                </div>
+
+                <!-- BARRA DE SAÚDE (FIADOS) -->
+                <div class="dash-card" style="grid-column: 1 / -1;">
+                    <h3>⚠️ Saúde Financeira: Risco de Inadimplência</h3>
+                    <p style="font-size: 13px; color: var(--gray); margin-top:-10px;">Compara quanto dinheiro está preso na rua (Fiados) em relação ao total vendido no mês.</p>
+                    <div class="fiado-health">
+                        <div class="health-bar-bg">
+                            <div id="fiado-health-bar" class="health-bar-fill"></div>
+                        </div>
+                    </div>
+                    <p id="fiado-health-text" style="text-align:center; font-weight:800; color:var(--dark); margin-top:10px; font-size: 16px;">Calculando...</p>
+                </div>
             </div>
         </div>
 
@@ -545,7 +592,6 @@
     let fiados = [];
     let despesas = [];
     let cofre = []; 
-    // INICIALIZANDO OS USUÁRIOS NA MEMÓRIA PARA CARREGAR INSTANTANEAMENTE
     let usuarios = [
         { nome: "Lucas", senha: "123456" },
         { nome: "Luana", senha: "luana123" },
@@ -555,8 +601,10 @@
     let totalVendaAtual = 0; 
     let usuarioLogado = ""; 
     let diasAbertosCaixa = new Set([new Date().toLocaleDateString('pt-BR')]);
+    
+    // Variável global para armazenar a instância do gráfico
+    let graficoPagamentosInstancia = null;
 
-    // PREENCHE A TELA DE LOGIN ASSIM QUE O CÓDIGO É LIDO (SEM ESPERAR A INTERNET)
     window.onload = () => {
         atualizarDropdownLogin();
     };
@@ -597,7 +645,7 @@
         atualizarFiadosUI();
         atualizarUsuariosUI();
         atualizarCofreUI(); 
-        atualizarDropdownLogin(); // Atualiza de novo caso tenha vindo novos da nuvem
+        atualizarDropdownLogin(); 
     });
 
     function salvarNoFirebase() {
@@ -669,6 +717,9 @@
         if(aba === 'despesas') document.getElementById('desc-despesa').focus();
         if(aba === 'usuarios') document.getElementById('novo-usuario-nome').focus();
         if(aba === 'cofre') document.getElementById('desc-cofre').focus();
+        
+        // Se abrir a aba de lucro/dashboard, redesenha o grafico
+        if(aba === 'lucro') calcularLucroMensal();
     }
 
     // ==========================================
@@ -847,7 +898,7 @@
     }
 
     // ==========================================
-    // FECHAMENTO DE TURNO
+    // FECHAMENTO DE TURNO E EXPORTAR EXCEL
     // ==========================================
     function abrirFechamento() {
         let totalDinheiro = 0, totalPix = 0, totalCartao = 0;
@@ -904,6 +955,28 @@
         salvarNoFirebase();
         document.getElementById('modal-turno').style.display = 'none';
         alert('Fechamento de turno registrado com sucesso! Boa folga.');
+    }
+
+    function exportarExcel() {
+        // Cria um arquivo CSV simples que pode ser aberto no Excel
+        let csv = "Data/Hora;Motivo/Descricao;Tipo;Valor\n";
+        
+        caixa.forEach(c => {
+            let descStr = c.descricao.replace(/;/g, " "); // tira ponto e virgula pra não quebrar a tabela
+            let valStr = c.valor.toFixed(2).replace('.', ','); // Coloca virgula nos centavos padrão Brasil
+            csv += `${c.data};${descStr};${c.tipo.toUpperCase()};R$ ${valStr}\n`;
+        });
+        
+        let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
+        let link = document.createElement("a");
+        let url = URL.createObjectURL(blob);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Relatorio_Mercearia_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     // ==========================================
@@ -983,7 +1056,6 @@
         let totalEntradas = 0, totalSaidas = 0, dataAtualAgrupamento = '';
         let lucrosPorDia = {};
         
-        // Calcula o lucro consolidado de cada dia
         caixa.forEach(item => {
             let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
             if (!lucrosPorDia[dataCurta]) lucrosPorDia[dataCurta] = 0;
@@ -995,7 +1067,6 @@
             let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
             let hora = item.data && item.data.includes(',') ? item.data.split(',')[1].trim() : "";
 
-            // Se mudou de dia, cria a barra clicável
             if (dataCurta !== dataAtualAgrupamento) {
                 let lucroDoDia = lucrosPorDia[dataCurta] || 0;
                 let corLucro = lucroDoDia >= 0 ? 'var(--success)' : 'var(--danger)'; 
@@ -1044,7 +1115,11 @@
         document.getElementById('saldo-total').style.color = saldo >= 0 ? 'var(--dark)' : 'var(--danger)';
         
         atualizarOpcoesMeses();
-        calcularLucroMensal();
+        
+        // Se a tela de dashboard estiver aberta, atualiza ela tb
+        if (document.getElementById('lucro').classList.contains('active')) {
+            calcularLucroMensal();
+        }
     }
 
     function excluirCaixa(index) {
@@ -1079,7 +1154,7 @@
         document.getElementById('total-despesas-display').innerHTML = `Total de Despesas<br><b style="font-size: 26px;">R$ ${totalDespesas.toFixed(2)}</b>`;
         
         atualizarOpcoesMeses();
-        calcularLucroMensal();
+        if (document.getElementById('lucro').classList.contains('active')) calcularLucroMensal();
     }
 
     function adicionarDespesa() {
@@ -1095,12 +1170,10 @@
         
         despesas.push({ data: dataStr, descricao: descFinal, valor: valor });
         
-        // Se a despesa for paga com dinheiro da Gaveta, registra a saída no Caixa também.
         if (formaPagamento === "Dinheiro") {
             caixa.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc} - ${usuarioLogado}`, tipo: 'saida', valor: valor });
         }
         
-        // Se a despesa for paga com dinheiro do Cofre, registra a saída no Cofre também.
         if (formaPagamento === "Cofre") {
             cofre.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc}`, tipo: 'saida', valor: valor, usuario: usuarioLogado });
         }
@@ -1122,7 +1195,7 @@
     }
 
     // ==========================================
-    // SISTEMA DE LUCRO MENSAL
+    // NOVO: DASHBOARD E RELATÓRIOS INTELIGENTES
     // ==========================================
     function atualizarOpcoesMeses() {
         let selectMes = document.getElementById('filtro-mes');
@@ -1147,12 +1220,23 @@
         let mesSelecionado = document.getElementById('filtro-mes').value;
         
         let totalEntradas = 0, totalSaidasCaixa = 0, totalGastoDespesas = 0;
+        let pagDinheiro = 0, pagPix = 0, pagCartao = 0;
 
         caixa.forEach(c => {
             let mesAno = c.data ? c.data.substring(3, 10) : "";
             if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
-                if (c.tipo === 'entrada') totalEntradas += c.valor;
-                else if (c.tipo === 'saida') totalSaidasCaixa += c.valor;
+                if (c.tipo === 'entrada') {
+                    totalEntradas += c.valor;
+                    
+                    // Conta as formas de pagamento apenas nas entradas
+                    if(c.descricao.includes('Dinheiro')) pagDinheiro += c.valor;
+                    else if(c.descricao.includes('PIX') || c.descricao.includes('Pix')) pagPix += c.valor;
+                    else if(c.descricao.includes('Cartão') || c.descricao.includes('Débito') || c.descricao.includes('Crédito')) pagCartao += c.valor;
+                    else pagDinheiro += c.valor; // Se não especificou, presume dinheiro
+                }
+                else if (c.tipo === 'saida') {
+                    totalSaidasCaixa += c.valor;
+                }
             }
         });
 
@@ -1173,8 +1257,9 @@
         let saidasTotais = saidasPuramenteDoCaixa + totalGastoDespesas;
         let lucroLiquido = totalEntradas - saidasTotais;
 
-        document.getElementById('resumo-entradas').innerHTML = `Total Entradas<br><b style="font-size: 24px;">R$ ${totalEntradas.toFixed(2)}</b>`;
-        document.getElementById('resumo-saidas').innerHTML = `Despesas + Saídas<br><b style="font-size: 24px;">R$ ${saidasTotais.toFixed(2)}</b>`;
+        // Atualiza Cards Principais
+        document.getElementById('resumo-entradas').innerHTML = `Faturamento Bruto<br><b style="font-size: 24px;">R$ ${totalEntradas.toFixed(2)}</b>`;
+        document.getElementById('resumo-saidas').innerHTML = `Despesas Gerais<br><b style="font-size: 24px;">R$ ${saidasTotais.toFixed(2)}</b>`;
         
         let painelLucro = document.getElementById('painel-lucro');
         painelLucro.innerText = `Lucro Líquido: R$ ${lucroLiquido.toFixed(2)}`;
@@ -1188,6 +1273,93 @@
             painelLucro.style.color = '#991b1b';
             painelLucro.style.borderColor = '#fecaca';
         }
+
+        // 1. Atualizar Ranking Top 5
+        let rankingUL = document.getElementById('ranking-produtos');
+        rankingUL.innerHTML = '';
+        // Faz uma cópia do estoque e ordena do mais vendido pro menor
+        let estoqueOrdenado = [...estoque].sort((a, b) => (b.vendidos || 0) - (a.vendidos || 0));
+        let top5 = estoqueOrdenado.slice(0, 5); // Pega só os 5 primeiros
+        
+        if(top5.length === 0 || top5[0].vendidos === 0) {
+            rankingUL.innerHTML = '<li><span class="rank-nome">Nenhuma venda registrada ainda.</span></li>';
+        } else {
+            top5.forEach((prod, index) => {
+                if(prod.vendidos > 0) {
+                    rankingUL.innerHTML += `<li><span class="rank-nome">${index + 1}º ${prod.nome}</span> <span class="rank-qtd">${Number(prod.vendidos.toFixed(3))} unid.</span></li>`;
+                }
+            });
+        }
+
+        // 2. Atualizar Gráfico Pizza
+        renderizarGraficoPagamentos(pagDinheiro, pagPix, pagCartao);
+
+        // 3. Atualizar Barra de Saúde (Fiados)
+        let totalFiadosPendentes = 0;
+        fiados.forEach(f => totalFiadosPendentes += f.total);
+        
+        let healthBar = document.getElementById('fiado-health-bar');
+        let healthText = document.getElementById('fiado-health-text');
+        
+        if (totalEntradas > 0) {
+            let porcentagemFiado = (totalFiadosPendentes / (totalEntradas + totalFiadosPendentes)) * 100;
+            healthBar.style.width = `${Math.min(porcentagemFiado, 100)}%`;
+            healthText.innerText = `R$ ${totalFiadosPendentes.toFixed(2)} pendentes (${porcentagemFiado.toFixed(1)}% do faturamento)`;
+            
+            // Muda cor se a dívida na rua for mais de 30% do que entra
+            if(porcentagemFiado > 30) {
+                healthBar.classList.add('health-bar-danger');
+            } else {
+                healthBar.classList.remove('health-bar-danger');
+            }
+        } else {
+            healthBar.style.width = '0%';
+            healthText.innerText = `R$ ${totalFiadosPendentes.toFixed(2)} pendentes na rua.`;
+        }
+    }
+
+    function renderizarGraficoPagamentos(dinheiro, pix, cartao) {
+        let canvas = document.getElementById('graficoPagamentos');
+        if(!canvas) return;
+        let ctx = canvas.getContext('2d');
+        
+        if (graficoPagamentosInstancia) {
+            graficoPagamentosInstancia.destroy();
+        }
+
+        // Só renderiza se tiver algum valor
+        if(dinheiro === 0 && pix === 0 && cartao === 0) {
+            // Se tudo for zero, desenha um cinza
+            graficoPagamentosInstancia = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sem vendas'],
+                    datasets: [{ data: [1], backgroundColor: ['#e2e8f0'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+            return;
+        }
+
+        graficoPagamentosInstancia = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Dinheiro', 'PIX', 'Cartão'],
+                datasets: [{
+                    data: [dinheiro, pix, cartao],
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { font: { family: 'Nunito', weight: 'bold' } } }
+                }
+            }
+        });
     }
 
     // ==========================================
@@ -1419,71 +1591,6 @@
         if (confirm(`Tem certeza que deseja apagar o cliente "${fiados[index].nome}" e todo o seu histórico?`)) {
             fiados.splice(index, 1);
             document.getElementById('detalhes-fiado').style.display = 'none';
-            salvarNoFirebase();
-        }
-    }
-    
-    // ==========================================
-    // INÍCIO DOS EVENTOS DE USUÁRIOS
-    // ==========================================
-    function atualizarUsuariosUI() {
-        let tbody = document.getElementById('tabela-usuarios');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        
-        usuarios.forEach((u, index) => {
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong style="color: var(--dark); font-size: 16px;">${u.nome}</strong></td>
-                <td style="color: var(--gray); font-family: monospace; font-size: 15px; font-weight: 700;">${u.senha}</td>
-                <td>
-                    <button class="btn-delete" onclick="excluirUsuario(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar Acesso</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-        
-        let painelDisplay = document.getElementById('total-usuarios-display');
-        if (painelDisplay) painelDisplay.innerHTML = `Total da Equipe<br><b style="font-size: 26px;">${usuarios.length}</b>`;
-    }
-
-    function cadastrarUsuario() {
-        let nome = document.getElementById('novo-usuario-nome').value.trim();
-        let senha = document.getElementById('novo-usuario-senha').value.trim();
-
-        if (!nome || !senha) {
-            alert('Preencha o nome e a senha do novo usuário!');
-            return;
-        }
-
-        let existe = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
-        if (existe) {
-            alert('Já existe um usuário cadastrado com esse exato nome!');
-            return;
-        }
-
-        usuarios.push({ nome: nome, senha: senha });
-        document.getElementById('novo-usuario-nome').value = '';
-        document.getElementById('novo-usuario-senha').value = '';
-        
-        salvarNoFirebase();
-        document.getElementById('novo-usuario-nome').focus();
-        alert(`Usuário ${nome} criado com sucesso!`);
-    }
-
-    function excluirUsuario(index) {
-        if (usuarios.length <= 1) {
-            alert("Você não pode apagar o único usuário do sistema, senão não conseguirá mais entrar na loja!");
-            return;
-        }
-        
-        if (usuarios[index].nome === usuarioLogado) {
-            alert("Segurança: Você não pode excluir o seu próprio perfil enquanto está logado com ele!");
-            return;
-        }
-
-        if (confirm(`Tem certeza que deseja apagar o acesso de "${usuarios[index].nome}"?\nEle não conseguirá mais entrar no sistema.`)) {
-            usuarios.splice(index, 1);
             salvarNoFirebase();
         }
     }
