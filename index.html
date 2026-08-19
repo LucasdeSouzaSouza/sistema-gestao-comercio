@@ -527,7 +527,7 @@
 
 <script>
     // ==========================================
-    // INICIALIZAÇÃO DO FIREBASE (NUVEM)
+    // INICIALIZAÇÃO DO FIREBASE E VARIÁVEIS
     // ==========================================
     const firebaseConfig = {
         apiKey: "AIzaSyDZ2XsFMp2GPIvY3LiTJWr9cxsgkrmrKGQ",
@@ -540,21 +540,26 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // ==========================================
-    // VARIÁVEIS DO SISTEMA
-    // ==========================================
     let caixa = [];
     let estoque = [];
     let fiados = [];
     let despesas = [];
     let cofre = []; 
-    let usuarios = []; 
+    // INICIALIZANDO OS USUÁRIOS NA MEMÓRIA PARA CARREGAR INSTANTANEAMENTE
+    let usuarios = [
+        { nome: "Lucas", senha: "123456" },
+        { nome: "Luana", senha: "luana123" },
+        { nome: "Raimundo", senha: "raimundo123" }
+    ]; 
     
     let totalVendaAtual = 0; 
     let usuarioLogado = ""; 
-    
-    // Deixa apenas o dia de HOJE aberto na sanfona da aba Caixa por padrão
     let diasAbertosCaixa = new Set([new Date().toLocaleDateString('pt-BR')]);
+
+    // PREENCHE A TELA DE LOGIN ASSIM QUE O CÓDIGO É LIDO (SEM ESPERAR A INTERNET)
+    window.onload = () => {
+        atualizarDropdownLogin();
+    };
 
     // ==========================================
     // ESCUTAR BANCO DE DADOS E RESGATAR LOCAIS
@@ -573,22 +578,7 @@
             if (dados.usuarios && dados.usuarios.length > 0) {
                 usuarios = dados.usuarios;
             } else {
-                usuarios = [
-                    { nome: "Lucas", senha: "123456" },
-                    { nome: "Luana", senha: "luana123" },
-                    { nome: "Raimundo", senha: "raimundo123" }
-                ];
                 precisaSalvarNuvem = true; 
-            }
-            
-            let localEstoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
-            if (estoque.length === 0 && localEstoque.length > 0) {
-                caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
-                estoque = localEstoque;
-                fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
-                despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
-                cofre = JSON.parse(localStorage.getItem('dadosCofre')) || []; 
-                precisaSalvarNuvem = true;
             }
         } else {
             caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
@@ -596,11 +586,6 @@
             fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
             cofre = JSON.parse(localStorage.getItem('dadosCofre')) || [];
-            usuarios = [
-                { nome: "Lucas", senha: "123456" },
-                { nome: "Luana", senha: "luana123" },
-                { nome: "Raimundo", senha: "raimundo123" }
-            ];
             precisaSalvarNuvem = true;
         }
 
@@ -612,7 +597,7 @@
         atualizarFiadosUI();
         atualizarUsuariosUI();
         atualizarCofreUI(); 
-        atualizarDropdownLogin();
+        atualizarDropdownLogin(); // Atualiza de novo caso tenha vindo novos da nuvem
     });
 
     function salvarNoFirebase() {
@@ -633,6 +618,8 @@
     // ==========================================
     function atualizarDropdownLogin() {
         let select = document.getElementById('input-usuario');
+        if(!select) return;
+        
         let valorAtual = select.value;
         select.innerHTML = '';
         usuarios.forEach(u => { select.innerHTML += `<option value="${u.nome}">${u.nome}</option>`; });
@@ -685,7 +672,7 @@
     }
 
     // ==========================================
-    // GESTÃO DO COFRE (NOTAS) 
+    // GESTÃO DO COFRE (NOTAS)
     // ==========================================
     function atualizarCofreUI() {
         let tbody = document.getElementById('tabela-cofre');
@@ -1432,6 +1419,71 @@
         if (confirm(`Tem certeza que deseja apagar o cliente "${fiados[index].nome}" e todo o seu histórico?`)) {
             fiados.splice(index, 1);
             document.getElementById('detalhes-fiado').style.display = 'none';
+            salvarNoFirebase();
+        }
+    }
+    
+    // ==========================================
+    // INÍCIO DOS EVENTOS DE USUÁRIOS
+    // ==========================================
+    function atualizarUsuariosUI() {
+        let tbody = document.getElementById('tabela-usuarios');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        usuarios.forEach((u, index) => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong style="color: var(--dark); font-size: 16px;">${u.nome}</strong></td>
+                <td style="color: var(--gray); font-family: monospace; font-size: 15px; font-weight: 700;">${u.senha}</td>
+                <td>
+                    <button class="btn-delete" onclick="excluirUsuario(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar Acesso</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        let painelDisplay = document.getElementById('total-usuarios-display');
+        if (painelDisplay) painelDisplay.innerHTML = `Total da Equipe<br><b style="font-size: 26px;">${usuarios.length}</b>`;
+    }
+
+    function cadastrarUsuario() {
+        let nome = document.getElementById('novo-usuario-nome').value.trim();
+        let senha = document.getElementById('novo-usuario-senha').value.trim();
+
+        if (!nome || !senha) {
+            alert('Preencha o nome e a senha do novo usuário!');
+            return;
+        }
+
+        let existe = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
+        if (existe) {
+            alert('Já existe um usuário cadastrado com esse exato nome!');
+            return;
+        }
+
+        usuarios.push({ nome: nome, senha: senha });
+        document.getElementById('novo-usuario-nome').value = '';
+        document.getElementById('novo-usuario-senha').value = '';
+        
+        salvarNoFirebase();
+        document.getElementById('novo-usuario-nome').focus();
+        alert(`Usuário ${nome} criado com sucesso!`);
+    }
+
+    function excluirUsuario(index) {
+        if (usuarios.length <= 1) {
+            alert("Você não pode apagar o único usuário do sistema, senão não conseguirá mais entrar na loja!");
+            return;
+        }
+        
+        if (usuarios[index].nome === usuarioLogado) {
+            alert("Segurança: Você não pode excluir o seu próprio perfil enquanto está logado com ele!");
+            return;
+        }
+
+        if (confirm(`Tem certeza que deseja apagar o acesso de "${usuarios[index].nome}"?\nEle não conseguirá mais entrar no sistema.`)) {
+            usuarios.splice(index, 1);
             salvarNoFirebase();
         }
     }
