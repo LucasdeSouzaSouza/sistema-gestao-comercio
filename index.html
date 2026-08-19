@@ -6,7 +6,7 @@
     <title>Mercearia Rsouza</title>
     
     <!-- CONFIGURAÇÕES DE APLICATIVO (PWA) -->
-    <meta name="theme-color" content="#0f2027">
+    <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MRsouza">
@@ -14,7 +14,7 @@
     <link rel="manifest" id="manifest-link">
 
     <!-- Importação de Fonte Moderna do Google -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     
     <!-- SDKS DO FIREBASE (NUVEM) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -22,18 +22,24 @@
 
     <style>
         /* ========================================== */
-        /* VARIÁVEIS DE CORES E ESTILO GLOBAL */
+        /* VARIÁVEIS DE CORES E ESTILO GLOBAL (MODERNO) */
         /* ========================================== */
         :root {
-            --primary: #2563eb;      
+            --primary: #4f46e5;      /* Azul Indigo Moderno */
+            --primary-hover: #4338ca;
             --success: #10b981;      
+            --success-hover: #059669;
             --danger: #ef4444;       
+            --danger-hover: #dc2626;
             --warning: #f59e0b;      
             --dark: #1e293b;         
-            --gray: #64748b;         
-            --bg-body: #f4f7f6;      
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --bg-body: #f3f4f6;      
             --bg-card: #ffffff;      
             --border: #e2e8f0;       
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
         }
 
         body {
@@ -55,34 +61,33 @@
         /* ========================================== */
         #tela-login {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(135deg, #1e1b4b, #4338ca, #312e81);
             display: flex; align-items: center; justify-content: center; z-index: 9999;
         }
         .login-box {
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            padding: 40px; border-radius: 16px; text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 90%; max-width: 340px;
-            animation: fadeInDown 0.5s ease;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+            padding: 40px; border-radius: 24px; text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); width: 90%; max-width: 360px;
+            animation: fadeInDown 0.6s ease cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .login-box h2 { margin-top: 0; color: var(--dark); margin-bottom: 5px; font-size: 24px; font-weight: 800; }
-        .login-box p { color: var(--gray); margin-bottom: 20px; font-size: 15px; }
+        .login-box h2 { margin-top: 0; color: var(--dark); margin-bottom: 5px; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;}
+        .login-box p { color: var(--gray); margin-bottom: 25px; font-size: 15px; font-weight: 500;}
         
         .login-box select, .login-box input { 
-            width: 85%; margin-bottom: 15px; padding: 14px; 
-            border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; 
-            text-align: center; font-family: inherit; color: var(--dark);
-            transition: all 0.3s; 
+            width: 85%; margin-bottom: 15px; padding: 16px; 
+            border: 2px solid transparent; background: #f1f5f9; border-radius: 12px; font-size: 16px; 
+            text-align: center; font-family: inherit; color: var(--dark); font-weight: 600;
+            transition: all 0.3s ease; 
         }
-        .login-box select { cursor: pointer; }
-        .login-box select:focus, .login-box input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+        .login-box select:focus, .login-box input:focus { background: #fff; border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15); }
         
         .login-box button { 
-            width: 100%; padding: 14px; background: var(--primary); color: white; 
-            border: none; border-radius: 10px; cursor: pointer; font-size: 16px; 
-            font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px;
-            transition: all 0.3s; 
+            width: 100%; padding: 16px; background: var(--primary); color: white; 
+            border: none; border-radius: 12px; cursor: pointer; font-size: 16px; 
+            font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px;
+            transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
         }
-        .login-box button:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4); }
+        .login-box button:hover { background: var(--primary-hover); transform: translateY(-3px); box-shadow: 0 15px 20px -3px rgba(79, 70, 229, 0.4); }
 
         #sistema-principal { display: none; }
 
@@ -90,102 +95,122 @@
         /* CONTAINER PRINCIPAL E CABEÇALHO */
         /* ========================================== */
         .container {
-            max-width: 1000px; margin: 0 auto; background: var(--bg-card);
-            padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            max-width: 1050px; margin: 0 auto; background: var(--bg-card);
+            padding: 30px; border-radius: 24px; box-shadow: var(--shadow-lg);
         }
-        .header-title { text-align: center; color: var(--dark); font-weight: 800; font-size: 30px; margin-bottom: 5px; }
-        .header-subtitle { text-align: center; color: var(--success); margin-bottom: 25px; font-size: 14px; font-weight: 800; }
+        .header-title { text-align: center; color: var(--dark); font-weight: 900; font-size: 32px; margin-bottom: 5px; letter-spacing: -1px;}
+        .header-subtitle { text-align: center; color: var(--gray); margin-bottom: 30px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .status-nuvem { color: var(--success); background: #d1fae5; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
         
         /* Botão de Sair */
         .btn-sair { 
-            background-color: var(--danger); color: white; border: none; padding: 4px 10px; 
-            border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; 
-            margin-left: 10px; vertical-align: middle; transition: all 0.2s ease; 
+            background-color: #fee2e2; color: var(--danger); border: 2px solid transparent; padding: 6px 12px; 
+            border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; 
+            transition: all 0.2s ease; 
         }
-        .btn-sair:hover { background-color: #b91c1c; transform: scale(0.95); }
+        .btn-sair:hover { background-color: var(--danger); color: white; transform: scale(0.95); }
 
         /* ========================================== */
         /* ABAS DE NAVEGAÇÃO */
         /* ========================================== */
-        .tabs { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; background: #f8fafc; padding: 8px; border-radius: 14px; border: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 12px 5px; cursor: pointer; background: transparent; border: none; font-size: 14px; font-weight: 800; color: var(--gray); border-radius: 10px; transition: all 0.3s ease; white-space: nowrap; }
-        .tab-btn.active { background: #ffffff; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; background: #f8fafc; padding: 10px; border-radius: 18px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 14px 8px; cursor: pointer; background: transparent; border: none; font-size: 14px; font-weight: 800; color: var(--gray-light); border-radius: 12px; transition: all 0.3s ease; white-space: nowrap; }
+        .tab-btn:hover { color: var(--dark); }
+        .tab-btn.active { background: #ffffff; color: var(--primary); box-shadow: var(--shadow-sm); }
 
         .section { display: none; animation: fadeIn 0.4s ease forwards; }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ========================================== */
         /* FORMULÁRIOS E INPUTS */
         /* ========================================== */
-        .form-group { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid var(--border); }
-        input, select, textarea { padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; flex: 1; min-width: 140px; font-size: 15px; font-family: inherit; color: var(--dark); transition: all 0.3s; }
-        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        .form-group { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; flex-wrap: wrap; background: #f8fafc; padding: 20px; border-radius: 20px; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
+        input, select, textarea { padding: 14px 16px; border: 2px solid var(--border); border-radius: 12px; flex: 1; min-width: 140px; font-size: 15px; font-weight: 600; font-family: inherit; color: var(--dark); transition: all 0.3s ease; background: #fff;}
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15); }
+        input::placeholder { color: var(--gray-light); font-weight: 500;}
         
-        button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 800; color: white; font-size: 15px; font-family: inherit; transition: all 0.2s ease; }
-        button:active { transform: scale(0.98); }
+        button { padding: 14px 24px; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; color: white; font-size: 15px; font-family: inherit; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px;}
+        button:active { transform: scale(0.97); }
         
-        .btn-add { background-color: var(--success); }
-        .btn-remove { background-color: var(--danger); }
-        .btn-edit { background-color: var(--warning); color: #fff; }
+        .btn-add { background-color: var(--success); box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
+        .btn-add:hover { background-color: var(--success-hover); }
+        
+        .btn-remove { background-color: var(--danger); box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);}
+        .btn-remove:hover { background-color: var(--danger-hover); }
+        
+        .btn-edit { background-color: var(--warning); color: #fff; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.2);}
+        .btn-edit:hover { background-color: #d97706; }
+        
         .btn-delete { background-color: var(--gray); }
-        .btn-dark { background-color: var(--dark); color: #fff; width: 100%; font-size: 18px; padding: 15px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(30, 41, 59, 0.3); }
+        .btn-delete:hover { background-color: #475569; }
         
-        .btn-venda { background: linear-gradient(135deg, #10b981, #059669); font-size: 20px; width: 100%; padding: 18px; margin-top: 10px; border-radius: 14px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .btn-dark { background-color: var(--dark); color: #fff; width: 100%; font-size: 18px; padding: 18px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(30, 41, 59, 0.2); border-radius: 16px;}
+        .btn-dark:hover { background-color: #0f172a; }
+        
+        .btn-venda { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); font-size: 20px; width: 100%; padding: 20px; margin-top: 10px; border-radius: 16px; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); text-transform: uppercase; letter-spacing: 1px; font-weight: 900;}
+        .btn-venda:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4); }
 
         /* ========================================== */
         /* TABELAS E SCROLL PARA CELULAR */
         /* ========================================== */
-        .table-container { overflow-x: auto; border-radius: 12px; box-shadow: 0 0 0 1px var(--border); background: #fff; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        th, td { padding: 15px 18px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
-        th { background-color: #f8fafc; color: var(--gray); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .table-container { overflow-x: auto; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); background: #fff; margin-top: 15px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 500px; }
+        th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border); font-size: 15px; }
+        th { background-color: #f8fafc; color: var(--gray); text-transform: uppercase; font-size: 12px; letter-spacing: 1px; font-weight: 800; border-bottom: 2px solid var(--border);}
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f1f5f9; }
         .entrada { color: var(--success); font-weight: 800; }
         .saida { color: var(--danger); font-weight: 800; }
-        .linha-divisor-data td { background-color: #f1f5f9; font-weight: 800; color: #334155; text-transform: uppercase; border-top: 2px solid #cbd5e1; }
+        .linha-divisor-data td { background-color: #f8fafc; font-weight: 800; color: #334155; text-transform: uppercase; border-top: 3px solid var(--border); font-size: 14px;}
 
         /* ========================================== */
         /* CARDS DE RESUMO */
         /* ========================================== */
-        .resumo { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .resumo span { flex: 1; background: #fff; padding: 15px 10px; border-radius: 14px; font-size: 15px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; }
-        .resumo span.entrada { border-bottom: 4px solid var(--success); color: var(--success); }
-        .resumo span.saida { border-bottom: 4px solid var(--danger); color: var(--danger); }
-        #saldo-total { border-bottom: 4px solid var(--primary); }
+        .resumo { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .resumo span { flex: 1; background: #fff; padding: 20px 15px; border-radius: 18px; font-size: 16px; font-weight: 800; box-shadow: var(--shadow-sm); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; }
         
-        #venda-total-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 4px solid var(--danger); }
-        #venda-total { color: var(--danger); font-size: 28px; border: none; padding: 0; box-shadow: none; display: inline;}
+        .resumo span.entrada { border-bottom: 5px solid var(--success); color: var(--success); }
+        .resumo span.saida { border-bottom: 5px solid var(--danger); color: var(--danger); }
+        .resumo span.cofre-card { border-bottom: 5px solid var(--primary); color: var(--primary); }
+        #saldo-total { border-bottom: 5px solid var(--dark); color: var(--dark); }
         
-        #venda-troco-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 4px solid var(--success); }
-        #venda-troco { color: var(--success); font-size: 28px; border: none; padding: 0; box-shadow: none; display: inline;}
+        #venda-total-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 5px solid var(--danger); }
+        #venda-total { color: var(--danger); font-size: 32px; border: none; padding: 0; box-shadow: none; display: inline; font-weight: 900;}
         
-        .painel-destaque { background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #064e3b; padding: 25px; border-radius: 16px; text-align: center; font-size: 26px; margin-bottom: 20px; border: 2px solid #a7f3d0; font-weight: 800; }
+        #venda-troco-container { flex-direction: row; font-size: 22px; color: var(--dark); border-bottom: 5px solid var(--success); background: #f0fdf4;}
+        #venda-troco { color: var(--success); font-size: 32px; border: none; padding: 0; box-shadow: none; display: inline; font-weight: 900;}
+        
+        .painel-destaque { background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #065f46; padding: 30px; border-radius: 20px; text-align: center; font-size: 30px; margin-bottom: 25px; border: 2px solid #a7f3d0; font-weight: 900; box-shadow: var(--shadow-sm);}
 
         /* ========================================== */
         /* MODAL DE FECHAMENTO DE TURNO */
         /* ========================================== */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 10000;
-            backdrop-filter: blur(5px);
+            background: rgba(15, 23, 42, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000;
+            backdrop-filter: blur(8px);
         }
         .modal-content {
-            background: #fff; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2); animation: fadeInDown 0.3s;
+            background: #fff; padding: 35px; border-radius: 24px; width: 90%; max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); animation: fadeInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .modal-content h3 { margin-top: 0; color: var(--dark); text-align: center; font-size: 24px; font-weight: 800; }
-        .turno-linha { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; font-weight: 700; color: var(--gray); }
-        .turno-linha b { color: var(--dark); }
+        .modal-content h3 { margin-top: 0; color: var(--dark); text-align: center; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;}
+        .turno-linha { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 16px; font-weight: 700; color: var(--gray); align-items: center;}
+        .turno-linha b { color: var(--dark); font-size: 18px;}
         
-        #detalhes-fiado { margin-top: 25px; display: none; background: #f8fafc; padding: 20px; border: 1px solid #cbd5e1; border-radius: 16px; }
+        #detalhes-fiado { margin-top: 30px; display: none; background: #fff; padding: 25px; border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-lg);}
         
         /* Tag de usuário no cabeçalho */
         #tag-usuario-logado {
             display: inline-block; background-color: var(--primary); color: white;
-            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;
-            margin-left: 10px; vertical-align: middle;
+            padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 800;
+            margin-left: 10px; vertical-align: middle; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
         }
+
+        /* Destaque para a aba Cofre */
+        .alerta-cofre { text-align: center; color: var(--warning); font-weight: 800; font-size: 14px; margin-top: -15px; margin-bottom: 20px; background: #fffbeb; padding: 10px; border-radius: 12px; border: 1px solid #fde68a;}
     </style>
 </head>
 <body>
@@ -197,8 +222,8 @@
         "short_name": "MRsouza",
         "start_url": window.location.href,
         "display": "standalone",
-        "background_color": "#f4f7f6",
-        "theme_color": "#0f2027",
+        "background_color": "#f3f4f6",
+        "theme_color": "#4f46e5",
         "icons": [{
             "src": "https://cdn-icons-png.flaticon.com/512/3759/3759041.png",
             "sizes": "512x512",
@@ -220,7 +245,7 @@
         </select>
         
         <input type="password" id="input-senha" placeholder="Digite a senha" onkeypress="if(event.key === 'Enter') acessarSistema()">
-        <button onclick="acessarSistema()">Entrar no APP</button>
+        <button onclick="acessarSistema()">Acessar Sistema</button>
     </div>
 </div>
 
@@ -230,54 +255,55 @@
         
         <h1 class="header-title">🛒 Mercearia Rsouza</h1>
         <p class="header-subtitle">
-            🟢 App Online (Nuvem Ativa) 
+            <span class="status-nuvem">🟢 Sincronizado</span> 
             <span id="tag-usuario-logado"></span>
-            <button class="btn-sair" onclick="fazerLogout()" title="Sair do sistema">🚪 Sair</button>
+            <button class="btn-sair" onclick="fazerLogout()" title="Sair do sistema">Sair</button>
         </p>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 Vendas</button>
-            <button class="tab-btn" onclick="mudarAba('caixa')">💵 Caixa</button>
+            <button class="tab-btn" onclick="mudarAba('caixa')">💵 Caixa Dia</button>
+            <button class="tab-btn" onclick="mudarAba('cofre')">🏦 Cofre (Notas)</button>
             <button class="tab-btn" onclick="mudarAba('estoque')">📦 Estoque</button>
             <button class="tab-btn" onclick="mudarAba('fiados')">📓 Fiados</button>
             <button class="tab-btn" onclick="mudarAba('despesas')">💸 Despesas</button>
             <button class="tab-btn" onclick="mudarAba('lucro')">📊 Resumo</button>
-            <button class="tab-btn" onclick="mudarAba('usuarios')" style="color: var(--primary);">👥 Usuários</button>
+            <button class="tab-btn" onclick="mudarAba('usuarios')" style="color: var(--primary);">👥 Equipe</button>
         </div>
 
         <!-- SEÇÃO DE VENDAS -->
         <div id="vendas" class="section active">
             <div class="form-group">
                 <select id="venda-produto" onchange="resetarPDV()"></select>
-                <input type="number" id="venda-qtd" placeholder="Quantidade" step="any" min="0.001" oninput="calcularVenda()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
-                <input type="number" id="venda-valor-desejado" placeholder="Ou R$ Desejado" step="0.01" oninput="calcularPorValor()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
+                <input type="number" id="venda-qtd" placeholder="Qtd" step="any" min="0.001" oninput="calcularVenda()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
+                <input type="number" id="venda-valor-desejado" placeholder="Ou valor (R$)" step="0.01" oninput="calcularPorValor()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
                 
                 <select id="venda-pagamento" onkeypress="if(event.key === 'Enter') finalizarVenda()">
                     <option value="Dinheiro">Dinheiro</option>
                     <option value="PIX">PIX</option>
-                    <option value="Débito">Cartão de Débito</option>
-                    <option value="Crédito">Cartão de Crédito</option>
+                    <option value="Débito">Cartão Débito</option>
+                    <option value="Crédito">Cartão Crédito</option>
                 </select>
                 
                 <input type="number" id="venda-valor-recebido" placeholder="Valor Recebido (Para Troco)" step="0.01" oninput="calcularTroco()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
             </div>
 
             <div class="resumo">
-                <span id="venda-total-container">Total a Pagar: <b style="color: var(--danger);">R$ <span id="venda-total">0.00</span></b></span>
-                <span id="venda-troco-container">Troco a Devolver: <b style="color: var(--success);">R$ <span id="venda-troco">0.00</span></b></span>
+                <span id="venda-total-container">Total a Pagar<br><b style="color: var(--danger);">R$ <span id="venda-total">0.00</span></b></span>
+                <span id="venda-troco-container">Troco a Devolver<br><b style="color: var(--success);">R$ <span id="venda-troco">0.00</span></b></span>
             </div>
 
-            <button class="btn-venda" onclick="finalizarVenda()">💳 Finalizar Venda</button>
+            <button class="btn-venda" onclick="finalizarVenda()">Finalizar Venda 💳</button>
         </div>
 
-        <!-- SEÇÃO DE CAIXA -->
+        <!-- SEÇÃO DE CAIXA DO DIA -->
         <div id="caixa" class="section">
             <div class="resumo">
-                <span id="total-entradas" class="entrada">Entradas<br>R$ 0.00</span>
-                <span id="saldo-total">Saldo Final<br>R$ 0.00</span>
+                <span id="total-entradas" class="entrada">Entradas do Turno<br>R$ 0.00</span>
+                <span id="saldo-total">Total no Caixa<br>R$ 0.00</span>
             </div>
 
-            <button class="btn-dark" onclick="abrirFechamento()">🔒 Fechar Turno / Resumo do Dia</button>
+            <button class="btn-dark" onclick="abrirFechamento()">🔒 Fechar Turno / Calcular Gaveta</button>
 
             <div class="table-container">
                 <table>
@@ -295,12 +321,48 @@
             </div>
         </div>
 
+        <!-- NOVA SEÇÃO: COFRE (NOTAS DE PAPEL) -->
+        <div id="cofre" class="section">
+            <div class="alerta-cofre">⚠️ Controle exclusivo para Dinheiro em Espécie (Notas de Papel guardadas). Não contabiliza moedas.</div>
+            
+            <div class="resumo">
+                <span class="cofre-card">Total Guardado no Cofre<br><b style="font-size: 32px; color: var(--primary);">R$ <span id="saldo-cofre-display">0.00</span></b></span>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="desc-cofre" placeholder="Motivo (ex: Sangria do Caixa, Pagamento Fornecedor)" onkeypress="if(event.key === 'Enter') adicionarCofre()">
+                <select id="tipo-cofre" onkeypress="if(event.key === 'Enter') adicionarCofre()">
+                    <option value="entrada">Entrou Notas (+)</option>
+                    <option value="saida">Saiu Notas (-)</option>
+                </select>
+                <input type="number" id="valor-cofre" placeholder="Valor (R$)" step="0.01" onkeypress="if(event.key === 'Enter') adicionarCofre()">
+                
+                <button class="btn-add" onclick="adicionarCofre()">Registrar no Cofre</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Motivo / Movimentação</th>
+                            <th>Responsável</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-cofre"></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- SEÇÃO DE ESTOQUE -->
         <div id="estoque" class="section">
             <div class="form-group">
                 <input type="text" id="nome-produto" placeholder="Nome do Produto" onkeypress="if(event.key === 'Enter') cadastrarProduto()">
                 <input type="number" id="preco-produto" placeholder="Preço (R$)" step="0.01" onkeypress="if(event.key === 'Enter') cadastrarProduto()">
-                <button class="btn-add" onclick="cadastrarProduto()">+ Novo Produto</button>
+                <button class="btn-add" onclick="cadastrarProduto()">Novo Produto</button>
             </div>
 
             <div class="table-container">
@@ -322,7 +384,7 @@
         <!-- SEÇÃO DE FIADOS -->
         <div id="fiados" class="section">
             <div class="resumo">
-                <span style="border-bottom: 4px solid var(--danger); color: var(--danger);">Total na Rua (A Receber)<br><b>R$ <span id="total-fiados-rua" style="border: none; padding: 0; box-shadow: none; display: inline;">0.00</span></b></span>
+                <span style="border-bottom: 5px solid var(--danger); color: var(--danger);">Total na Rua (A Receber)<br><b style="font-size: 26px;">R$ <span id="total-fiados-rua" style="border: none; padding: 0; box-shadow: none; display: inline;">0.00</span></b></span>
             </div>
 
             <div class="form-group">
@@ -332,10 +394,10 @@
                 <select id="fiado-produto" onchange="calcularValorFiado()" onkeypress="if(event.key === 'Enter') registrarFiado()"></select>
 
                 <input type="number" id="fiado-qtd" placeholder="Qtd" step="any" style="flex: 0.5;" oninput="calcularValorFiado()" onkeypress="if(event.key === 'Enter') registrarFiado()">
-                <input type="number" id="fiado-valor" placeholder="Valor Total (R$)" step="0.01" oninput="calcularQtdFiadoPorValor()" onkeypress="if(event.key === 'Enter') registrarFiado()">
+                <input type="number" id="fiado-valor" placeholder="Valor (R$)" step="0.01" oninput="calcularQtdFiadoPorValor()" onkeypress="if(event.key === 'Enter') registrarFiado()">
                 
                 <select id="fiado-pagamento" onkeypress="if(event.key === 'Enter') registrarFiado()">
-                    <option value="A Prazo">A Prazo / Fiado</option>
+                    <option value="A Prazo">Fiado / A Prazo</option>
                     <option value="Promissória">Promissória</option>
                     <option value="Dinheiro">Dinheiro</option>
                     <option value="PIX">PIX</option>
@@ -351,7 +413,7 @@
                         <tr>
                             <th>Cliente</th>
                             <th>Total Devido</th>
-                            <th>Ações</th>
+                            <th>Ações Rápidas</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-fiados"></tbody>
@@ -364,7 +426,7 @@
         <!-- SEÇÃO DE DESPESAS -->
         <div id="despesas" class="section">
             <div class="resumo">
-                <span id="total-despesas-display" class="saida">Total de Despesas<br>R$ 0.00</span>
+                <span id="total-despesas-display" class="saida">Total de Despesas<br><b style="font-size: 26px;">R$ 0.00</b></span>
             </div>
             
             <div class="form-group">
@@ -373,11 +435,10 @@
                 <input type="date" id="data-despesa" title="Data da Compra/Pagamento" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 
                 <select id="despesa-pagamento" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
-                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Dinheiro">Dinheiro da Gaveta</option>
                     <option value="PIX">PIX</option>
-                    <option value="Débito">Cartão de Débito</option>
-                    <option value="Crédito">Cartão de Crédito</option>
-                    <option value="Boleto">Boleto / Transf.</option>
+                    <option value="Débito">Cartão</option>
+                    <option value="Cofre">Dinheiro do Cofre</option>
                 </select>
 
                 <button class="btn-add" onclick="adicionarDespesa()">Registrar Despesa</button>
@@ -400,9 +461,9 @@
 
         <!-- SEÇÃO DE LUCRO MENSAL -->
         <div id="lucro" class="section">
-            <div class="form-group" style="justify-content: center;">
-                <label style="font-weight: 800; color: var(--dark); font-size: 18px;">📅 Filtrar Mês: </label>
-                <select id="filtro-mes" onchange="calcularLucroMensal()" style="max-width: 250px; font-weight: bold;"></select>
+            <div class="form-group" style="justify-content: center; background: #fff; border: none; box-shadow: none;">
+                <label style="font-weight: 800; color: var(--dark); font-size: 18px;">📅 Analisar Mês: </label>
+                <select id="filtro-mes" onchange="calcularLucroMensal()" style="max-width: 250px; font-weight: 800; border-color: var(--primary); color: var(--primary);"></select>
             </div>
 
             <div class="painel-destaque" id="painel-lucro">
@@ -410,28 +471,28 @@
             </div>
 
             <div class="resumo">
-                <span class="entrada" id="resumo-entradas">Total Entradas<br>R$ 0.00</span>
-                <span class="saida" id="resumo-saidas">Despesas + Saídas<br>R$ 0.00</span>
+                <span class="entrada" id="resumo-entradas">Total Entradas<br><b style="font-size: 24px;">R$ 0.00</b></span>
+                <span class="saida" id="resumo-saidas">Despesas + Saídas<br><b style="font-size: 24px;">R$ 0.00</b></span>
             </div>
         </div>
 
         <!-- SEÇÃO DE GERENCIAMENTO DE USUÁRIOS -->
         <div id="usuarios" class="section">
             <div class="resumo">
-                <span id="total-usuarios-display" style="border-bottom: 4px solid var(--primary); color: var(--primary);">Total de Usuários<br>0</span>
+                <span id="total-usuarios-display" style="border-bottom: 5px solid var(--primary); color: var(--primary);">Total de Usuários<br><b style="font-size: 26px;">0</b></span>
             </div>
             
             <div class="form-group">
-                <input type="text" id="novo-usuario-nome" placeholder="Nome do Funcionário/Usuário" onkeypress="if(event.key === 'Enter') cadastrarUsuario()">
+                <input type="text" id="novo-usuario-nome" placeholder="Nome do Usuário" onkeypress="if(event.key === 'Enter') cadastrarUsuario()">
                 <input type="text" id="novo-usuario-senha" placeholder="Senha de Acesso" onkeypress="if(event.key === 'Enter') cadastrarUsuario()">
-                <button class="btn-add" onclick="cadastrarUsuario()">+ Adicionar Usuário</button>
+                <button class="btn-add" onclick="cadastrarUsuario()">Criar Acesso</button>
             </div>
 
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Nome de Acesso</th>
+                            <th>Nome do Colaborador</th>
                             <th>Senha Cadastrada</th>
                             <th>Ações</th>
                         </tr>
@@ -448,12 +509,12 @@
 <div id="modal-turno" class="modal-overlay">
     <div class="modal-content">
         <h3>📊 Resumo do Turno</h3>
-        <p style="text-align: center; color: var(--gray); font-size: 14px; margin-top: -5px; margin-bottom: 20px;">Vendas desde o último fechamento</p>
+        <p style="text-align: center; color: var(--gray-light); font-size: 14px; margin-top: -5px; margin-bottom: 25px; font-weight: 600;">Valores desde o último fechamento</p>
         
         <div id="conteudo-turno"></div>
         
-        <button class="btn-venda" onclick="confirmarFechamento()" style="margin-top: 25px; padding: 15px; font-size: 18px;">🔒 Confirmar Fechamento</button>
-        <button class="btn-delete" onclick="document.getElementById('modal-turno').style.display='none'" style="width: 100%; margin-top: 10px; padding: 15px;">Cancelar</button>
+        <button class="btn-venda" onclick="confirmarFechamento()" style="margin-top: 30px; font-size: 18px;">🔒 Confirmar Fechamento</button>
+        <button class="btn-sair" onclick="document.getElementById('modal-turno').style.display='none'" style="width: 100%; margin-top: 15px; padding: 15px; border-radius: 16px; border: none; font-size: 16px;">Cancelar</button>
     </div>
 </div>
 
@@ -479,6 +540,7 @@
     let estoque = [];
     let fiados = [];
     let despesas = [];
+    let cofre = []; // <-- NOVA VARIÁVEL DO COFRE
     let usuarios = []; 
     
     let totalVendaAtual = 0; 
@@ -496,6 +558,7 @@
             estoque = dados.estoque || [];
             fiados = dados.fiados || [];
             despesas = dados.despesas || [];
+            cofre = dados.cofre || []; // Puxa dados do cofre
             
             if (dados.usuarios && dados.usuarios.length > 0) {
                 usuarios = dados.usuarios;
@@ -514,6 +577,8 @@
                 estoque = localEstoque;
                 fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
                 despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
+                // Se tiver cofre no local storage de um teste anterior, pega também
+                cofre = JSON.parse(localStorage.getItem('dadosCofre')) || []; 
                 precisaSalvarNuvem = true;
             }
         } else {
@@ -521,6 +586,7 @@
             estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
+            cofre = JSON.parse(localStorage.getItem('dadosCofre')) || [];
             usuarios = [
                 { nome: "Lucas", senha: "123456" },
                 { nome: "Luana", senha: "luana123" },
@@ -536,6 +602,7 @@
         atualizarDespesasUI();
         atualizarFiadosUI();
         atualizarUsuariosUI();
+        atualizarCofreUI(); // Nova UI do Cofre
         atualizarDropdownLogin();
     });
 
@@ -545,6 +612,7 @@
             estoque: estoque,
             fiados: fiados,
             despesas: despesas,
+            cofre: cofre, // Salva o cofre
             usuarios: usuarios
         }).catch((error) => {
             console.error("Erro ao salvar:", error);
@@ -552,30 +620,24 @@
     }
 
     // ==========================================
-    // SISTEMA DE SEGURANÇA (LOGIN MULTI-USUÁRIOS E SAÍDA)
+    // SISTEMA DE SEGURANÇA E NAVEGAÇÃO
     // ==========================================
     function atualizarDropdownLogin() {
         let select = document.getElementById('input-usuario');
         let valorAtual = select.value;
         select.innerHTML = '';
-        
-        usuarios.forEach(u => {
-            select.innerHTML += `<option value="${u.nome}">${u.nome}</option>`;
-        });
-        
+        usuarios.forEach(u => { select.innerHTML += `<option value="${u.nome}">${u.nome}</option>`; });
         if (valorAtual) select.value = valorAtual;
     }
 
     function acessarSistema() {
         let nomeSelecionado = document.getElementById('input-usuario').value;
         let senhaDigitada = document.getElementById('input-senha').value;
-        
         let perfilUsuario = usuarios.find(u => u.nome === nomeSelecionado);
 
         if (perfilUsuario && senhaDigitada === perfilUsuario.senha) {
             usuarioLogado = perfilUsuario.nome;
             document.getElementById('tag-usuario-logado').innerText = "👤 " + usuarioLogado;
-            
             document.getElementById('tela-login').style.display = 'none';
             document.getElementById('sistema-principal').style.display = 'block';
             document.getElementById('venda-produto').focus();
@@ -591,87 +653,16 @@
             usuarioLogado = "";
             document.getElementById('tag-usuario-logado').innerText = "";
             document.getElementById('input-senha').value = ""; 
-            
             document.getElementById('sistema-principal').style.display = 'none';
             document.getElementById('tela-login').style.display = 'flex';
-            
             mudarAba('vendas');
             document.getElementById('input-usuario').focus();
         }
     }
 
-    // ==========================================
-    // GERENCIAMENTO DE USUÁRIOS
-    // ==========================================
-    function atualizarUsuariosUI() {
-        let tbody = document.getElementById('tabela-usuarios');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        
-        usuarios.forEach((u, index) => {
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong style="color: var(--dark); font-size: 16px;">${u.nome}</strong></td>
-                <td style="color: var(--gray); font-family: monospace; font-size: 15px;">${u.senha}</td>
-                <td>
-                    <button class="btn-delete" onclick="excluirUsuario(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-        
-        let painelDisplay = document.getElementById('total-usuarios-display');
-        if (painelDisplay) painelDisplay.innerHTML = `Total de Usuários<br>${usuarios.length}`;
-    }
-
-    function cadastrarUsuario() {
-        let nome = document.getElementById('novo-usuario-nome').value.trim();
-        let senha = document.getElementById('novo-usuario-senha').value.trim();
-
-        if (!nome || !senha) {
-            alert('Preencha o nome e a senha do novo usuário!');
-            return;
-        }
-
-        let existe = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
-        if (existe) {
-            alert('Já existe um usuário cadastrado com esse exato nome!');
-            return;
-        }
-
-        usuarios.push({ nome: nome, senha: senha });
-        document.getElementById('novo-usuario-nome').value = '';
-        document.getElementById('novo-usuario-senha').value = '';
-        
-        salvarNoFirebase();
-        document.getElementById('novo-usuario-nome').focus();
-        alert(`Usuário ${nome} criado com sucesso!`);
-    }
-
-    function excluirUsuario(index) {
-        if (usuarios.length <= 1) {
-            alert("Você não pode apagar o único usuário do sistema, senão não conseguirá mais entrar na loja!");
-            return;
-        }
-        
-        if (usuarios[index].nome === usuarioLogado) {
-            alert("Segurança: Você não pode excluir o seu próprio perfil enquanto está logado com ele!");
-            return;
-        }
-
-        if (confirm(`Tem certeza que deseja apagar o acesso de "${usuarios[index].nome}"?\nEle não conseguirá mais entrar no sistema.`)) {
-            usuarios.splice(index, 1);
-            salvarNoFirebase();
-        }
-    }
-
-    // ==========================================
-    // NAVEGAÇÃO E RECURSOS GERAIS
-    // ==========================================
     function mudarAba(aba) {
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        
         document.getElementById(aba).classList.add('active');
         event.target.classList.add('active');
         document.getElementById('detalhes-fiado').style.display = 'none';
@@ -681,8 +672,78 @@
         if(aba === 'fiados') document.getElementById('fiado-nome').focus();
         if(aba === 'despesas') document.getElementById('desc-despesa').focus();
         if(aba === 'usuarios') document.getElementById('novo-usuario-nome').focus();
+        if(aba === 'cofre') document.getElementById('desc-cofre').focus();
     }
 
+    // ==========================================
+    // GESTÃO DO COFRE (NOTAS) - NOVA FUNCIONALIDADE
+    // ==========================================
+    function atualizarCofreUI() {
+        let tbody = document.getElementById('tabela-cofre');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        let saldoCofre = 0;
+
+        cofre.forEach((item, index) => {
+            let tr = document.createElement('tr');
+            let dataCurta = item.data.split(',')[0];
+            let hora = item.data.includes(',') ? item.data.split(',')[1].trim() : "";
+            let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
+            let iconTipo = item.tipo === 'entrada' ? '📥 Entrou' : '📤 Saiu';
+            
+            if (item.tipo === 'entrada') saldoCofre += item.valor;
+            else saldoCofre -= item.valor;
+
+            tr.innerHTML = `
+                <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}<br><span style="font-size:12px">${hora}</span></td>
+                <td style="font-weight: 800; color: var(--dark);">${item.descricao}</td>
+                <td style="color: var(--gray); font-weight: 600;">👤 ${item.usuario}</td>
+                <td class="${classeCor}">${iconTipo}</td>
+                <td class="${classeCor}" style="font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
+                <td><button class="btn-delete" onclick="excluirCofre(${index})" style="padding: 6px 12px; font-size: 12px;">Desfazer</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('saldo-cofre-display').innerText = saldoCofre.toFixed(2);
+    }
+
+    function adicionarCofre() {
+        let desc = document.getElementById('desc-cofre').value.trim();
+        let tipo = document.getElementById('tipo-cofre').value;
+        let valor = parseFloat(document.getElementById('valor-cofre').value);
+
+        if (!desc || isNaN(valor) || valor <= 0) { 
+            alert('Preencha um motivo e um valor válido!'); return; 
+        }
+
+        let dataAtual = new Date().toLocaleString('pt-BR');
+        
+        cofre.push({ 
+            data: dataAtual, 
+            descricao: desc, 
+            tipo: tipo, 
+            valor: valor,
+            usuario: usuarioLogado
+        });
+        
+        document.getElementById('desc-cofre').value = '';
+        document.getElementById('valor-cofre').value = '';
+        
+        salvarNoFirebase();
+        document.getElementById('desc-cofre').focus();
+    }
+
+    function excluirCofre(index) {
+        if (confirm(`Atenção: Tem certeza que deseja apagar o registro "${cofre[index].descricao}" do cofre? Isso alterará o saldo de notas guardadas.`)) {
+            cofre.splice(index, 1);
+            salvarNoFirebase();
+        }
+    }
+
+    // ==========================================
+    // OUTRAS FUNÇÕES GERAIS E ATUALIZAÇÕES
+    // ==========================================
     function atualizarSelects() {
         let selectVenda = document.getElementById('venda-produto');
         let selectFiado = document.getElementById('fiado-produto');
@@ -829,8 +890,8 @@
             <div class="turno-linha"><span>📉 Saídas / Despesas:</span> <b style="color: var(--danger);">- R$ ${totalSaidas.toFixed(2)}</b></div>
             <div class="turno-linha"><span>📈 Faturamento Total:</span> <b style="color: var(--success);">R$ ${totalEntradas.toFixed(2)}</b></div>
             
-            <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
-            <div class="turno-linha" style="font-size: 18px; color: var(--dark);"><span>💰 Dinheiro na Gaveta:</span> <b style="color: var(--primary);">R$ ${saldoNaGaveta.toFixed(2)}</b></div>
+            <hr style="border: 0; border-top: 2px dashed var(--border); margin: 20px 0;">
+            <div class="turno-linha" style="font-size: 20px; color: var(--dark);"><span>💰 Deixe na Gaveta:</span> <b style="color: var(--primary); font-size: 24px;">R$ ${saldoNaGaveta.toFixed(2)}</b></div>
         `;
 
         document.getElementById('modal-turno').style.display = 'flex';
@@ -846,7 +907,7 @@
         });
         salvarNoFirebase();
         document.getElementById('modal-turno').style.display = 'none';
-        alert('Fechamento de turno registrado com sucesso!');
+        alert('Fechamento de turno registrado com sucesso! Boa folga.');
     }
 
     // ==========================================
@@ -864,10 +925,10 @@
 
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong style="color: var(--dark); font-size: 15px;">${produto.nome}</strong></td>
-                <td>R$ ${preco.toFixed(2)}</td>
-                <td style="color: var(--success); font-size: 16px; font-weight: 800;">${vendidosExibicao}</td>
-                <td style="color: var(--primary); font-weight: 800;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
+                <td><strong style="color: var(--dark); font-size: 16px;">${produto.nome}</strong></td>
+                <td style="font-weight: 700;">R$ ${preco.toFixed(2)}</td>
+                <td style="color: var(--success); font-size: 16px; font-weight: 900;">${vendidosExibicao}</td>
+                <td style="color: var(--primary); font-weight: 900; font-size: 16px;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
                 <td>
                     <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem" style="padding: 6px 12px; font-size: 12px;">Zerar</button>
                     <button class="btn-delete" onclick="excluirProduto(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
@@ -908,7 +969,7 @@
     }
 
     // ==========================================
-    // CONTROLE DE CAIXA
+    // CONTROLE DE CAIXA DO DIA
     // ==========================================
     function atualizarCaixaUI() {
         let tbody = document.getElementById('tabela-caixa');
@@ -945,23 +1006,22 @@
             else totalSaidas += item.valor;
 
             let exibeDataHora = hora !== "" ? hora : dataCurta;
-            
             let bgStyle = item.descricao.includes('🔒 FECHAMENTO DE TURNO REGISTRADO') ? 'background-color: #fffbeb;' : '';
 
             tr.innerHTML = `
-                <td style="color: var(--gray); font-weight: 600; ${bgStyle}">${exibeDataHora}</td>
-                <td style="font-weight: 600; color: var(--dark); ${bgStyle}">${item.descricao}</td>
+                <td style="color: var(--gray-light); font-weight: 700; ${bgStyle}">${exibeDataHora}</td>
+                <td style="font-weight: 800; color: var(--dark); ${bgStyle}">${item.descricao}</td>
                 <td class="${classeCor}" style="${bgStyle}">${item.tipo.toUpperCase()}</td>
-                <td class="${classeCor}" style="${bgStyle}">R$ ${item.valor.toFixed(2)}</td>
-                <td style="${bgStyle}"><button class="btn-delete" onclick="excluirCaixa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
+                <td class="${classeCor}" style="${bgStyle}; font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
+                <td style="${bgStyle}"><button class="btn-delete" onclick="excluirCaixa(${index})" style="padding: 6px 12px; font-size: 12px;">Desfazer</button></td>
             `;
             tbody.appendChild(tr);
         });
 
         let saldo = totalEntradas - totalSaidas;
-        document.getElementById('total-entradas').innerHTML = `Entradas<br>R$ ${totalEntradas.toFixed(2)}`;
-        document.getElementById('saldo-total').innerHTML = `Saldo Final<br>R$ ${saldo.toFixed(2)}`;
-        document.getElementById('saldo-total').style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
+        document.getElementById('total-entradas').innerHTML = `Entradas do Turno<br><b style="font-size: 26px;">R$ ${totalEntradas.toFixed(2)}</b>`;
+        document.getElementById('saldo-total').innerHTML = `Total na Gaveta<br><b style="font-size: 26px;">R$ ${saldo.toFixed(2)}</b>`;
+        document.getElementById('saldo-total').style.color = saldo >= 0 ? 'var(--dark)' : 'var(--danger)';
         
         atualizarOpcoesMeses();
         calcularLucroMensal();
@@ -988,15 +1048,15 @@
             
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="color: var(--gray); font-weight: 600;">${dataCurta}</td>
-                <td style="color: var(--dark); font-weight: 700;">${item.descricao}</td>
-                <td class="saida">R$ ${item.valor.toFixed(2)}</td>
+                <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}</td>
+                <td style="color: var(--dark); font-weight: 800;">${item.descricao}</td>
+                <td class="saida" style="font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
                 <td><button class="btn-delete" onclick="excluirDespesa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
             `;
             tbody.appendChild(tr);
         });
 
-        document.getElementById('total-despesas-display').innerHTML = `Total de Despesas<br>R$ ${totalDespesas.toFixed(2)}`;
+        document.getElementById('total-despesas-display').innerHTML = `Total de Despesas<br><b style="font-size: 26px;">R$ ${totalDespesas.toFixed(2)}</b>`;
         
         atualizarOpcoesMeses();
         calcularLucroMensal();
@@ -1011,9 +1071,19 @@
         if (!desc || isNaN(valor) || valor <= 0) { alert('Preencha a descrição e um valor válido!'); return; }
 
         let dataStr = dtInput ? `${dtInput.split('-')[2]}/${dtInput.split('-')[1]}/${dtInput.split('-')[0]}, 00:00:00` : new Date().toLocaleString('pt-BR');
-
         let descFinal = desc + ` (${formaPagamento}) - ${usuarioLogado}`;
+        
         despesas.push({ data: dataStr, descricao: descFinal, valor: valor });
+        
+        // Se a despesa for paga com dinheiro da Gaveta, registra a saída no Caixa também.
+        if (formaPagamento === "Dinheiro") {
+            caixa.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc} - ${usuarioLogado}`, tipo: 'saida', valor: valor });
+        }
+        
+        // Se a despesa for paga com dinheiro do Cofre, registra a saída no Cofre também.
+        if (formaPagamento === "Cofre") {
+            cofre.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc}`, tipo: 'saida', valor: valor, usuario: usuarioLogado });
+        }
         
         document.getElementById('desc-despesa').value = '';
         document.getElementById('valor-despesa').value = '';
@@ -1025,7 +1095,7 @@
     }
 
     function excluirDespesa(index) {
-        if (confirm('Tem certeza que deseja apagar esta despesa?')) {
+        if (confirm('Tem certeza que deseja apagar esta despesa? (Nota: Isso não devolverá o dinheiro automaticamente para o Caixa ou Cofre. Ajuste manualmente se necessário).')) {
             despesas.splice(index, 1);
             salvarNoFirebase();
         }
@@ -1071,11 +1141,24 @@
             if (mesSelecionado === 'todos' || mesAno === mesSelecionado) totalGastoDespesas += d.valor;
         });
 
+        // Para evitar duplicidade de subtração quando a despesa sai do caixa:
+        // Apenas consideramos as despesas no cálculo final de saídas
         let saidasTotais = totalSaidasCaixa + totalGastoDespesas;
+        
+        // Recalculando lógica de despesa cruzada para não dobrar:
+        let saidasPuramenteDoCaixa = 0;
+        caixa.forEach(c => {
+            let mesAno = c.data ? c.data.substring(3, 10) : "";
+            if (c.tipo === 'saida' && !c.descricao.includes('Despesa: ') && !c.descricao.includes('FECHAMENTO') && (mesSelecionado === 'todos' || mesAno === mesSelecionado)) {
+                saidasPuramenteDoCaixa += c.valor;
+            }
+        });
+
+        saidasTotais = saidasPuramenteDoCaixa + totalGastoDespesas;
         let lucroLiquido = totalEntradas - saidasTotais;
 
-        document.getElementById('resumo-entradas').innerHTML = `Total Entradas<br>R$ ${totalEntradas.toFixed(2)}`;
-        document.getElementById('resumo-saidas').innerHTML = `Despesas + Saídas<br>R$ ${saidasTotais.toFixed(2)}`;
+        document.getElementById('resumo-entradas').innerHTML = `Total Entradas<br><b style="font-size: 24px;">R$ ${totalEntradas.toFixed(2)}</b>`;
+        document.getElementById('resumo-saidas').innerHTML = `Despesas + Saídas<br><b style="font-size: 24px;">R$ ${saidasTotais.toFixed(2)}</b>`;
         
         let painelLucro = document.getElementById('painel-lucro');
         painelLucro.innerText = `Lucro Líquido: R$ ${lucroLiquido.toFixed(2)}`;
@@ -1108,13 +1191,13 @@
 
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="font-size: 16px;"><strong style="color: var(--dark);">${cliente.nome}</strong></td>
-                <td style="color: var(--danger); font-size: 16px; font-weight: 800;">R$ ${cliente.total.toFixed(2)}</td>
+                <td style="font-size: 16px;"><strong style="color: var(--dark); font-weight: 900;">${cliente.nome}</strong></td>
+                <td style="color: var(--danger); font-size: 16px; font-weight: 900;">R$ ${cliente.total.toFixed(2)}</td>
                 <td>
-                    <button onclick="prepararNovaCompraFiado(${index})" style="background-color: var(--primary); color: white; border: none; border-radius: 10px; padding: 6px 12px; font-size: 12px; margin-bottom: 4px; cursor: pointer; font-weight: 800;">➕ Adicionar</button>
-                    <button class="btn-edit" onclick="verDetalhesFiado(${index})" style="padding: 6px 12px; font-size: 12px; margin-bottom:4px;">Ver Compras</button>
-                    <button class="btn-add" onclick="receberPagamentoFiado(${index})" style="padding: 6px 12px; font-size: 12px; margin-bottom:4px;">💲 Receber</button>
-                    <button class="btn-delete" onclick="excluirClienteFiado(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
+                    <button onclick="prepararNovaCompraFiado(${index})" style="background-color: var(--primary); color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; margin-bottom: 4px; cursor: pointer; font-weight: 800; box-shadow: var(--shadow-sm);">➕ Add</button>
+                    <button class="btn-edit" onclick="verDetalhesFiado(${index})" style="padding: 6px 12px; font-size: 12px; margin-bottom:4px; border-radius: 8px;">Extrato</button>
+                    <button class="btn-add" onclick="receberPagamentoFiado(${index})" style="padding: 6px 12px; font-size: 12px; margin-bottom:4px; border-radius: 8px;">💲 Receber</button>
+                    <button class="btn-delete" onclick="excluirClienteFiado(${index})" style="padding: 6px 12px; font-size: 12px; border-radius: 8px;">Apagar</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1137,9 +1220,9 @@
         document.getElementById('fiado-produto').focus();
         
         campoNome.style.borderColor = "var(--primary)";
-        campoNome.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.2)";
+        campoNome.style.boxShadow = "0 0 0 4px rgba(79, 70, 229, 0.2)";
         setTimeout(() => {
-            campoNome.style.borderColor = "#cbd5e1";
+            campoNome.style.borderColor = "var(--border)";
             campoNome.style.boxShadow = "none";
         }, 1500);
         
@@ -1214,15 +1297,15 @@
         let div = document.getElementById('detalhes-fiado');
         
         let html = `
-            <h3 style="margin-top: 0; color: var(--dark);">Extrato: ${cliente.nome}</h3>
+            <h3 style="margin-top: 0; color: var(--dark); font-size: 24px; font-weight: 900;">Extrato: ${cliente.nome}</h3>
             <div style="overflow-x: auto;">
-                <table style="font-size: 14px; box-shadow: none; border: 1px solid var(--border); min-width: 300px;">
+                <table style="font-size: 14px; box-shadow: none; border: 1px solid var(--border); min-width: 300px; border-radius: 12px; overflow: hidden;">
                     <thead><tr>
-                        <th style="background: #e2e8f0;">Data</th>
-                        <th style="background: #e2e8f0;">Produto</th>
-                        <th style="background: #e2e8f0;">Qtd</th>
-                        <th style="background: #e2e8f0;">Valor</th>
-                        <th style="background: #e2e8f0; text-align: center;">Ação</th>
+                        <th style="background: var(--bg-body);">Data</th>
+                        <th style="background: var(--bg-body);">Produto</th>
+                        <th style="background: var(--bg-body);">Qtd</th>
+                        <th style="background: var(--bg-body);">Valor</th>
+                        <th style="background: var(--bg-body); text-align: center;">Ação</th>
                     </tr></thead>
                     <tbody>
         `;
@@ -1231,12 +1314,12 @@
             let corValor = c.valor < 0 ? 'color: var(--success);' : 'color: var(--danger);';
             let qtdDisplay = c.quantidade ? Number(c.quantidade.toFixed(3)) : '-';
             html += `<tr>
-                <td style="color: var(--gray);">${c.data.split(',')[0]}</td>
-                <td style="font-weight: 600;">${c.produto}</td>
-                <td>${qtdDisplay}</td>
-                <td style="${corValor} font-weight: 800;">R$ ${c.valor.toFixed(2)}</td>
+                <td style="color: var(--gray-light); font-weight: 700;">${c.data.split(',')[0]}</td>
+                <td style="font-weight: 700; color: var(--dark);">${c.produto}</td>
+                <td style="font-weight: 700;">${qtdDisplay}</td>
+                <td style="${corValor} font-weight: 900; font-size: 15px;">R$ ${c.valor.toFixed(2)}</td>
                 <td style="text-align: center;">
-                    <button onclick="excluirItemFiado(${index}, ${compraIndex})" style="background: var(--danger); color: white; border: none; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: 800; font-size: 12px;" title="Apagar este item da conta">🗑️ Excluir</button>
+                    <button onclick="excluirItemFiado(${index}, ${compraIndex})" style="background: var(--danger); color: white; border: none; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: 800; font-size: 12px;" title="Apagar este item da conta">🗑️ Apagar</button>
                 </td>
             </tr>`;
         });
@@ -1246,7 +1329,7 @@
                 </table>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
-                <span style="font-size: 20px; font-weight: 800; color: var(--danger);">Total a Pagar: R$ ${cliente.total.toFixed(2)}</span>
+                <span style="font-size: 22px; font-weight: 900; color: var(--danger);">Total: R$ ${cliente.total.toFixed(2)}</span>
                 <button class="btn-delete" onclick="document.getElementById('detalhes-fiado').style.display='none'">Fechar Extrato</button>
             </div>
         `;
@@ -1255,16 +1338,13 @@
         div.style.display = 'block';
     }
 
-    // NOVA FUNÇÃO: EXCLUIR ITEM INDIVIDUAL DO FIADO
     function excluirItemFiado(clienteIndex, compraIndex) {
         let cliente = fiados[clienteIndex];
         let item = cliente.compras[compraIndex];
 
         if (confirm(`Tem certeza que deseja apagar o item "${item.produto}" (R$ ${item.valor.toFixed(2)}) da conta de ${cliente.nome}?`)) {
-            // Ajusta o total da dívida do cliente
             cliente.total -= item.valor;
             
-            // Tenta abater a quantidade vendida no estoque para manter tudo certinho
             if (item.quantidade) {
                 let nomeBusca = item.produto.split(' (')[0].split(' - ')[0].trim();
                 let prod = estoque.find(p => p.nome.trim() === nomeBusca);
@@ -1274,10 +1354,8 @@
                 }
             }
 
-            // Remove o item da lista
             cliente.compras.splice(compraIndex, 1);
 
-            // Se apagou todas as compras, a conta zera e o cliente some da lista
             if (cliente.compras.length === 0) {
                 fiados.splice(clienteIndex, 1);
                 document.getElementById('detalhes-fiado').style.display = 'none';
@@ -1320,6 +1398,71 @@
         if (confirm(`Tem certeza que deseja apagar o cliente "${fiados[index].nome}" e todo o seu histórico?`)) {
             fiados.splice(index, 1);
             document.getElementById('detalhes-fiado').style.display = 'none';
+            salvarNoFirebase();
+        }
+    }
+    
+    // ==========================================
+    // INÍCIO DOS EVENTOS DE USUÁRIOS
+    // ==========================================
+    function atualizarUsuariosUI() {
+        let tbody = document.getElementById('tabela-usuarios');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        usuarios.forEach((u, index) => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong style="color: var(--dark); font-size: 16px;">${u.nome}</strong></td>
+                <td style="color: var(--gray); font-family: monospace; font-size: 15px; font-weight: 700;">${u.senha}</td>
+                <td>
+                    <button class="btn-delete" onclick="excluirUsuario(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar Acesso</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        let painelDisplay = document.getElementById('total-usuarios-display');
+        if (painelDisplay) painelDisplay.innerHTML = `Total da Equipe<br><b style="font-size: 26px;">${usuarios.length}</b>`;
+    }
+
+    function cadastrarUsuario() {
+        let nome = document.getElementById('novo-usuario-nome').value.trim();
+        let senha = document.getElementById('novo-usuario-senha').value.trim();
+
+        if (!nome || !senha) {
+            alert('Preencha o nome e a senha do novo usuário!');
+            return;
+        }
+
+        let existe = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
+        if (existe) {
+            alert('Já existe um usuário cadastrado com esse exato nome!');
+            return;
+        }
+
+        usuarios.push({ nome: nome, senha: senha });
+        document.getElementById('novo-usuario-nome').value = '';
+        document.getElementById('novo-usuario-senha').value = '';
+        
+        salvarNoFirebase();
+        document.getElementById('novo-usuario-nome').focus();
+        alert(`Usuário ${nome} criado com sucesso!`);
+    }
+
+    function excluirUsuario(index) {
+        if (usuarios.length <= 1) {
+            alert("Você não pode apagar o único usuário do sistema, senão não conseguirá mais entrar na loja!");
+            return;
+        }
+        
+        if (usuarios[index].nome === usuarioLogado) {
+            alert("Segurança: Você não pode excluir o seu próprio perfil enquanto está logado com ele!");
+            return;
+        }
+
+        if (confirm(`Tem certeza que deseja apagar o acesso de "${usuarios[index].nome}"?\nEle não conseguirá mais entrar no sistema.`)) {
+            usuarios.splice(index, 1);
             salvarNoFirebase();
         }
     }
