@@ -316,8 +316,8 @@
         <!-- SEÇÃO DE CAIXA DO DIA -->
         <div id="caixa" class="section">
             <div class="resumo">
-                <span id="total-entradas" class="entrada">Entradas do Turno<br>R$ 0.00</span>
-                <span id="saldo-total">Total no Caixa<br>R$ 0.00</span>
+                <span id="total-entradas" class="entrada">Entradas (Geral)<br>R$ 0.00</span>
+                <span id="saldo-total">Dinheiro na Gaveta<br>R$ 0.00</span>
             </div>
 
             <button class="btn-dark" onclick="abrirFechamento()">🔒 Fechar Turno / Calcular Gaveta</button>
@@ -642,18 +642,13 @@
         atualizarDropdownLogin(); 
     });
 
-    // ==========================================
-    // MUDANÇA IMPORTANTE: BACKUP LOCAL + MERGE VERDADEIRO
-    // ==========================================
     function salvarNoFirebase() {
-        // 1. Salva tudo na memória do navegador primeiro (Backup Físico)
         localStorage.setItem('dadosCaixa', JSON.stringify(caixa));
         localStorage.setItem('dadosEstoque', JSON.stringify(estoque));
         localStorage.setItem('dadosFiados', JSON.stringify(fiados));
         localStorage.setItem('dadosDespesas', JSON.stringify(despesas));
         localStorage.setItem('dadosCofre', JSON.stringify(cofre));
 
-        // 2. Manda pra nuvem mesclando os dados (Protege contra o celular desatualizado)
         db.collection("sistema").doc("dados_loja").set({
             caixa: caixa,
             estoque: estoque,
@@ -734,15 +729,12 @@
         tbody.innerHTML = '';
         let saldoCofre = 0;
 
-        // Se o cofre não for um array válido, zera ele pra não travar a tela
         if (!Array.isArray(cofre)) cofre = [];
 
         cofre.forEach((item, index) => {
-            if (!item) return; // Ignora dados vazios deixados por bug
+            if (!item) return; 
 
             let tr = document.createElement('tr');
-            
-            // Tratamento inteligente de datas para evitar "crash invisível"
             let dataCompleta = item.data || "";
             let dataCurta = dataCompleta.includes(',') ? dataCompleta.split(',')[0].trim() : (dataCompleta.split(' ')[0] || "Sem Data");
             let hora = dataCompleta.includes(',') ? dataCompleta.split(',')[1].trim() : (dataCompleta.split(' ')[1] || "");
@@ -798,7 +790,6 @@
         document.getElementById('desc-cofre').value = '';
         document.getElementById('valor-cofre').value = '';
         
-        // Força o desenho da tabela antes mesmo do servidor responder
         atualizarCofreUI(); 
         salvarNoFirebase();
         
@@ -808,7 +799,7 @@
     function excluirCofre(index) {
         if (confirm(`Atenção: Tem certeza que deseja apagar o registro "${cofre[index].descricao}" do cofre? Isso alterará o saldo de notas guardadas.`)) {
             cofre.splice(index, 1);
-            atualizarCofreUI(); // Força update imediato
+            atualizarCofreUI(); 
             salvarNoFirebase();
         }
     }
@@ -925,6 +916,7 @@
     function abrirFechamento() {
         let totalDinheiro = 0, totalPix = 0, totalCartao = 0;
         let totalEntradas = 0, totalSaidas = 0;
+        let saidasGaveta = 0; // Para calcular o dinheiro vivo retirado
         
         let indexUltimoFechamento = -1;
         for (let i = caixa.length - 1; i >= 0; i--) {
@@ -945,10 +937,15 @@
                 else totalDinheiro += item.valor; 
             } else if (item.tipo === 'saida') {
                 totalSaidas += item.valor;
+                // Considera saída da gaveta apenas se for Dinheiro ou Despesa
+                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:')) {
+                    saidasGaveta += item.valor;
+                }
             }
         });
 
-        let saldoNaGaveta = totalDinheiro - totalSaidas;
+        // O Saldo na Gaveta ignora as saídas do PIX/Cartão (que não saem fisicamente da gaveta)
+        let saldoNaGaveta = totalDinheiro - saidasGaveta;
 
         document.getElementById('conteudo-turno').innerHTML = `
             <div class="turno-linha"><span>💵 Entrou em Dinheiro:</span> <b>R$ ${totalDinheiro.toFixed(2)}</b></div>
@@ -1064,6 +1061,7 @@
         tbody.innerHTML = '';
         let totalEntradas = 0, totalSaidas = 0, dataAtualAgrupamento = '';
         let lucrosPorDia = {};
+        let saldoGaveta = 0; // Armazena apenas dinheiro físico
         
         caixa.forEach(item => {
             let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
@@ -1102,8 +1100,21 @@
             tr.style.display = isOpen ? 'table-row' : 'none';
 
             let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
-            if (item.tipo === 'entrada') totalEntradas += item.valor;
-            else totalSaidas += item.valor;
+            
+            if (item.tipo === 'entrada') {
+                totalEntradas += item.valor;
+                // Soma no saldo da Gaveta se for especificado como Dinheiro, 
+                // ou se for entrada padrão não especificada como PIX/Cartão
+                if (item.descricao.includes('Dinheiro') || (!item.descricao.includes('PIX') && !item.descricao.includes('Pix') && !item.descricao.includes('Cartão') && !item.descricao.includes('Débito') && !item.descricao.includes('Crédito'))) {
+                    saldoGaveta += item.valor;
+                }
+            } else if (item.tipo === 'saida') {
+                totalSaidas += item.valor;
+                // Deduz da Gaveta apenas saídas em dinheiro físico ou despesas
+                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:')) {
+                    saldoGaveta -= item.valor;
+                }
+            }
 
             let exibeDataHora = hora !== "" ? hora : dataCurta;
             let bgStyle = item.descricao.includes('🔒 FECHAMENTO DE TURNO REGISTRADO') ? 'background-color: #fffbeb;' : '';
@@ -1118,10 +1129,10 @@
             tbody.appendChild(tr);
         });
 
-        let saldo = totalEntradas - totalSaidas;
-        document.getElementById('total-entradas').innerHTML = `Entradas do Turno<br><b style="font-size: 26px;">R$ ${totalEntradas.toFixed(2)}</b>`;
-        document.getElementById('saldo-total').innerHTML = `Total na Gaveta<br><b style="font-size: 26px;">R$ ${saldo.toFixed(2)}</b>`;
-        document.getElementById('saldo-total').style.color = saldo >= 0 ? 'var(--dark)' : 'var(--danger)';
+        // Atualização da UI para focar na Gaveta real
+        document.getElementById('total-entradas').innerHTML = `Entradas (Geral)<br><b style="font-size: 26px;">R$ ${totalEntradas.toFixed(2)}</b>`;
+        document.getElementById('saldo-total').innerHTML = `Dinheiro na Gaveta<br><b style="font-size: 26px;">R$ ${saldoGaveta.toFixed(2)}</b>`;
+        document.getElementById('saldo-total').style.color = saldoGaveta >= 0 ? 'var(--dark)' : 'var(--danger)';
         
         atualizarOpcoesMeses();
         if (document.getElementById('lucro').classList.contains('active')) {
