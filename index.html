@@ -361,7 +361,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Data</th>
+                            <th>Data/Hora</th>
                             <th>Motivo / Movimentação</th>
                             <th>Responsável</th>
                             <th>Tipo</th>
@@ -726,7 +726,7 @@
     }
 
     // ==========================================
-    // GESTÃO DO COFRE (NOTAS)
+    // GESTÃO DO COFRE BLINDADA CONTRA ERROS
     // ==========================================
     function atualizarCofreUI() {
         let tbody = document.getElementById('tabela-cofre');
@@ -734,28 +734,44 @@
         tbody.innerHTML = '';
         let saldoCofre = 0;
 
+        // Se o cofre não for um array válido, zera ele pra não travar a tela
+        if (!Array.isArray(cofre)) cofre = [];
+
         cofre.forEach((item, index) => {
+            if (!item) return; // Ignora dados vazios deixados por bug
+
             let tr = document.createElement('tr');
-            let dataCurta = item.data.split(',')[0];
-            let hora = item.data.includes(',') ? item.data.split(',')[1].trim() : "";
+            
+            // Tratamento inteligente de datas para evitar "crash invisível"
+            let dataCompleta = item.data || "";
+            let dataCurta = dataCompleta.includes(',') ? dataCompleta.split(',')[0].trim() : (dataCompleta.split(' ')[0] || "Sem Data");
+            let hora = dataCompleta.includes(',') ? dataCompleta.split(',')[1].trim() : (dataCompleta.split(' ')[1] || "");
+            
             let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
             let iconTipo = item.tipo === 'entrada' ? '📥 Entrou' : '📤 Saiu';
             
-            if (item.tipo === 'entrada') saldoCofre += item.valor;
-            else saldoCofre -= item.valor;
+            let valorItem = parseFloat(item.valor);
+            if (isNaN(valorItem)) valorItem = 0;
+
+            if (item.tipo === 'entrada') saldoCofre += valorItem;
+            else saldoCofre -= valorItem;
+
+            let descItem = item.descricao || "Sem motivo informado";
+            let userItem = item.usuario || "Desconhecido";
 
             tr.innerHTML = `
                 <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}<br><span style="font-size:12px">${hora}</span></td>
-                <td style="font-weight: 800; color: var(--dark);">${item.descricao}</td>
-                <td style="color: var(--gray); font-weight: 600;">👤 ${item.usuario || 'Desconhecido'}</td>
+                <td style="font-weight: 800; color: var(--dark);">${descItem}</td>
+                <td style="color: var(--gray); font-weight: 600;">👤 ${userItem}</td>
                 <td class="${classeCor}">${iconTipo}</td>
-                <td class="${classeCor}" style="font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
+                <td class="${classeCor}" style="font-size: 16px;">R$ ${valorItem.toFixed(2)}</td>
                 <td><button class="btn-delete" onclick="excluirCofre(${index})" style="padding: 6px 12px; font-size: 12px;">Desfazer</button></td>
             `;
             tbody.appendChild(tr);
         });
 
-        document.getElementById('saldo-cofre-display').innerText = saldoCofre.toFixed(2);
+        let displayCofre = document.getElementById('saldo-cofre-display');
+        if(displayCofre) displayCofre.innerText = saldoCofre.toFixed(2);
     }
 
     function adicionarCofre() {
@@ -766,6 +782,8 @@
         if (!desc || isNaN(valor) || valor <= 0) { 
             alert('Preencha um motivo e um valor válido!'); return; 
         }
+
+        if (!Array.isArray(cofre)) cofre = [];
 
         let dataAtual = new Date().toLocaleString('pt-BR');
         
@@ -780,13 +798,17 @@
         document.getElementById('desc-cofre').value = '';
         document.getElementById('valor-cofre').value = '';
         
+        // Força o desenho da tabela antes mesmo do servidor responder
+        atualizarCofreUI(); 
         salvarNoFirebase();
+        
         document.getElementById('desc-cofre').focus();
     }
 
     function excluirCofre(index) {
         if (confirm(`Atenção: Tem certeza que deseja apagar o registro "${cofre[index].descricao}" do cofre? Isso alterará o saldo de notas guardadas.`)) {
             cofre.splice(index, 1);
+            atualizarCofreUI(); // Força update imediato
             salvarNoFirebase();
         }
     }
@@ -1159,7 +1181,9 @@
             caixa.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc} - ${usuarioLogado}`, tipo: 'saida', valor: valor });
         }
         if (formaPagamento === "Cofre") {
+            if (!Array.isArray(cofre)) cofre = [];
             cofre.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc}`, tipo: 'saida', valor: valor, usuario: usuarioLogado });
+            atualizarCofreUI();
         }
         
         document.getElementById('desc-despesa').value = '';
@@ -1521,7 +1545,9 @@
         cliente.compras.push({ data: dataAtual, produto: `✅ Pagamento (${formaPagamento}) - ${usuarioLogado}`, quantidade: '', valor: -valorPago });
         
         if (formaPagamento.toLowerCase() === "cofre") {
+            if (!Array.isArray(cofre)) cofre = [];
             cofre.push({ data: dataAtual, descricao: `Pagamento Fiado - ${cliente.nome} - ${usuarioLogado}`, tipo: 'entrada', valor: valorPago, usuario: usuarioLogado });
+            atualizarCofreUI();
         } else {
             caixa.push({ data: dataAtual, descricao: `Pagamento Fiado - ${cliente.nome} (${formaPagamento}) - ${usuarioLogado}`, tipo: 'entrada', valor: valorPago });
         }
