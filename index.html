@@ -25,7 +25,7 @@
         /* VARIÁVEIS DE CORES E ESTILO GLOBAL (MODERNO) */
         /* ========================================== */
         :root {
-            --primary: #4f46e5;      /* Azul Indigo Moderno */
+            --primary: #4f46e5;      
             --primary-hover: #4338ca;
             --success: #10b981;      
             --success-hover: #059669;
@@ -163,7 +163,14 @@
         tr:hover td { background-color: #f1f5f9; }
         .entrada { color: var(--success); font-weight: 800; }
         .saida { color: var(--danger); font-weight: 800; }
-        .linha-divisor-data td { background-color: #f8fafc; font-weight: 800; color: #334155; text-transform: uppercase; border-top: 3px solid var(--border); font-size: 14px;}
+        
+        /* Nova formatação da linha de data agrupada para ser clicável */
+        .linha-divisor-data td { 
+            background-color: #f8fafc; font-weight: 800; color: #334155; 
+            text-transform: uppercase; border-top: 3px solid var(--border); 
+            font-size: 14px; cursor: pointer; user-select: none; transition: background 0.2s ease;
+        }
+        .linha-divisor-data:hover td { background-color: #e2e8f0; }
 
         /* ========================================== */
         /* CARDS DE RESUMO */
@@ -540,11 +547,14 @@
     let estoque = [];
     let fiados = [];
     let despesas = [];
-    let cofre = []; // <-- NOVA VARIÁVEL DO COFRE
+    let cofre = []; 
     let usuarios = []; 
     
     let totalVendaAtual = 0; 
     let usuarioLogado = ""; 
+    
+    // Deixa apenas o dia de HOJE aberto na sanfona da aba Caixa por padrão
+    let diasAbertosCaixa = new Set([new Date().toLocaleDateString('pt-BR')]);
 
     // ==========================================
     // ESCUTAR BANCO DE DADOS E RESGATAR LOCAIS
@@ -558,7 +568,7 @@
             estoque = dados.estoque || [];
             fiados = dados.fiados || [];
             despesas = dados.despesas || [];
-            cofre = dados.cofre || []; // Puxa dados do cofre
+            cofre = dados.cofre || []; 
             
             if (dados.usuarios && dados.usuarios.length > 0) {
                 usuarios = dados.usuarios;
@@ -577,7 +587,6 @@
                 estoque = localEstoque;
                 fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
                 despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
-                // Se tiver cofre no local storage de um teste anterior, pega também
                 cofre = JSON.parse(localStorage.getItem('dadosCofre')) || []; 
                 precisaSalvarNuvem = true;
             }
@@ -602,7 +611,7 @@
         atualizarDespesasUI();
         atualizarFiadosUI();
         atualizarUsuariosUI();
-        atualizarCofreUI(); // Nova UI do Cofre
+        atualizarCofreUI(); 
         atualizarDropdownLogin();
     });
 
@@ -612,7 +621,7 @@
             estoque: estoque,
             fiados: fiados,
             despesas: despesas,
-            cofre: cofre, // Salva o cofre
+            cofre: cofre, 
             usuarios: usuarios
         }).catch((error) => {
             console.error("Erro ao salvar:", error);
@@ -676,7 +685,7 @@
     }
 
     // ==========================================
-    // GESTÃO DO COFRE (NOTAS) - NOVA FUNCIONALIDADE
+    // GESTÃO DO COFRE (NOTAS) 
     // ==========================================
     function atualizarCofreUI() {
         let tbody = document.getElementById('tabela-cofre');
@@ -925,7 +934,7 @@
 
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong style="color: var(--dark); font-size: 16px;">${produto.nome}</strong></td>
+                <td><strong style="color: var(--dark); font-size: 15px;">${produto.nome}</strong></td>
                 <td style="font-weight: 700;">R$ ${preco.toFixed(2)}</td>
                 <td style="color: var(--success); font-size: 16px; font-weight: 900;">${vendidosExibicao}</td>
                 <td style="color: var(--primary); font-weight: 900; font-size: 16px;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
@@ -969,8 +978,17 @@
     }
 
     // ==========================================
-    // CONTROLE DE CAIXA DO DIA
+    // CONTROLE DE CAIXA DO DIA (COM SANFONA / COLLAPSE)
     // ==========================================
+    function toggleDiaCaixa(dataCurta) {
+        if(diasAbertosCaixa.has(dataCurta)) {
+            diasAbertosCaixa.delete(dataCurta);
+        } else {
+            diasAbertosCaixa.add(dataCurta);
+        }
+        atualizarCaixaUI();
+    }
+
     function atualizarCaixaUI() {
         let tbody = document.getElementById('tabela-caixa');
         tbody.innerHTML = '';
@@ -978,6 +996,7 @@
         let totalEntradas = 0, totalSaidas = 0, dataAtualAgrupamento = '';
         let lucrosPorDia = {};
         
+        // Calcula o lucro consolidado de cada dia
         caixa.forEach(item => {
             let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
             if (!lucrosPorDia[dataCurta]) lucrosPorDia[dataCurta] = 0;
@@ -989,19 +1008,33 @@
             let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
             let hora = item.data && item.data.includes(',') ? item.data.split(',')[1].trim() : "";
 
+            // Se mudou de dia, cria a barra clicável
             if (dataCurta !== dataAtualAgrupamento) {
                 let lucroDoDia = lucrosPorDia[dataCurta] || 0;
                 let corLucro = lucroDoDia >= 0 ? 'var(--success)' : 'var(--danger)'; 
+                let isOpen = diasAbertosCaixa.has(dataCurta);
+                let iconeSeta = isOpen ? "🔽" : "▶️";
+
                 let trDivisor = document.createElement('tr');
                 trDivisor.className = 'linha-divisor-data';
-                trDivisor.innerHTML = `<td colspan="5"><div style="display: flex; justify-content: space-between; align-items: center; width: 100%;"><span>📅 ${dataCurta}</span><span style="color: ${corLucro}; font-size: 15px;">Saldo do Dia: R$ ${lucroDoDia.toFixed(2)}</span></div></td>`;
+                trDivisor.onclick = () => toggleDiaCaixa(dataCurta);
+                trDivisor.innerHTML = `
+                    <td colspan="5">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span>${iconeSeta} &nbsp;📅 ${dataCurta}</span>
+                            <span style="color: ${corLucro}; font-size: 15px;">Saldo do Dia: R$ ${lucroDoDia.toFixed(2)}</span>
+                        </div>
+                    </td>
+                `;
                 tbody.appendChild(trDivisor);
                 dataAtualAgrupamento = dataCurta;
             }
 
+            let isOpen = diasAbertosCaixa.has(dataCurta);
             let tr = document.createElement('tr');
+            tr.style.display = isOpen ? 'table-row' : 'none';
+
             let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
-            
             if (item.tipo === 'entrada') totalEntradas += item.valor;
             else totalSaidas += item.valor;
 
@@ -1142,10 +1175,6 @@
         });
 
         // Para evitar duplicidade de subtração quando a despesa sai do caixa:
-        // Apenas consideramos as despesas no cálculo final de saídas
-        let saidasTotais = totalSaidasCaixa + totalGastoDespesas;
-        
-        // Recalculando lógica de despesa cruzada para não dobrar:
         let saidasPuramenteDoCaixa = 0;
         caixa.forEach(c => {
             let mesAno = c.data ? c.data.substring(3, 10) : "";
@@ -1154,7 +1183,7 @@
             }
         });
 
-        saidasTotais = saidasPuramenteDoCaixa + totalGastoDespesas;
+        let saidasTotais = saidasPuramenteDoCaixa + totalGastoDespesas;
         let lucroLiquido = totalEntradas - saidasTotais;
 
         document.getElementById('resumo-entradas').innerHTML = `Total Entradas<br><b style="font-size: 24px;">R$ ${totalEntradas.toFixed(2)}</b>`;
@@ -1374,14 +1403,19 @@
         if (isNaN(valorPago) || valorPago <= 0) { alert('Valor inválido!'); return; }
         if (valorPago > cliente.total) { alert(`Valor maior que a dívida.`); return; }
 
-        let formaPagamento = prompt(`Forma de pagamento (Dinheiro, PIX, Cartão):`, `Dinheiro`);
+        let formaPagamento = prompt(`Forma de pagamento (Dinheiro, PIX, Cartão, Cofre):`, `Dinheiro`);
         if (formaPagamento === null) formaPagamento = "Dinheiro"; 
 
         cliente.total -= valorPago;
         let dataAtual = new Date().toLocaleString('pt-BR');
         
         cliente.compras.push({ data: dataAtual, produto: `✅ Pagamento (${formaPagamento}) - ${usuarioLogado}`, quantidade: '', valor: -valorPago });
-        caixa.push({ data: dataAtual, descricao: `Pagamento Fiado - ${cliente.nome} (${formaPagamento}) - ${usuarioLogado}`, tipo: 'entrada', valor: valorPago });
+        
+        if (formaPagamento.toLowerCase() === "cofre") {
+            cofre.push({ data: dataAtual, descricao: `Pagamento Fiado - ${cliente.nome} - ${usuarioLogado}`, tipo: 'entrada', valor: valorPago, usuario: usuarioLogado });
+        } else {
+            caixa.push({ data: dataAtual, descricao: `Pagamento Fiado - ${cliente.nome} (${formaPagamento}) - ${usuarioLogado}`, tipo: 'entrada', valor: valorPago });
+        }
 
         if (cliente.total <= 0.01) { 
             cliente.total = 0;
@@ -1398,71 +1432,6 @@
         if (confirm(`Tem certeza que deseja apagar o cliente "${fiados[index].nome}" e todo o seu histórico?`)) {
             fiados.splice(index, 1);
             document.getElementById('detalhes-fiado').style.display = 'none';
-            salvarNoFirebase();
-        }
-    }
-    
-    // ==========================================
-    // INÍCIO DOS EVENTOS DE USUÁRIOS
-    // ==========================================
-    function atualizarUsuariosUI() {
-        let tbody = document.getElementById('tabela-usuarios');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        
-        usuarios.forEach((u, index) => {
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong style="color: var(--dark); font-size: 16px;">${u.nome}</strong></td>
-                <td style="color: var(--gray); font-family: monospace; font-size: 15px; font-weight: 700;">${u.senha}</td>
-                <td>
-                    <button class="btn-delete" onclick="excluirUsuario(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar Acesso</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-        
-        let painelDisplay = document.getElementById('total-usuarios-display');
-        if (painelDisplay) painelDisplay.innerHTML = `Total da Equipe<br><b style="font-size: 26px;">${usuarios.length}</b>`;
-    }
-
-    function cadastrarUsuario() {
-        let nome = document.getElementById('novo-usuario-nome').value.trim();
-        let senha = document.getElementById('novo-usuario-senha').value.trim();
-
-        if (!nome || !senha) {
-            alert('Preencha o nome e a senha do novo usuário!');
-            return;
-        }
-
-        let existe = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
-        if (existe) {
-            alert('Já existe um usuário cadastrado com esse exato nome!');
-            return;
-        }
-
-        usuarios.push({ nome: nome, senha: senha });
-        document.getElementById('novo-usuario-nome').value = '';
-        document.getElementById('novo-usuario-senha').value = '';
-        
-        salvarNoFirebase();
-        document.getElementById('novo-usuario-nome').focus();
-        alert(`Usuário ${nome} criado com sucesso!`);
-    }
-
-    function excluirUsuario(index) {
-        if (usuarios.length <= 1) {
-            alert("Você não pode apagar o único usuário do sistema, senão não conseguirá mais entrar na loja!");
-            return;
-        }
-        
-        if (usuarios[index].nome === usuarioLogado) {
-            alert("Segurança: Você não pode excluir o seu próprio perfil enquanto está logado com ele!");
-            return;
-        }
-
-        if (confirm(`Tem certeza que deseja apagar o acesso de "${usuarios[index].nome}"?\nEle não conseguirá mais entrar no sistema.`)) {
-            usuarios.splice(index, 1);
             salvarNoFirebase();
         }
     }
