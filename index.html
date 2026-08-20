@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mercearia Rsouza</title>
     
-    <!-- CONFIGURAÇÕES DE APLICATIVO (PWA) COM ÍCONE NOVO -->
+    <!-- CONFIGURAÇÕES DE APLICATIVO (PWA) -->
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -288,7 +288,7 @@
             <button class="tab-btn" onclick="mudarAba('usuarios')" style="color: var(--primary);">👥 Equipe</button>
         </div>
 
-        <!-- SEÇÃO DE VENDAS (AGORA COM CESTA DE COMPRAS) -->
+        <!-- SEÇÃO DE VENDAS -->
         <div id="vendas" class="section active">
             
             <div class="form-group" style="padding-bottom: 10px;">
@@ -614,9 +614,7 @@
         { nome: "Raimundo", senha: "raimundo123" }
     ]; 
     
-    // VARIÁVEIS DO NOVO CARRINHO DE COMPRAS
     let carrinho = [];
-    
     let usuarioLogado = ""; 
     let diasAbertosCaixa = new Set([new Date().toLocaleDateString('pt-BR')]);
     let graficoPagamentosInstancia = null;
@@ -650,9 +648,7 @@
                 usuarios = dados.usuarios;
             } else {
                 let localUsr = JSON.parse(localStorage.getItem('dadosUsuarios'));
-                if (localUsr && localUsr.length > 0) {
-                    usuarios = localUsr;
-                }
+                if (localUsr && localUsr.length > 0) usuarios = localUsr;
                 precisaSalvarNuvem = true; 
             }
         } else {
@@ -827,7 +823,6 @@
         let preco = produto.preco || 0;
         let subtotal = preco * qtd;
 
-        // Adiciona na cesta
         carrinho.push({
             estoqueIndex: index,
             nome: produto.nome,
@@ -835,7 +830,6 @@
             subtotal: subtotal
         });
 
-        // Limpa os campos para o próximo bip
         document.getElementById('venda-produto').value = "";
         resetarInputsVenda();
         
@@ -897,7 +891,6 @@
         let totalVendaFinal = 0;
         let itensDescricao = [];
 
-        // Dá baixa no estoque para cada item da cesta
         carrinho.forEach(item => {
             totalVendaFinal += item.subtotal;
             estoque[item.estoqueIndex].vendidos = (estoque[item.estoqueIndex].vendidos || 0) + item.qtd;
@@ -905,7 +898,6 @@
         });
 
         let dataAtual = new Date().toLocaleString('pt-BR');
-        // Cria uma descrição completa unindo tudo
         let descricaoFinal = `Venda: ${itensDescricao.join(', ')} (${formaPagamento}) - ${usuarioLogado}`;
         
         caixa.push({ 
@@ -917,12 +909,145 @@
 
         salvarNoFirebase(); 
         
-        // Zera o carrinho
         carrinho = [];
         atualizarCarrinhoUI();
         document.getElementById('venda-pagamento').value = "Dinheiro";
         document.getElementById('venda-valor-recebido').value = "";
         document.getElementById('venda-produto').focus(); 
+    }
+
+    // ==========================================
+    // CONTROLE DE CAIXA DO DIA E EDIÇÃO DE PAGAMENTO
+    // ==========================================
+    function toggleDiaCaixa(dataCurta) {
+        if(diasAbertosCaixa.has(dataCurta)) diasAbertosCaixa.delete(dataCurta);
+        else diasAbertosCaixa.add(dataCurta);
+        atualizarCaixaUI();
+    }
+
+    // NOVA FUNÇÃO: Editar forma de pagamento da venda ou fiado
+    function editarPagamentoCaixa(index) {
+        let item = caixa[index];
+        if (!item.descricao.includes('Venda:') && !item.descricao.includes('Pagamento Fiado')) {
+            alert('Você só pode editar a forma de pagamento de Vendas ou Pagamentos de Fiado.');
+            return;
+        }
+
+        let novaForma = prompt("Essa transação foi paga como?\n\nDigite 1 para DINHEIRO\nDigite 2 para PIX\nDigite 3 para DÉBITO\nDigite 4 para CRÉDITO");
+        
+        if (!novaForma) return;
+
+        let pagamentoFinal = "";
+        if (novaForma === "1" || novaForma.toLowerCase() === "dinheiro") pagamentoFinal = "Dinheiro";
+        else if (novaForma === "2" || novaForma.toLowerCase() === "pix") pagamentoFinal = "PIX";
+        else if (novaForma === "3" || novaForma.toLowerCase() === "débito" || novaForma.toLowerCase() === "debito") pagamentoFinal = "Cartão Débito";
+        else if (novaForma === "4" || novaForma.toLowerCase() === "crédito" || novaForma.toLowerCase() === "credito") pagamentoFinal = "Cartão Crédito";
+        else {
+            alert("Opção inválida. Nenhuma alteração foi feita.");
+            return;
+        }
+
+        let descricaoAntiga = item.descricao;
+        item.descricao = item.descricao.replace(/\((Dinheiro|PIX|Pix|Cartão Débito|Cartão Crédito|Débito|Crédito|Cartão)\)/i, `(${pagamentoFinal})`);
+        
+        if (descricaoAntiga !== item.descricao) {
+            atualizarCaixaUI();
+            salvarNoFirebase();
+            alert(`A forma de pagamento foi alterada para ${pagamentoFinal}! O saldo da gaveta foi atualizado na hora.`);
+        } else {
+            alert("Não foi possível identificar a forma de pagamento antiga para alterar.");
+        }
+    }
+
+    function atualizarCaixaUI() {
+        let tbody = document.getElementById('tabela-caixa');
+        tbody.innerHTML = '';
+        let totalEntradas = 0, totalSaidas = 0, dataAtualAgrupamento = '';
+        let lucrosPorDia = {};
+        let saldoGaveta = 0; 
+        
+        caixa.forEach(item => {
+            let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
+            if (!lucrosPorDia[dataCurta]) lucrosPorDia[dataCurta] = 0;
+            if (item.tipo === 'entrada') lucrosPorDia[dataCurta] += item.valor;
+            else if (item.tipo === 'saida') lucrosPorDia[dataCurta] -= item.valor;
+        });
+
+        caixa.forEach((item, index) => {
+            let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
+            let hora = item.data && item.data.includes(',') ? item.data.split(',')[1].trim() : "";
+
+            if (dataCurta !== dataAtualAgrupamento) {
+                let lucroDoDia = lucrosPorDia[dataCurta] || 0;
+                let corLucro = lucroDoDia >= 0 ? 'var(--success)' : 'var(--danger)'; 
+                let isOpen = diasAbertosCaixa.has(dataCurta);
+                let iconeSeta = isOpen ? "🔽" : "▶️";
+
+                let trDivisor = document.createElement('tr');
+                trDivisor.className = 'linha-divisor-data';
+                trDivisor.onclick = () => toggleDiaCaixa(dataCurta);
+                trDivisor.innerHTML = `
+                    <td colspan="5">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span>${iconeSeta} &nbsp;📅 ${dataCurta}</span>
+                            <span style="color: ${corLucro}; font-size: 15px;">Saldo do Dia: R$ ${lucroDoDia.toFixed(2)}</span>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(trDivisor);
+                dataAtualAgrupamento = dataCurta;
+            }
+
+            let isOpen = diasAbertosCaixa.has(dataCurta);
+            let tr = document.createElement('tr');
+            tr.style.display = isOpen ? 'table-row' : 'none';
+
+            let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
+            
+            if (item.tipo === 'entrada') {
+                totalEntradas += item.valor;
+                if (item.descricao.includes('Dinheiro') || (!item.descricao.includes('PIX') && !item.descricao.includes('Pix') && !item.descricao.includes('Cartão') && !item.descricao.includes('Débito') && !item.descricao.includes('Crédito'))) {
+                    saldoGaveta += item.valor;
+                }
+            } else if (item.tipo === 'saida') {
+                totalSaidas += item.valor;
+                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:')) {
+                    saldoGaveta -= item.valor;
+                }
+            }
+
+            let exibeDataHora = hora !== "" ? hora : dataCurta;
+            let bgStyle = item.descricao.includes('🔒 FECHAMENTO DE TURNO REGISTRADO') ? 'background-color: #fffbeb;' : '';
+
+            // BOTÃO DE EDITAR ADICIONADO AQUI
+            tr.innerHTML = `
+                <td style="color: var(--gray-light); font-weight: 700; ${bgStyle}">${exibeDataHora}</td>
+                <td style="font-weight: 800; color: var(--dark); ${bgStyle}">${item.descricao}</td>
+                <td class="${classeCor}" style="${bgStyle}">${item.tipo.toUpperCase()}</td>
+                <td class="${classeCor}" style="${bgStyle}; font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
+                <td style="${bgStyle}; white-space: nowrap;">
+                    ${(item.descricao.includes('Venda:') || item.descricao.includes('Pagamento Fiado')) ? `<button class="btn-edit" onclick="editarPagamentoCaixa(${index})" style="padding: 6px 10px; font-size: 12px; margin-right: 5px; border-radius: 6px;" title="Alterar Pagamento">✏️ Editar</button>` : ''}
+                    <button class="btn-delete" onclick="excluirCaixa(${index})" style="padding: 6px 12px; font-size: 12px; border-radius: 6px;">Desfazer</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('total-entradas').innerHTML = `Entradas (Geral)<br><b style="font-size: 26px;">R$ ${totalEntradas.toFixed(2)}</b>`;
+        document.getElementById('saldo-total').innerHTML = `Dinheiro na Gaveta<br><b style="font-size: 26px;">R$ ${saldoGaveta.toFixed(2)}</b>`;
+        document.getElementById('saldo-total').style.color = saldoGaveta >= 0 ? 'var(--dark)' : 'var(--danger)';
+        
+        atualizarOpcoesMeses();
+        if (document.getElementById('lucro').classList.contains('active')) {
+            calcularLucroMensal();
+        }
+    }
+
+    function excluirCaixa(index) {
+        if (confirm('Tem certeza que deseja apagar este registro do caixa?')) {
+            caixa.splice(index, 1);
+            salvarNoFirebase();
+        }
     }
 
     // ==========================================
@@ -1005,148 +1130,6 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    }
-
-    // ==========================================
-    // CONTROLE DE ESTOQUE E CAIXA
-    // ==========================================
-    function atualizarEstoqueUI() {
-        let tbody = document.getElementById('tabela-estoque');
-        tbody.innerHTML = '';
-        estoque.forEach((produto, index) => {
-            let preco = produto.preco ? produto.preco : 0;
-            let vendidos = produto.vendidos ? parseFloat(produto.vendidos) : 0;
-            let valorTotalArrecadado = preco * vendidos; 
-            let vendidosExibicao = Number(vendidos.toFixed(3));
-
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong style="color: var(--dark); font-size: 15px;">${produto.nome}</strong></td>
-                <td style="font-weight: 700;">R$ ${preco.toFixed(2)}</td>
-                <td style="color: var(--success); font-size: 16px; font-weight: 900;">${vendidosExibicao}</td>
-                <td style="color: var(--primary); font-weight: 900; font-size: 16px;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
-                <td>
-                    <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem" style="padding: 6px 12px; font-size: 12px;">Zerar</button>
-                    <button class="btn-delete" onclick="excluirProduto(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-        atualizarSelects(); 
-    }
-
-    function cadastrarProduto() {
-        let nome = document.getElementById('nome-produto').value;
-        let preco = parseFloat(document.getElementById('preco-produto').value);
-        if (!nome || isNaN(preco) || preco < 0) { alert('Preencha o nome e o preço de venda!'); return; }
-        estoque.push({ nome: nome, preco: preco, vendidos: 0 });
-        document.getElementById('nome-produto').value = '';
-        document.getElementById('preco-produto').value = '';
-        salvarNoFirebase();
-        document.getElementById('nome-produto').focus();
-    }
-
-    function zerarVendas(index) {
-        if (confirm(`Deseja zerar a quantidade vendida de "${estoque[index].nome}"?`)) {
-            estoque[index].vendidos = 0;
-            salvarNoFirebase();
-        }
-    }
-
-    function excluirProduto(index) {
-        if (confirm(`Tem certeza que deseja remover "${estoque[index].nome}"?`)) {
-            estoque.splice(index, 1);
-            salvarNoFirebase();
-        }
-    }
-
-    function toggleDiaCaixa(dataCurta) {
-        if(diasAbertosCaixa.has(dataCurta)) {
-            diasAbertosCaixa.delete(dataCurta);
-        } else {
-            diasAbertosCaixa.add(dataCurta);
-        }
-        atualizarCaixaUI();
-    }
-
-    function atualizarCaixaUI() {
-        let tbody = document.getElementById('tabela-caixa');
-        tbody.innerHTML = '';
-        let totalEntradas = 0, totalSaidas = 0, dataAtualAgrupamento = '';
-        let lucrosPorDia = {};
-        let saldoGaveta = 0; 
-        
-        caixa.forEach(item => {
-            let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
-            if (!lucrosPorDia[dataCurta]) lucrosPorDia[dataCurta] = 0;
-            if (item.tipo === 'entrada') lucrosPorDia[dataCurta] += item.valor;
-            else if (item.tipo === 'saida') lucrosPorDia[dataCurta] -= item.valor;
-        });
-
-        caixa.forEach((item, index) => {
-            let dataCurta = item.data ? item.data.split(',')[0].trim() : "Data Indefinida";
-            let hora = item.data && item.data.includes(',') ? item.data.split(',')[1].trim() : "";
-
-            if (dataCurta !== dataAtualAgrupamento) {
-                let lucroDoDia = lucrosPorDia[dataCurta] || 0;
-                let corLucro = lucroDoDia >= 0 ? 'var(--success)' : 'var(--danger)'; 
-                let isOpen = diasAbertosCaixa.has(dataCurta);
-                let iconeSeta = isOpen ? "🔽" : "▶️";
-
-                let trDivisor = document.createElement('tr');
-                trDivisor.className = 'linha-divisor-data';
-                trDivisor.onclick = () => toggleDiaCaixa(dataCurta);
-                trDivisor.innerHTML = `
-                    <td colspan="5">
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <span>${iconeSeta} &nbsp;📅 ${dataCurta}</span>
-                            <span style="color: ${corLucro}; font-size: 15px;">Saldo do Dia: R$ ${lucroDoDia.toFixed(2)}</span>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(trDivisor);
-                dataAtualAgrupamento = dataCurta;
-            }
-
-            let isOpen = diasAbertosCaixa.has(dataCurta);
-            let tr = document.createElement('tr');
-            tr.style.display = isOpen ? 'table-row' : 'none';
-
-            let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
-            
-            if (item.tipo === 'entrada') {
-                totalEntradas += item.valor;
-                if (item.descricao.includes('Dinheiro') || (!item.descricao.includes('PIX') && !item.descricao.includes('Pix') && !item.descricao.includes('Cartão') && !item.descricao.includes('Débito') && !item.descricao.includes('Crédito'))) {
-                    saldoGaveta += item.valor;
-                }
-            } else if (item.tipo === 'saida') {
-                totalSaidas += item.valor;
-                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:')) {
-                    saldoGaveta -= item.valor;
-                }
-            }
-
-            let exibeDataHora = hora !== "" ? hora : dataCurta;
-            let bgStyle = item.descricao.includes('🔒 FECHAMENTO DE TURNO REGISTRADO') ? 'background-color: #fffbeb;' : '';
-
-            tr.innerHTML = `
-                <td style="color: var(--gray-light); font-weight: 700; ${bgStyle}">${exibeDataHora}</td>
-                <td style="font-weight: 800; color: var(--dark); ${bgStyle}">${item.descricao}</td>
-                <td class="${classeCor}" style="${bgStyle}">${item.tipo.toUpperCase()}</td>
-                <td class="${classeCor}" style="${bgStyle}; font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
-                <td style="${bgStyle}"><button class="btn-delete" onclick="excluirCaixa(${index})" style="padding: 6px 12px; font-size: 12px;">Desfazer</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        document.getElementById('total-entradas').innerHTML = `Entradas (Geral)<br><b style="font-size: 26px;">R$ ${totalEntradas.toFixed(2)}</b>`;
-        document.getElementById('saldo-total').innerHTML = `Dinheiro na Gaveta<br><b style="font-size: 26px;">R$ ${saldoGaveta.toFixed(2)}</b>`;
-        document.getElementById('saldo-total').style.color = saldoGaveta >= 0 ? 'var(--dark)' : 'var(--danger)';
-        
-        atualizarOpcoesMeses();
-        if (document.getElementById('lucro').classList.contains('active')) {
-            calcularLucroMensal();
-        }
     }
 
     // ==========================================
@@ -1295,6 +1278,59 @@
     function excluirDespesa(index) {
         if (confirm('Tem certeza que deseja apagar esta despesa? (Nota: Isso não devolverá o dinheiro automaticamente para o Caixa ou Cofre. Ajuste manualmente se necessário).')) {
             despesas.splice(index, 1);
+            salvarNoFirebase();
+        }
+    }
+
+    // ==========================================
+    // CONTROLE DE ESTOQUE E CAIXA
+    // ==========================================
+    function atualizarEstoqueUI() {
+        let tbody = document.getElementById('tabela-estoque');
+        tbody.innerHTML = '';
+        estoque.forEach((produto, index) => {
+            let preco = produto.preco ? produto.preco : 0;
+            let vendidos = produto.vendidos ? parseFloat(produto.vendidos) : 0;
+            let valorTotalArrecadado = preco * vendidos; 
+            let vendidosExibicao = Number(vendidos.toFixed(3));
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong style="color: var(--dark); font-size: 15px;">${produto.nome}</strong></td>
+                <td style="font-weight: 700;">R$ ${preco.toFixed(2)}</td>
+                <td style="color: var(--success); font-size: 16px; font-weight: 900;">${vendidosExibicao}</td>
+                <td style="color: var(--primary); font-weight: 900; font-size: 16px;">R$ ${valorTotalArrecadado.toFixed(2)}</td>
+                <td>
+                    <button class="btn-edit" onclick="zerarVendas(${index})" title="Zera a contagem" style="padding: 6px 12px; font-size: 12px;">Zerar</button>
+                    <button class="btn-delete" onclick="excluirProduto(${index})" style="padding: 6px 12px; font-size: 12px;">Excluir</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        atualizarSelects(); 
+    }
+
+    function cadastrarProduto() {
+        let nome = document.getElementById('nome-produto').value;
+        let preco = parseFloat(document.getElementById('preco-produto').value);
+        if (!nome || isNaN(preco) || preco < 0) { alert('Preencha o nome e o preço de venda!'); return; }
+        estoque.push({ nome: nome, preco: preco, vendidos: 0 });
+        document.getElementById('nome-produto').value = '';
+        document.getElementById('preco-produto').value = '';
+        salvarNoFirebase();
+        document.getElementById('nome-produto').focus();
+    }
+
+    function zerarVendas(index) {
+        if (confirm(`Deseja zerar a quantidade vendida de "${estoque[index].nome}"?`)) {
+            estoque[index].vendidos = 0;
+            salvarNoFirebase();
+        }
+    }
+
+    function excluirProduto(index) {
+        if (confirm(`Tem certeza que deseja remover "${estoque[index].nome}"?`)) {
+            estoque.splice(index, 1);
             salvarNoFirebase();
         }
     }
