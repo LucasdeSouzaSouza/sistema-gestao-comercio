@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mercearia Rsouza</title>
     
-    <!-- CONFIGURAÇÕES DE APLICATIVO (PWA) -->
+    <!-- CONFIGURAÇÕES DE APLICATIVO (PWA) COM ÍCONE NOVO -->
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -278,7 +278,7 @@
         </p>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 Vendas</button>
+            <button class="tab-btn active" onclick="mudarAba('vendas')">🛒 Vendas PDV</button>
             <button class="tab-btn" onclick="mudarAba('caixa')">💵 Caixa Dia</button>
             <button class="tab-btn" onclick="mudarAba('cofre')">🏦 Cofre (Notas)</button>
             <button class="tab-btn" onclick="mudarAba('estoque')">📦 Estoque</button>
@@ -288,29 +288,49 @@
             <button class="tab-btn" onclick="mudarAba('usuarios')" style="color: var(--primary);">👥 Equipe</button>
         </div>
 
-        <!-- SEÇÃO DE VENDAS -->
+        <!-- SEÇÃO DE VENDAS (AGORA COM CESTA DE COMPRAS) -->
         <div id="vendas" class="section active">
-            <div class="form-group">
-                <select id="venda-produto" onchange="resetarPDV()"></select>
-                <input type="number" id="venda-qtd" placeholder="Qtd" step="any" min="0.001" oninput="calcularVenda()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
-                <input type="number" id="venda-valor-desejado" placeholder="Ou valor (R$)" step="0.01" oninput="calcularPorValor()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
-                
-                <select id="venda-pagamento" onkeypress="if(event.key === 'Enter') finalizarVenda()">
-                    <option value="Dinheiro">Dinheiro</option>
-                    <option value="PIX">PIX</option>
+            
+            <div class="form-group" style="padding-bottom: 10px;">
+                <select id="venda-produto" onchange="resetarInputsVenda()"></select>
+                <input type="number" id="venda-qtd" placeholder="Qtd" step="any" min="0.001" oninput="calcularVendaTemporaria()" onkeypress="if(event.key === 'Enter') adicionarAoCarrinho()">
+                <input type="number" id="venda-valor-desejado" placeholder="Ou valor (R$)" step="0.01" oninput="calcularPorValorTemporario()" onkeypress="if(event.key === 'Enter') adicionarAoCarrinho()">
+                <button class="btn-add" onclick="adicionarAoCarrinho()" style="padding: 14px 20px;">➕ Add à Cesta</button>
+            </div>
+
+            <!-- Tabela da Cesta de Compras -->
+            <div class="table-container" style="margin-bottom: 25px; margin-top: 0; box-shadow: none; border: 2px solid var(--border);">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="background: #f1f5f9;">Produto na Cesta</th>
+                            <th style="background: #f1f5f9;">Qtd</th>
+                            <th style="background: #f1f5f9;">Subtotal</th>
+                            <th style="background: #f1f5f9;">Remover</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-carrinho">
+                        <tr><td colspan="4" style="text-align: center; color: var(--gray-light);">Sua cesta está vazia. Adicione produtos acima.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-group" style="background: #eef2ff; border-color: #c7d2fe;">
+                <select id="venda-pagamento">
+                    <option value="Dinheiro">Pagar em Dinheiro</option>
+                    <option value="PIX">Pagar no PIX</option>
                     <option value="Débito">Cartão Débito</option>
                     <option value="Crédito">Cartão Crédito</option>
                 </select>
-                
-                <input type="number" id="venda-valor-recebido" placeholder="Valor Recebido (Para Troco)" step="0.01" oninput="calcularTroco()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
+                <input type="number" id="venda-valor-recebido" placeholder="Valor Entregue pelo Cliente (Calcula Troco)" step="0.01" oninput="calcularTrocoCarrinho()" onkeypress="if(event.key === 'Enter') finalizarVenda()">
             </div>
 
             <div class="resumo">
-                <span id="venda-total-container">Total a Pagar<br><b style="color: var(--danger);">R$ <span id="venda-total">0.00</span></b></span>
+                <span id="venda-total-container">Total da Compra<br><b style="color: var(--danger);">R$ <span id="venda-total">0.00</span></b></span>
                 <span id="venda-troco-container">Troco a Devolver<br><b style="color: var(--success);">R$ <span id="venda-troco">0.00</span></b></span>
             </div>
 
-            <button class="btn-venda" onclick="finalizarVenda()">Finalizar Venda 💳</button>
+            <button class="btn-venda" onclick="finalizarVenda()">Finalizar Venda da Cesta 💳</button>
         </div>
 
         <!-- SEÇÃO DE CAIXA DO DIA -->
@@ -594,7 +614,9 @@
         { nome: "Raimundo", senha: "raimundo123" }
     ]; 
     
-    let totalVendaAtual = 0; 
+    // VARIÁVEIS DO NOVO CARRINHO DE COMPRAS
+    let carrinho = [];
+    
     let usuarioLogado = ""; 
     let diasAbertosCaixa = new Set([new Date().toLocaleDateString('pt-BR')]);
     let graficoPagamentosInstancia = null;
@@ -617,7 +639,6 @@
             fiados = dados.fiados || JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = dados.despesas || JSON.parse(localStorage.getItem('dadosDespesas')) || [];
             
-            // ESCUDO ANTI-APAGÃO: Se o celular velho não mandou o cofre, puxamos do PC e devolvemos pra nuvem
             if (dados.cofre !== undefined) {
                 cofre = dados.cofre;
             } else {
@@ -625,7 +646,6 @@
                 precisaSalvarNuvem = true;
             }
             
-            // ESCUDO ANTI-APAGÃO para os usuários
             if (dados.usuarios && dados.usuarios.length > 0) {
                 usuarios = dados.usuarios;
             } else {
@@ -731,106 +751,16 @@
         if(aba === 'fiados') document.getElementById('fiado-nome').focus();
         if(aba === 'despesas') document.getElementById('desc-despesa').focus();
         
-        // GATILHOS DE RENDERIZAÇÃO IMEDIATA (Evita tela em branco)
-        if(aba === 'usuarios') {
-            atualizarUsuariosUI();
-            document.getElementById('novo-usuario-nome').focus();
-        }
-        if(aba === 'cofre') {
-            atualizarCofreUI();
-            document.getElementById('desc-cofre').focus();
-        }
-        
+        if(aba === 'usuarios') { atualizarUsuariosUI(); document.getElementById('novo-usuario-nome').focus(); }
+        if(aba === 'cofre') { atualizarCofreUI(); document.getElementById('desc-cofre').focus(); }
         if(aba === 'lucro') calcularLucroMensal();
     }
 
     // ==========================================
-    // GESTÃO DO COFRE 
+    // SISTEMA DE VENDAS COM CESTA/CARRINHO
     // ==========================================
-    function atualizarCofreUI() {
-        let tbody = document.getElementById('tabela-cofre');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        let saldoCofre = 0;
+    let valorItemTemporario = 0;
 
-        if (!Array.isArray(cofre)) cofre = [];
-
-        cofre.forEach((item, index) => {
-            if (!item) return; 
-
-            let tr = document.createElement('tr');
-            let dataCompleta = item.data || "";
-            let dataCurta = dataCompleta.includes(',') ? dataCompleta.split(',')[0].trim() : (dataCompleta.split(' ')[0] || "Sem Data");
-            let hora = dataCompleta.includes(',') ? dataCompleta.split(',')[1].trim() : (dataCompleta.split(' ')[1] || "");
-            
-            let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
-            let iconTipo = item.tipo === 'entrada' ? '📥 Entrou' : '📤 Saiu';
-            
-            let valorItem = parseFloat(item.valor);
-            if (isNaN(valorItem)) valorItem = 0;
-
-            if (item.tipo === 'entrada') saldoCofre += valorItem;
-            else saldoCofre -= valorItem;
-
-            let descItem = item.descricao || "Sem motivo informado";
-            let userItem = item.usuario || "Desconhecido";
-
-            tr.innerHTML = `
-                <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}<br><span style="font-size:12px">${hora}</span></td>
-                <td style="font-weight: 800; color: var(--dark);">${descItem}</td>
-                <td style="color: var(--gray); font-weight: 600;">👤 ${userItem}</td>
-                <td class="${classeCor}">${iconTipo}</td>
-                <td class="${classeCor}" style="font-size: 16px;">R$ ${valorItem.toFixed(2)}</td>
-                <td><button class="btn-delete" onclick="excluirCofre(${index})" style="padding: 6px 12px; font-size: 12px;">Desfazer</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        let displayCofre = document.getElementById('saldo-cofre-display');
-        if(displayCofre) displayCofre.innerText = saldoCofre.toFixed(2);
-    }
-
-    function adicionarCofre() {
-        let desc = document.getElementById('desc-cofre').value.trim();
-        let tipo = document.getElementById('tipo-cofre').value;
-        let valor = parseFloat(document.getElementById('valor-cofre').value);
-
-        if (!desc || isNaN(valor) || valor <= 0) { 
-            alert('Preencha um motivo e um valor válido!'); return; 
-        }
-
-        if (!Array.isArray(cofre)) cofre = [];
-
-        let dataAtual = new Date().toLocaleString('pt-BR');
-        
-        cofre.push({ 
-            data: dataAtual, 
-            descricao: desc, 
-            tipo: tipo, 
-            valor: valor,
-            usuario: usuarioLogado
-        });
-        
-        document.getElementById('desc-cofre').value = '';
-        document.getElementById('valor-cofre').value = '';
-        
-        atualizarCofreUI(); 
-        salvarNoFirebase();
-        
-        document.getElementById('desc-cofre').focus();
-    }
-
-    function excluirCofre(index) {
-        if (confirm(`Atenção: Tem certeza que deseja apagar o registro "${cofre[index].descricao}" do cofre? Isso alterará o saldo de notas guardadas.`)) {
-            cofre.splice(index, 1);
-            atualizarCofreUI(); 
-            salvarNoFirebase();
-        }
-    }
-
-    // ==========================================
-    // OUTRAS FUNÇÕES GERAIS E ATUALIZAÇÕES
-    // ==========================================
     function atualizarSelects() {
         let selectVenda = document.getElementById('venda-produto');
         let selectFiado = document.getElementById('fiado-produto');
@@ -855,82 +785,143 @@
         if (valFiado) selectFiado.value = valFiado;
     }
 
-    function calcularVenda() {
-        let index = document.getElementById('venda-produto').value;
-        let qtd = parseFloat(document.getElementById('venda-qtd').value) || 0;
-        if (index === "") return resetarPDV();
-
-        let preco = estoque[index].preco || 0;
-        totalVendaAtual = preco * qtd;
-        
-        document.getElementById('venda-valor-desejado').value = totalVendaAtual > 0 ? totalVendaAtual.toFixed(2) : '';
-        document.getElementById('venda-total').innerText = totalVendaAtual.toFixed(2);
-        calcularTroco();
+    function resetarInputsVenda() {
+        document.getElementById('venda-qtd').value = "";
+        document.getElementById('venda-valor-desejado').value = "";
+        valorItemTemporario = 0;
     }
 
-    function calcularPorValor() {
+    function calcularVendaTemporaria() {
+        let index = document.getElementById('venda-produto').value;
+        let qtd = parseFloat(document.getElementById('venda-qtd').value) || 0;
+        if (index === "") return resetarInputsVenda();
+
+        let preco = estoque[index].preco || 0;
+        valorItemTemporario = preco * qtd;
+        
+        document.getElementById('venda-valor-desejado').value = valorItemTemporario > 0 ? valorItemTemporario.toFixed(2) : '';
+    }
+
+    function calcularPorValorTemporario() {
         let index = document.getElementById('venda-produto').value;
         let valor = parseFloat(document.getElementById('venda-valor-desejado').value) || 0;
-        if (index === "") return resetarPDV();
+        if (index === "") return resetarInputsVenda();
 
         let preco = estoque[index].preco || 0;
         let qtd = preco > 0 ? valor / preco : 0;
         
         document.getElementById('venda-qtd').value = qtd > 0 ? Number(qtd.toFixed(3)) : '';
-        totalVendaAtual = valor;
-        document.getElementById('venda-total').innerText = totalVendaAtual.toFixed(2);
-        calcularTroco();
+        valorItemTemporario = valor;
     }
-    
-    function calcularTroco() {
-        let recebido = parseFloat(document.getElementById('venda-valor-recebido').value) || 0;
-        let troco = recebido - totalVendaAtual;
+
+    function adicionarAoCarrinho() {
+        let index = document.getElementById('venda-produto').value;
+        let qtd = parseFloat(document.getElementById('venda-qtd').value);
+
+        if (index === "" || isNaN(qtd) || qtd <= 0) {
+            alert('Por favor, selecione um produto e digite uma quantidade ou valor válido.');
+            return;
+        }
+
+        let produto = estoque[index];
+        let preco = produto.preco || 0;
+        let subtotal = preco * qtd;
+
+        // Adiciona na cesta
+        carrinho.push({
+            estoqueIndex: index,
+            nome: produto.nome,
+            qtd: qtd,
+            subtotal: subtotal
+        });
+
+        // Limpa os campos para o próximo bip
+        document.getElementById('venda-produto').value = "";
+        resetarInputsVenda();
         
-        if (troco < 0 || totalVendaAtual === 0) {
+        atualizarCarrinhoUI();
+        document.getElementById('venda-produto').focus();
+    }
+
+    function removerDoCarrinho(i) {
+        carrinho.splice(i, 1);
+        atualizarCarrinhoUI();
+    }
+
+    function atualizarCarrinhoUI() {
+        let tbody = document.getElementById('tabela-carrinho');
+        tbody.innerHTML = '';
+        let totalCesta = 0;
+
+        if (carrinho.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--gray-light);">Sua cesta está vazia. Adicione produtos acima.</td></tr>';
+        } else {
+            carrinho.forEach((item, i) => {
+                totalCesta += item.subtotal;
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: 800; color: var(--dark);">${item.nome}</td>
+                    <td style="font-weight: 600;">${Number(item.qtd.toFixed(3))}</td>
+                    <td style="color: var(--primary); font-weight: 800;">R$ ${item.subtotal.toFixed(2)}</td>
+                    <td><button class="btn-delete" onclick="removerDoCarrinho(${i})" style="padding: 4px 10px; font-size: 12px; border-radius: 6px;">❌</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('venda-total').innerText = totalCesta.toFixed(2);
+        calcularTrocoCarrinho(totalCesta);
+    }
+
+    function calcularTrocoCarrinho(total) {
+        if (total === undefined) {
+            total = carrinho.reduce((acc, item) => acc + item.subtotal, 0);
+        }
+        let recebido = parseFloat(document.getElementById('venda-valor-recebido').value) || 0;
+        let troco = recebido - total;
+        
+        if (troco < 0 || total === 0) {
             document.getElementById('venda-troco').innerText = "0.00";
         } else {
             document.getElementById('venda-troco').innerText = troco.toFixed(2);
         }
     }
 
-    function resetarPDV() {
-        totalVendaAtual = 0;
-        document.getElementById('venda-valor-desejado').value = "";
-        document.getElementById('venda-qtd').value = "";
-        document.getElementById('venda-valor-recebido').value = "";
-        document.getElementById('venda-total').innerText = "0.00";
-        document.getElementById('venda-troco').innerText = "0.00";
-    }
-
     function finalizarVenda() {
-        let index = document.getElementById('venda-produto').value;
-        let qtd = parseFloat(document.getElementById('venda-qtd').value);
-        let formaPagamento = document.getElementById('venda-pagamento').value;
-
-        if (index === "" || isNaN(qtd) || qtd <= 0) {
-            alert('Por favor, selecione um produto e digite a quantidade ou valor.');
+        if (carrinho.length === 0) {
+            alert('A cesta está vazia! Adicione produtos na cesta antes de finalizar.');
             return;
         }
 
-        let produto = estoque[index];
-        let total = totalVendaAtual;
+        let formaPagamento = document.getElementById('venda-pagamento').value;
+        let totalVendaFinal = 0;
+        let itensDescricao = [];
 
-        estoque[index].vendidos = (estoque[index].vendidos || 0) + qtd; 
+        // Dá baixa no estoque para cada item da cesta
+        carrinho.forEach(item => {
+            totalVendaFinal += item.subtotal;
+            estoque[item.estoqueIndex].vendidos = (estoque[item.estoqueIndex].vendidos || 0) + item.qtd;
+            itensDescricao.push(`${Number(item.qtd.toFixed(3))}x ${item.nome}`);
+        });
+
         let dataAtual = new Date().toLocaleString('pt-BR');
-        let descricaoQtd = Number(qtd.toFixed(3));
+        // Cria uma descrição completa unindo tudo
+        let descricaoFinal = `Venda: ${itensDescricao.join(', ')} (${formaPagamento}) - ${usuarioLogado}`;
         
         caixa.push({ 
             data: dataAtual, 
-            descricao: `Venda: ${descricaoQtd}x ${produto.nome} (${formaPagamento}) - ${usuarioLogado}`, 
+            descricao: descricaoFinal, 
             tipo: 'entrada', 
-            valor: total 
+            valor: totalVendaFinal 
         });
 
         salvarNoFirebase(); 
         
-        document.getElementById('venda-produto').value = "";
+        // Zera o carrinho
+        carrinho = [];
+        atualizarCarrinhoUI();
         document.getElementById('venda-pagamento').value = "Dinheiro";
-        resetarPDV();
+        document.getElementById('venda-valor-recebido').value = "";
         document.getElementById('venda-produto').focus(); 
     }
 
@@ -1158,9 +1149,86 @@
         }
     }
 
-    function excluirCaixa(index) {
-        if (confirm('Tem certeza que deseja apagar este registro do caixa?')) {
-            caixa.splice(index, 1);
+    // ==========================================
+    // GESTÃO DO COFRE BLINDADA
+    // ==========================================
+    function atualizarCofreUI() {
+        let tbody = document.getElementById('tabela-cofre');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        let saldoCofre = 0;
+
+        if (!Array.isArray(cofre)) cofre = [];
+
+        cofre.forEach((item, index) => {
+            if (!item) return; 
+
+            let tr = document.createElement('tr');
+            let dataCompleta = item.data || "";
+            let dataCurta = dataCompleta.includes(',') ? dataCompleta.split(',')[0].trim() : (dataCompleta.split(' ')[0] || "Sem Data");
+            let hora = dataCompleta.includes(',') ? dataCompleta.split(',')[1].trim() : (dataCompleta.split(' ')[1] || "");
+            
+            let classeCor = item.tipo === 'entrada' ? 'entrada' : 'saida';
+            let iconTipo = item.tipo === 'entrada' ? '📥 Entrou' : '📤 Saiu';
+            
+            let valorItem = parseFloat(item.valor);
+            if (isNaN(valorItem)) valorItem = 0;
+
+            if (item.tipo === 'entrada') saldoCofre += valorItem;
+            else saldoCofre -= valorItem;
+
+            let descItem = item.descricao || "Sem motivo informado";
+            let userItem = item.usuario || "Desconhecido";
+
+            tr.innerHTML = `
+                <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}<br><span style="font-size:12px">${hora}</span></td>
+                <td style="font-weight: 800; color: var(--dark);">${descItem}</td>
+                <td style="color: var(--gray); font-weight: 600;">👤 ${userItem}</td>
+                <td class="${classeCor}">${iconTipo}</td>
+                <td class="${classeCor}" style="font-size: 16px;">R$ ${valorItem.toFixed(2)}</td>
+                <td><button class="btn-delete" onclick="excluirCofre(${index})" style="padding: 6px 12px; font-size: 12px;">Desfazer</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        let displayCofre = document.getElementById('saldo-cofre-display');
+        if(displayCofre) displayCofre.innerText = saldoCofre.toFixed(2);
+    }
+
+    function adicionarCofre() {
+        let desc = document.getElementById('desc-cofre').value.trim();
+        let tipo = document.getElementById('tipo-cofre').value;
+        let valor = parseFloat(document.getElementById('valor-cofre').value);
+
+        if (!desc || isNaN(valor) || valor <= 0) { 
+            alert('Preencha um motivo e um valor válido!'); return; 
+        }
+
+        if (!Array.isArray(cofre)) cofre = [];
+
+        let dataAtual = new Date().toLocaleString('pt-BR');
+        
+        cofre.push({ 
+            data: dataAtual, 
+            descricao: desc, 
+            tipo: tipo, 
+            valor: valor,
+            usuario: usuarioLogado
+        });
+        
+        document.getElementById('desc-cofre').value = '';
+        document.getElementById('valor-cofre').value = '';
+        
+        atualizarCofreUI(); 
+        salvarNoFirebase();
+        
+        document.getElementById('desc-cofre').focus();
+    }
+
+    function excluirCofre(index) {
+        if (confirm(`Atenção: Tem certeza que deseja apagar o registro "${cofre[index].descricao}" do cofre? Isso alterará o saldo de notas guardadas.`)) {
+            cofre.splice(index, 1);
+            atualizarCofreUI(); 
             salvarNoFirebase();
         }
     }
