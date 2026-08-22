@@ -204,7 +204,7 @@
         .health-bar-danger { background: var(--danger) !important; }
 
         /* ========================================== */
-        /* MODAL DE FECHAMENTO DE TURNO */
+        /* MODAIS DO SISTEMA */
         /* ========================================== */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -228,6 +228,10 @@
         }
 
         .alerta-cofre { text-align: center; color: var(--warning); font-weight: 800; font-size: 14px; margin-top: -15px; margin-bottom: 20px; background: #fffbeb; padding: 10px; border-radius: 12px; border: 1px solid #fde68a;}
+        
+        .moeda-box { display:flex; align-items:center; justify-content:space-between; background:#f8fafc; padding:10px 15px; border-radius:12px; border:1px solid var(--border); }
+        .moeda-box b { font-size: 18px; color: var(--dark); }
+        .moeda-box input { width: 70px; padding: 10px; margin:0; text-align: center; font-size: 16px; font-weight: 900;}
     </style>
 </head>
 <body>
@@ -298,7 +302,6 @@
                 <button class="btn-add" onclick="adicionarAoCarrinho()" style="padding: 14px 20px;">➕ Add à Cesta</button>
             </div>
 
-            <!-- Tabela da Cesta de Compras -->
             <div class="table-container" style="margin-bottom: 25px; margin-top: 0; box-shadow: none; border: 2px solid var(--border);">
                 <table>
                     <thead>
@@ -337,10 +340,13 @@
         <div id="caixa" class="section">
             <div class="resumo">
                 <span id="total-entradas" class="entrada">Entradas (Geral)<br>R$ 0.00</span>
-                <span id="saldo-total">Dinheiro na Gaveta<br>R$ 0.00</span>
+                <span id="saldo-total">Dinheiro na Gaveta<br>R$ 0.00<br><span id="display-moedas-gaveta" style="font-size: 13px; color: var(--warning); display: block; margin-top: 4px; font-weight: 800;">🪙 R$ 0.00 em moedas</span></span>
             </div>
 
-            <button class="btn-dark" onclick="abrirFechamento()">🔒 Fechar Turno / Calcular Gaveta</button>
+            <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
+                <button class="btn-dark" onclick="abrirFechamento()" style="flex: 2; margin-bottom: 0; min-width: 200px;">🔒 Fechar Turno / Gaveta</button>
+                <button class="btn-edit" onclick="abrirCalculadoraMoedas()" style="flex: 1; margin-bottom: 0; min-width: 150px; background: #fbbf24; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); color: #fff;">🪙 Contar Moedas</button>
+            </div>
 
             <div class="table-container">
                 <table>
@@ -588,6 +594,44 @@
     </div>
 </div>
 
+<!-- NOVO MODAL: CALCULADORA DE MOEDAS -->
+<div id="modal-moedas" class="modal-overlay">
+    <div class="modal-content">
+        <h3>🪙 Contador de Moedas</h3>
+        <p style="text-align: center; color: var(--gray-light); font-size: 14px; margin-top: -5px; margin-bottom: 20px;">Conte as moedas da gaveta e digite as quantidades.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div class="moeda-box">
+                <b>R$ 1,00</b>
+                <input type="number" id="qtd-m100" min="0" oninput="calcularTotalMoedas()">
+            </div>
+            <div class="moeda-box">
+                <b>R$ 0,50</b>
+                <input type="number" id="qtd-m50" min="0" oninput="calcularTotalMoedas()">
+            </div>
+            <div class="moeda-box">
+                <b>R$ 0,25</b>
+                <input type="number" id="qtd-m25" min="0" oninput="calcularTotalMoedas()">
+            </div>
+            <div class="moeda-box">
+                <b>R$ 0,10</b>
+                <input type="number" id="qtd-m10" min="0" oninput="calcularTotalMoedas()">
+            </div>
+            <div class="moeda-box">
+                <b>R$ 0,05</b>
+                <input type="number" id="qtd-m5" min="0" oninput="calcularTotalMoedas()">
+            </div>
+        </div>
+
+        <div style="text-align: center; font-size: 22px; margin-bottom: 20px; color: var(--dark); font-weight: 800;">
+            Total: <b style="color: var(--primary); font-size: 28px;">R$ <span id="total-moedas-calc">0.00</span></b>
+        </div>
+        
+        <button class="btn-add" onclick="salvarCalculoMoedas()" style="width: 100%; font-size: 18px; padding: 15px;">Salvar Moedas 💾</button>
+        <button class="btn-sair" onclick="document.getElementById('modal-moedas').style.display='none'" style="width: 100%; margin-top: 10px; padding: 15px; border-radius: 16px; border: none; font-size: 16px;">Fechar</button>
+    </div>
+</div>
+
 <script>
     // ==========================================
     // INICIALIZAÇÃO DO FIREBASE E VARIÁVEIS
@@ -614,6 +658,8 @@
         { nome: "Raimundo", senha: "raimundo123" }
     ]; 
     
+    let contagemMoedas = { m100: 0, m50: 0, m25: 0, m10: 0, m5: 0 }; // NOVO: Guarda as quantidades de moedas
+
     let carrinho = [];
     let usuarioLogado = ""; 
     let diasAbertosCaixa = new Set([new Date().toLocaleDateString('pt-BR')]);
@@ -637,26 +683,22 @@
             fiados = dados.fiados || JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = dados.despesas || JSON.parse(localStorage.getItem('dadosDespesas')) || [];
             
-            if (dados.cofre !== undefined) {
-                cofre = dados.cofre;
-            } else {
-                cofre = JSON.parse(localStorage.getItem('dadosCofre')) || cofre; 
-                precisaSalvarNuvem = true;
-            }
+            if (dados.cofre !== undefined) { cofre = dados.cofre; } 
+            else { cofre = JSON.parse(localStorage.getItem('dadosCofre')) || cofre; precisaSalvarNuvem = true; }
             
-            if (dados.usuarios && dados.usuarios.length > 0) {
-                usuarios = dados.usuarios;
-            } else {
-                let localUsr = JSON.parse(localStorage.getItem('dadosUsuarios'));
-                if (localUsr && localUsr.length > 0) usuarios = localUsr;
-                precisaSalvarNuvem = true; 
-            }
+            if (dados.usuarios && dados.usuarios.length > 0) { usuarios = dados.usuarios; } 
+            else { let localUsr = JSON.parse(localStorage.getItem('dadosUsuarios')); if (localUsr && localUsr.length > 0) usuarios = localUsr; precisaSalvarNuvem = true; }
+            
+            if (dados.contagemMoedas !== undefined) { contagemMoedas = dados.contagemMoedas; } 
+            else { contagemMoedas = JSON.parse(localStorage.getItem('dadosMoedas')) || contagemMoedas; precisaSalvarNuvem = true; }
+            
         } else {
             caixa = JSON.parse(localStorage.getItem('dadosCaixa')) || [];
             estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
             cofre = JSON.parse(localStorage.getItem('dadosCofre')) || [];
+            contagemMoedas = JSON.parse(localStorage.getItem('dadosMoedas')) || { m100: 0, m50: 0, m25: 0, m10: 0, m5: 0 };
             let localUsr = JSON.parse(localStorage.getItem('dadosUsuarios'));
             if (localUsr && localUsr.length > 0) usuarios = localUsr;
             precisaSalvarNuvem = true;
@@ -680,6 +722,7 @@
         localStorage.setItem('dadosDespesas', JSON.stringify(despesas));
         localStorage.setItem('dadosCofre', JSON.stringify(cofre));
         localStorage.setItem('dadosUsuarios', JSON.stringify(usuarios));
+        localStorage.setItem('dadosMoedas', JSON.stringify(contagemMoedas));
 
         db.collection("sistema").doc("dados_loja").set({
             caixa: caixa,
@@ -687,7 +730,8 @@
             fiados: fiados,
             despesas: despesas,
             cofre: cofre, 
-            usuarios: usuarios
+            usuarios: usuarios,
+            contagemMoedas: contagemMoedas
         }, { merge: true }).catch((error) => {
             console.error("Erro ao salvar:", error);
         });
@@ -746,7 +790,7 @@
         if(aba === 'estoque') document.getElementById('nome-produto').focus();
         if(aba === 'fiados') document.getElementById('fiado-nome').focus();
         if(aba === 'despesas') document.getElementById('desc-despesa').focus();
-        
+        if(aba === 'caixa') atualizarCaixaUI();
         if(aba === 'usuarios') { atualizarUsuariosUI(); document.getElementById('novo-usuario-nome').focus(); }
         if(aba === 'cofre') { atualizarCofreUI(); document.getElementById('desc-cofre').focus(); }
         if(aba === 'lucro') calcularLucroMensal();
@@ -917,6 +961,44 @@
     }
 
     // ==========================================
+    // CONTADOR DE MOEDAS DA GAVETA (NOVO)
+    // ==========================================
+    function abrirCalculadoraMoedas() {
+        document.getElementById('qtd-m100').value = contagemMoedas.m100 || "";
+        document.getElementById('qtd-m50').value = contagemMoedas.m50 || "";
+        document.getElementById('qtd-m25').value = contagemMoedas.m25 || "";
+        document.getElementById('qtd-m10').value = contagemMoedas.m10 || "";
+        document.getElementById('qtd-m5').value = contagemMoedas.m5 || "";
+        calcularTotalMoedas();
+        document.getElementById('modal-moedas').style.display = 'flex';
+    }
+
+    function calcularTotalMoedas() {
+        let m100 = parseInt(document.getElementById('qtd-m100').value) || 0;
+        let m50 = parseInt(document.getElementById('qtd-m50').value) || 0;
+        let m25 = parseInt(document.getElementById('qtd-m25').value) || 0;
+        let m10 = parseInt(document.getElementById('qtd-m10').value) || 0;
+        let m5 = parseInt(document.getElementById('qtd-m5').value) || 0;
+        
+        let total = (m100 * 1.00) + (m50 * 0.50) + (m25 * 0.25) + (m10 * 0.10) + (m5 * 0.05);
+        document.getElementById('total-moedas-calc').innerText = total.toFixed(2);
+        return total;
+    }
+
+    function salvarCalculoMoedas() {
+        contagemMoedas.m100 = parseInt(document.getElementById('qtd-m100').value) || 0;
+        contagemMoedas.m50 = parseInt(document.getElementById('qtd-m50').value) || 0;
+        contagemMoedas.m25 = parseInt(document.getElementById('qtd-m25').value) || 0;
+        contagemMoedas.m10 = parseInt(document.getElementById('qtd-m10').value) || 0;
+        contagemMoedas.m5 = parseInt(document.getElementById('qtd-m5').value) || 0;
+        
+        salvarNoFirebase();
+        atualizarCaixaUI(); 
+        document.getElementById('modal-moedas').style.display = 'none';
+    }
+
+
+    // ==========================================
     // CONTROLE DE CAIXA DO DIA E EDIÇÃO DE PAGAMENTO
     // ==========================================
     function toggleDiaCaixa(dataCurta) {
@@ -925,7 +1007,6 @@
         atualizarCaixaUI();
     }
 
-    // NOVA FUNÇÃO: Editar forma de pagamento da venda ou fiado
     function editarPagamentoCaixa(index) {
         let item = caixa[index];
         if (!item.descricao.includes('Venda:') && !item.descricao.includes('Pagamento Fiado')) {
@@ -1019,7 +1100,6 @@
             let exibeDataHora = hora !== "" ? hora : dataCurta;
             let bgStyle = item.descricao.includes('🔒 FECHAMENTO DE TURNO REGISTRADO') ? 'background-color: #fffbeb;' : '';
 
-            // BOTÃO DE EDITAR ADICIONADO AQUI
             tr.innerHTML = `
                 <td style="color: var(--gray-light); font-weight: 700; ${bgStyle}">${exibeDataHora}</td>
                 <td style="font-weight: 800; color: var(--dark); ${bgStyle}">${item.descricao}</td>
@@ -1033,8 +1113,12 @@
             tbody.appendChild(tr);
         });
 
+        // LÓGICA DE EXIBIR AS MOEDAS JUNTO COM O SALDO DA GAVETA
+        let totalMoedas = (contagemMoedas.m100 * 1.00) + (contagemMoedas.m50 * 0.50) + (contagemMoedas.m25 * 0.25) + (contagemMoedas.m10 * 0.10) + (contagemMoedas.m5 * 0.05);
+
         document.getElementById('total-entradas').innerHTML = `Entradas (Geral)<br><b style="font-size: 26px;">R$ ${totalEntradas.toFixed(2)}</b>`;
-        document.getElementById('saldo-total').innerHTML = `Dinheiro na Gaveta<br><b style="font-size: 26px;">R$ ${saldoGaveta.toFixed(2)}</b>`;
+        
+        document.getElementById('saldo-total').innerHTML = `Dinheiro na Gaveta<br><b style="font-size: 26px;">R$ ${saldoGaveta.toFixed(2)}</b><br><span id="display-moedas-gaveta" style="font-size: 13px; color: var(--warning); display: block; margin-top: 4px; font-weight: 800;">🪙 R$ ${totalMoedas.toFixed(2)} em moedas</span>`;
         document.getElementById('saldo-total').style.color = saldoGaveta >= 0 ? 'var(--dark)' : 'var(--danger)';
         
         atualizarOpcoesMeses();
