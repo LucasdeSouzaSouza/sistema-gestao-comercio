@@ -178,6 +178,7 @@
         
         .resumo span.entrada { border-bottom: 5px solid var(--success); color: var(--success); }
         .resumo span.saida { border-bottom: 5px solid var(--danger); color: var(--danger); }
+        .resumo span.saida-casa { border-bottom: 5px solid var(--warning); color: #b45309; background: #fffbeb; }
         .resumo span.cofre-card { border-bottom: 5px solid var(--primary); color: var(--primary); }
         #saldo-total { border-bottom: 5px solid var(--dark); color: var(--dark); }
         
@@ -287,7 +288,9 @@
             <button class="tab-btn" onclick="mudarAba('cofre')">🏦 Cofre (Notas)</button>
             <button class="tab-btn" onclick="mudarAba('estoque')">📦 Estoque</button>
             <button class="tab-btn" onclick="mudarAba('fiados')">📓 Fiados</button>
-            <button class="tab-btn" onclick="mudarAba('despesas')">💸 Despesas</button>
+            <!-- DIVISÃO DAS DESPESAS -->
+            <button class="tab-btn" onclick="mudarAba('despesas')">🏪 Gastos Loja</button>
+            <button class="tab-btn" onclick="mudarAba('pessoais')" style="color: #b45309;">🏠 Gastos Casa</button>
             <button class="tab-btn" onclick="mudarAba('lucro')">📊 Gestão/Painel</button>
             <button class="tab-btn" onclick="mudarAba('usuarios')" style="color: var(--primary);">👥 Equipe</button>
         </div>
@@ -466,14 +469,14 @@
             <div id="detalhes-fiado"></div>
         </div>
 
-        <!-- SEÇÃO DE DESPESAS -->
+        <!-- SEÇÃO DE DESPESAS DA LOJA -->
         <div id="despesas" class="section">
             <div class="resumo">
-                <span id="total-despesas-display" class="saida">Total de Despesas<br><b style="font-size: 26px;">R$ 0.00</b></span>
+                <span id="total-despesas-display" class="saida">Gastos da Mercearia<br><b style="font-size: 26px;">R$ 0.00</b></span>
             </div>
             
             <div class="form-group">
-                <input type="text" id="desc-despesa" placeholder="Descrição (ex: Fornecedor, Luz)" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
+                <input type="text" id="desc-despesa" placeholder="Descrição (ex: Fornecedor, Conta de Luz da Loja)" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 <input type="number" id="valor-despesa" placeholder="Valor (R$)" step="0.01" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 <input type="date" id="data-despesa" title="Data da Compra/Pagamento" onkeypress="if(event.key === 'Enter') adicionarDespesa()">
                 
@@ -484,7 +487,7 @@
                     <option value="Cofre">Dinheiro do Cofre</option>
                 </select>
 
-                <button class="btn-add" onclick="adicionarDespesa()">Registrar Despesa</button>
+                <button class="btn-add" onclick="adicionarDespesa()">Registrar Despesa Loja</button>
             </div>
 
             <div class="table-container">
@@ -502,6 +505,41 @@
             </div>
         </div>
 
+        <!-- SEÇÃO DE GASTOS PESSOAIS / CASA (NOVA) -->
+        <div id="pessoais" class="section">
+            <div class="resumo">
+                <span id="total-pessoais-display" class="saida-casa">Gastos de Casa / Pessoais<br><b style="font-size: 26px;">R$ 0.00</b></span>
+            </div>
+            
+            <div class="form-group" style="background: #fffbeb; border-color: #fde68a;">
+                <input type="text" id="desc-pessoal" placeholder="Descrição (ex: Lanche, Conta de Luz de Casa)" onkeypress="if(event.key === 'Enter') adicionarPessoal()">
+                <input type="number" id="valor-pessoal" placeholder="Valor Retirado (R$)" step="0.01" onkeypress="if(event.key === 'Enter') adicionarPessoal()">
+                <input type="date" id="data-pessoal" title="Data da Retirada" onkeypress="if(event.key === 'Enter') adicionarPessoal()">
+                
+                <select id="pagamento-pessoal" onkeypress="if(event.key === 'Enter') adicionarPessoal()">
+                    <option value="Dinheiro">Tirou da Gaveta</option>
+                    <option value="PIX">PIX (Conta da Loja)</option>
+                    <option value="Cofre">Tirou do Cofre</option>
+                </select>
+
+                <button class="btn-add" onclick="adicionarPessoal()" style="background-color: #d97706;">Registrar Retirada</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Motivo (Casa)</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-pessoais"></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- DASHBOARD DE GESTÃO -->
         <div id="lucro" class="section">
             <div class="form-group" style="justify-content: space-between; background: transparent; border: none; box-shadow: none; padding: 0;">
@@ -512,13 +550,16 @@
                 <button class="btn-dark" onclick="exportarExcel()" style="width: auto; margin-bottom: 0; padding: 12px 20px; font-size: 14px; background-color: #0f172a;">📥 Exportar Planilha (Excel)</button>
             </div>
 
+            <!-- PAINEL INTELIGENTE REFORMULADO -->
             <div class="painel-destaque" id="painel-lucro">
-                Lucro Líquido: R$ 0.00
+                Lucro do Negócio: R$ 0.00
+                <div style="font-size: 16px; margin-top: 10px; font-weight: 700; color: #475569;" id="painel-sobra">Sobrou Livre (Após Gastos de Casa): R$ 0.00</div>
             </div>
 
             <div class="resumo">
-                <span class="entrada" id="resumo-entradas">Faturamento Bruto<br><b style="font-size: 24px;">R$ 0.00</b></span>
-                <span class="saida" id="resumo-saidas">Despesas Gerais<br><b style="font-size: 24px;">R$ 0.00</b></span>
+                <span class="entrada" id="resumo-entradas">Faturamento<br><b style="font-size: 24px;">R$ 0.00</b></span>
+                <span class="saida" id="resumo-saidas-loja">Gastos da Loja<br><b style="font-size: 24px;">R$ 0.00</b></span>
+                <span class="saida-casa" id="resumo-saidas-casa">Gastos de Casa<br><b style="font-size: 24px;">R$ 0.00</b></span>
             </div>
 
             <div class="dashboard-grid">
@@ -651,6 +692,7 @@
     let estoque = [];
     let fiados = [];
     let despesas = [];
+    let pessoais = []; // NOVO ARRAY PARA GASTOS DE CASA
     let cofre = []; 
     let usuarios = [
         { nome: "Lucas", senha: "123456" },
@@ -677,6 +719,7 @@
         atualizarCaixaUI();
         atualizarCofreUI();
         atualizarDespesasUI();
+        atualizarPessoaisUI(); // NOVA ABA
         atualizarFiadosUI();
         atualizarUsuariosUI();
         if (document.getElementById('lucro').classList.contains('active')) calcularLucroMensal();
@@ -690,10 +733,14 @@
 
         if (doc.exists) {
             let dados = doc.data();
+            
             caixa = dados.caixa || JSON.parse(localStorage.getItem('dadosCaixa')) || [];
             estoque = dados.estoque || JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             fiados = dados.fiados || JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = dados.despesas || JSON.parse(localStorage.getItem('dadosDespesas')) || [];
+            
+            if (dados.pessoais !== undefined) { pessoais = dados.pessoais; } 
+            else { pessoais = JSON.parse(localStorage.getItem('dadosPessoais')) || []; precisaSalvarNuvem = true; }
             
             if (dados.cofre !== undefined) { cofre = dados.cofre; } 
             else { cofre = JSON.parse(localStorage.getItem('dadosCofre')) || cofre; precisaSalvarNuvem = true; }
@@ -709,6 +756,7 @@
             estoque = JSON.parse(localStorage.getItem('dadosEstoque')) || [];
             fiados = JSON.parse(localStorage.getItem('dadosFiados')) || [];
             despesas = JSON.parse(localStorage.getItem('dadosDespesas')) || [];
+            pessoais = JSON.parse(localStorage.getItem('dadosPessoais')) || [];
             cofre = JSON.parse(localStorage.getItem('dadosCofre')) || [];
             contagemMoedas = JSON.parse(localStorage.getItem('dadosMoedas')) || { m100: 0, m50: 0, m25: 0, m10: 0, m5: 0 };
             let localUsr = JSON.parse(localStorage.getItem('dadosUsuarios'));
@@ -718,7 +766,7 @@
 
         if (precisaSalvarNuvem) salvarNoFirebase();
         
-        sincronizarTelas(); // Atualiza toda a tela com os dados novos da nuvem
+        sincronizarTelas(); 
         atualizarDropdownLogin(); 
     });
 
@@ -727,6 +775,7 @@
         localStorage.setItem('dadosEstoque', JSON.stringify(estoque));
         localStorage.setItem('dadosFiados', JSON.stringify(fiados));
         localStorage.setItem('dadosDespesas', JSON.stringify(despesas));
+        localStorage.setItem('dadosPessoais', JSON.stringify(pessoais));
         localStorage.setItem('dadosCofre', JSON.stringify(cofre));
         localStorage.setItem('dadosUsuarios', JSON.stringify(usuarios));
         localStorage.setItem('dadosMoedas', JSON.stringify(contagemMoedas));
@@ -738,6 +787,7 @@
             estoque: estoque,
             fiados: fiados,
             despesas: despesas,
+            pessoais: pessoais,
             cofre: cofre, 
             usuarios: usuarios,
             contagemMoedas: contagemMoedas
@@ -799,6 +849,7 @@
         if(aba === 'estoque') document.getElementById('nome-produto').focus();
         if(aba === 'fiados') document.getElementById('fiado-nome').focus();
         if(aba === 'despesas') document.getElementById('desc-despesa').focus();
+        if(aba === 'pessoais') document.getElementById('desc-pessoal').focus();
         if(aba === 'caixa') atualizarCaixaUI();
         if(aba === 'usuarios') document.getElementById('novo-usuario-nome').focus(); 
         if(aba === 'cofre') document.getElementById('desc-cofre').focus(); 
@@ -1005,7 +1056,6 @@
         document.getElementById('modal-moedas').style.display = 'none';
     }
 
-
     // ==========================================
     // CONTROLE DE CAIXA DO DIA E EDIÇÃO DE PAGAMENTO
     // ==========================================
@@ -1131,7 +1181,8 @@
                     saldoGavetaTurno += item.valor;
                 }
             } else if (item.tipo === 'saida') {
-                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:') || item.descricao.includes('Sangria')) {
+                // AGORA ABATE TAMBÉM OS GASTOS DE CASA FEITOS NO DINHEIRO
+                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:') || item.descricao.includes('Gasto Casa:') || item.descricao.includes('Sangria')) {
                     saldoGavetaTurno -= item.valor;
                 }
             }
@@ -1181,7 +1232,8 @@
                 else totalDinheiro += item.valor; 
             } else if (item.tipo === 'saida') {
                 totalSaidas += item.valor;
-                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:') || item.descricao.includes('Sangria')) {
+                // Conta saídas para Casa também no resumo da Gaveta
+                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:') || item.descricao.includes('Gasto Casa:') || item.descricao.includes('Sangria')) {
                     saidasGaveta += item.valor;
                 }
             }
@@ -1195,7 +1247,7 @@
             <div class="turno-linha"><span>💳 Entrou em Cartão:</span> <b>R$ ${totalCartao.toFixed(2)}</b></div>
             
             <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
-            <div class="turno-linha"><span>📉 Saídas / Despesas:</span> <b style="color: var(--danger);">- R$ ${totalSaidas.toFixed(2)}</b></div>
+            <div class="turno-linha"><span>📉 Saídas / Despesas / Casa:</span> <b style="color: var(--danger);">- R$ ${totalSaidas.toFixed(2)}</b></div>
             <div class="turno-linha"><span>📈 Faturamento Total:</span> <b style="color: var(--success);">R$ ${totalEntradas.toFixed(2)}</b></div>
             
             <hr style="border: 0; border-top: 2px dashed var(--border); margin: 20px 0;">
@@ -1206,7 +1258,6 @@
     }
 
     function confirmarFechamento() {
-        // Calcula o saldo atual da gaveta para fazer a Sangria Automática
         let totalDinheiro = 0;
         let saidasGaveta = 0; 
         
@@ -1226,7 +1277,7 @@
                     totalDinheiro += item.valor;
                 }
             } else if (item.tipo === 'saida') {
-                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:') || item.descricao.includes('Sangria')) {
+                if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:') || item.descricao.includes('Gasto Casa:') || item.descricao.includes('Sangria')) {
                     saidasGaveta += item.valor;
                 }
             }
@@ -1235,7 +1286,6 @@
         let saldoNaGaveta = totalDinheiro - saidasGaveta;
         let dataAtual = new Date().toLocaleString('pt-BR');
         
-        // 1. Sangria Automática (Tira o dinheiro da Gaveta)
         if (saldoNaGaveta > 0) {
             caixa.push({ 
                 data: dataAtual, 
@@ -1245,7 +1295,6 @@
             });
         }
         
-        // 2. Registro do Fechamento
         caixa.push({ 
             data: dataAtual, 
             descricao: `🔒 FECHAMENTO DE TURNO REGISTRADO - ${usuarioLogado}`, 
@@ -1253,7 +1302,6 @@
             valor: 0 
         });
 
-        // 3. Zera o contador de moedas
         contagemMoedas = { m100: 0, m50: 0, m25: 0, m10: 0, m5: 0 };
 
         salvarNoFirebase();
@@ -1361,7 +1409,7 @@
     }
 
     // ==========================================
-    // SISTEMA DE DESPESAS
+    // SISTEMA DE DESPESAS DA LOJA
     // ==========================================
     function atualizarDespesasUI() {
         let tbody = document.getElementById('tabela-despesas');
@@ -1382,8 +1430,7 @@
             tbody.appendChild(tr);
         });
 
-        document.getElementById('total-despesas-display').innerHTML = `Total de Despesas<br><b style="font-size: 26px;">R$ ${totalDespesas.toFixed(2)}</b>`;
-        
+        document.getElementById('total-despesas-display').innerHTML = `Gastos da Mercearia<br><b style="font-size: 26px;">R$ ${totalDespesas.toFixed(2)}</b>`;
         atualizarOpcoesMeses();
     }
 
@@ -1401,11 +1448,11 @@
         despesas.push({ data: dataStr, descricao: descFinal, valor: valor });
         
         if (formaPagamento === "Dinheiro") {
-            caixa.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc} - ${usuarioLogado}`, tipo: 'saida', valor: valor });
+            caixa.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa Loja: ${desc} - ${usuarioLogado}`, tipo: 'saida', valor: valor });
         }
         if (formaPagamento === "Cofre") {
             if (!Array.isArray(cofre)) cofre = [];
-            cofre.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa: ${desc}`, tipo: 'saida', valor: valor, usuario: usuarioLogado });
+            cofre.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Despesa Loja: ${desc}`, tipo: 'saida', valor: valor, usuario: usuarioLogado });
         }
         
         document.getElementById('desc-despesa').value = '';
@@ -1418,14 +1465,79 @@
     }
 
     function excluirDespesa(index) {
-        if (confirm('Tem certeza que deseja apagar esta despesa? (Nota: Isso não devolverá o dinheiro automaticamente para o Caixa ou Cofre. Ajuste manualmente se necessário).')) {
+        if (confirm('Tem certeza que deseja apagar esta despesa da loja? (Ajuste o caixa/cofre manualmente se necessário).')) {
             despesas.splice(index, 1);
             salvarNoFirebase();
         }
     }
 
     // ==========================================
-    // CONTROLE DE ESTOQUE E CAIXA
+    // SISTEMA DE GASTOS DE CASA / PESSOAIS (NOVO)
+    // ==========================================
+    function atualizarPessoaisUI() {
+        let tbody = document.getElementById('tabela-pessoais');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        let totalPessoais = 0;
+
+        pessoais.forEach((item, index) => {
+            totalPessoais += item.valor;
+            let dataCurta = item.data.split(',')[0]; 
+            
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}</td>
+                <td style="color: var(--dark); font-weight: 800;">${item.descricao}</td>
+                <td style="color: #b45309; font-weight: 800; font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
+                <td><button class="btn-delete" onclick="excluirPessoal(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('total-pessoais-display').innerHTML = `Gastos de Casa / Pessoais<br><b style="font-size: 26px;">R$ ${totalPessoais.toFixed(2)}</b>`;
+        atualizarOpcoesMeses();
+    }
+
+    function adicionarPessoal() {
+        let desc = document.getElementById('desc-pessoal').value;
+        let valor = parseFloat(document.getElementById('valor-pessoal').value);
+        let dtInput = document.getElementById('data-pessoal').value;
+        let formaPagamento = document.getElementById('pagamento-pessoal').value;
+
+        if (!desc || isNaN(valor) || valor <= 0) { alert('Preencha a descrição do gasto pessoal e um valor válido!'); return; }
+
+        let dataStr = dtInput ? `${dtInput.split('-')[2]}/${dtInput.split('-')[1]}/${dtInput.split('-')[0]}, 00:00:00` : new Date().toLocaleString('pt-BR');
+        let descFinal = desc + ` (${formaPagamento}) - ${usuarioLogado}`;
+        
+        pessoais.push({ data: dataStr, descricao: descFinal, valor: valor });
+        
+        if (formaPagamento === "Dinheiro") {
+            caixa.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Gasto Casa: ${desc} - ${usuarioLogado}`, tipo: 'saida', valor: valor });
+        }
+        if (formaPagamento === "Cofre") {
+            if (!Array.isArray(cofre)) cofre = [];
+            cofre.push({ data: new Date().toLocaleString('pt-BR'), descricao: `Gasto Casa: ${desc}`, tipo: 'saida', valor: valor, usuario: usuarioLogado });
+        }
+        
+        document.getElementById('desc-pessoal').value = '';
+        document.getElementById('valor-pessoal').value = '';
+        document.getElementById('data-pessoal').value = '';
+        document.getElementById('pagamento-pessoal').value = 'Dinheiro';
+        
+        salvarNoFirebase();
+        document.getElementById('desc-pessoal').focus();
+    }
+
+    function excluirPessoal(index) {
+        if (confirm('Tem certeza que deseja apagar este gasto pessoal? (Ajuste o caixa/cofre manualmente se necessário).')) {
+            pessoais.splice(index, 1);
+            salvarNoFirebase();
+        }
+    }
+
+
+    // ==========================================
+    // CONTROLE DE ESTOQUE
     // ==========================================
     function atualizarEstoqueUI() {
         let tbody = document.getElementById('tabela-estoque');
@@ -1482,10 +1594,12 @@
     // ==========================================
     function atualizarOpcoesMeses() {
         let selectMes = document.getElementById('filtro-mes');
+        if (!selectMes) return;
         let mesesSet = new Set();
 
         caixa.forEach(c => { if(c.data) { let mesAno = c.data.substring(3, 10); if (mesAno.length === 7) mesesSet.add(mesAno); } });
         despesas.forEach(d => { if(d.data) { let mesAno = d.data.substring(3, 10); if (mesAno.length === 7) mesesSet.add(mesAno); } });
+        pessoais.forEach(p => { if(p.data) { let mesAno = p.data.substring(3, 10); if (mesAno.length === 7) mesesSet.add(mesAno); } });
 
         let mesesArray = Array.from(mesesSet).sort((a, b) => {
             return b.split('/').reverse().join('').localeCompare(a.split('/').reverse().join('')); 
@@ -1499,7 +1613,7 @@
 
     function calcularLucroMensal() {
         let mesSelecionado = document.getElementById('filtro-mes').value;
-        let totalEntradas = 0, totalSaidasCaixa = 0, totalGastoDespesas = 0;
+        let totalEntradas = 0, totalGastoDespesasLoja = 0, totalGastosCasa = 0;
         let pagDinheiro = 0, pagPix = 0, pagCartao = 0;
 
         caixa.forEach(c => {
@@ -1511,42 +1625,54 @@
                     else if(c.descricao.includes('PIX') || c.descricao.includes('Pix')) pagPix += c.valor;
                     else if(c.descricao.includes('Cartão') || c.descricao.includes('Débito') || c.descricao.includes('Crédito')) pagCartao += c.valor;
                     else pagDinheiro += c.valor; 
-                } else if (c.tipo === 'saida') {
-                    totalSaidasCaixa += c.valor;
                 }
             }
         });
 
         despesas.forEach(d => {
             let mesAno = d.data ? d.data.substring(3, 10) : "";
-            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) totalGastoDespesas += d.valor;
+            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) totalGastoDespesasLoja += d.valor;
+        });
+        
+        pessoais.forEach(p => {
+            let mesAno = p.data ? p.data.substring(3, 10) : "";
+            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) totalGastosCasa += p.valor;
         });
 
         let saidasPuramenteDoCaixa = 0;
         caixa.forEach(c => {
             let mesAno = c.data ? c.data.substring(3, 10) : "";
-            if (c.tipo === 'saida' && !c.descricao.includes('Despesa: ') && !c.descricao.includes('FECHAMENTO') && !c.descricao.includes('Sangria') && (mesSelecionado === 'todos' || mesAno === mesSelecionado)) {
+            if (c.tipo === 'saida' && !c.descricao.includes('Despesa: ') && !c.descricao.includes('Gasto Casa: ') && !c.descricao.includes('FECHAMENTO') && !c.descricao.includes('Sangria') && (mesSelecionado === 'todos' || mesAno === mesSelecionado)) {
                 saidasPuramenteDoCaixa += c.valor;
             }
         });
 
-        let saidasTotais = saidasPuramenteDoCaixa + totalGastoDespesas;
-        let lucroLiquido = totalEntradas - saidasTotais;
+        let saidasTotaisLoja = saidasPuramenteDoCaixa + totalGastoDespesasLoja;
+        
+        // CÁLCULO MESTRE
+        let lucroLiquidoLoja = totalEntradas - saidasTotaisLoja; // O que a loja deu de dinheiro real
+        let saldoLivreFinal = lucroLiquidoLoja - totalGastosCasa; // O que sobrou pra você guardar / investir
 
-        document.getElementById('resumo-entradas').innerHTML = `Faturamento Bruto<br><b style="font-size: 24px;">R$ ${totalEntradas.toFixed(2)}</b>`;
-        document.getElementById('resumo-saidas').innerHTML = `Despesas Gerais<br><b style="font-size: 24px;">R$ ${saidasTotais.toFixed(2)}</b>`;
+        document.getElementById('resumo-entradas').innerHTML = `Faturamento<br><b style="font-size: 24px;">R$ ${totalEntradas.toFixed(2)}</b>`;
+        document.getElementById('resumo-saidas-loja').innerHTML = `Gastos da Loja<br><b style="font-size: 24px;">R$ ${saidasTotaisLoja.toFixed(2)}</b>`;
+        document.getElementById('resumo-saidas-casa').innerHTML = `Gastos de Casa<br><b style="font-size: 24px;">R$ ${totalGastosCasa.toFixed(2)}</b>`;
         
         let painelLucro = document.getElementById('painel-lucro');
-        painelLucro.innerText = `Lucro Líquido: R$ ${lucroLiquido.toFixed(2)}`;
+        let painelSobra = document.getElementById('painel-sobra');
         
-        if (lucroLiquido >= 0) {
+        painelLucro.childNodes[0].nodeValue = `Lucro do Negócio: R$ ${lucroLiquidoLoja.toFixed(2)}`;
+        painelSobra.innerText = `Sobrou Livre (Após Gastos de Casa): R$ ${saldoLivreFinal.toFixed(2)}`;
+        
+        if (saldoLivreFinal >= 0) {
             painelLucro.style.background = 'linear-gradient(135deg, #ecfdf5, #d1fae5)';
             painelLucro.style.color = '#065f46';
             painelLucro.style.borderColor = '#a7f3d0';
+            painelSobra.style.color = '#047857';
         } else {
             painelLucro.style.background = 'linear-gradient(135deg, #fef2f2, #fee2e2)';
             painelLucro.style.color = '#991b1b';
             painelLucro.style.borderColor = '#fecaca';
+            painelSobra.style.color = '#7f1d1d';
         }
 
         let rankingUL = document.getElementById('ranking-produtos');
