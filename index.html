@@ -288,7 +288,6 @@
             <button class="tab-btn" onclick="mudarAba('cofre')">🏦 Cofre (Notas)</button>
             <button class="tab-btn" onclick="mudarAba('estoque')">📦 Estoque</button>
             <button class="tab-btn" onclick="mudarAba('fiados')">📓 Fiados</button>
-            <!-- DIVISÃO DAS DESPESAS -->
             <button class="tab-btn" onclick="mudarAba('despesas')">🏪 Gastos Loja</button>
             <button class="tab-btn" onclick="mudarAba('pessoais')" style="color: #b45309;">🏠 Gastos Casa</button>
             <button class="tab-btn" onclick="mudarAba('lucro')">📊 Gestão/Painel</button>
@@ -471,6 +470,11 @@
 
         <!-- SEÇÃO DE DESPESAS DA LOJA -->
         <div id="despesas" class="section">
+            <div class="form-group" style="justify-content: flex-end; background: transparent; border: none; box-shadow: none; padding: 0; margin-bottom: 15px;">
+                <label style="font-weight: 800; color: var(--dark); font-size: 16px;">📅 Período: </label>
+                <select id="filtro-mes-despesas" onchange="atualizarDespesasUI()" style="max-width: 180px; font-weight: 800; border-color: var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 12px;"></select>
+            </div>
+
             <div class="resumo">
                 <span id="total-despesas-display" class="saida">Gastos da Mercearia<br><b style="font-size: 26px;">R$ 0.00</b></span>
             </div>
@@ -505,8 +509,13 @@
             </div>
         </div>
 
-        <!-- SEÇÃO DE GASTOS PESSOAIS / CASA (NOVA) -->
+        <!-- SEÇÃO DE GASTOS PESSOAIS / CASA -->
         <div id="pessoais" class="section">
+            <div class="form-group" style="justify-content: flex-end; background: transparent; border: none; box-shadow: none; padding: 0; margin-bottom: 15px;">
+                <label style="font-weight: 800; color: var(--dark); font-size: 16px;">📅 Período: </label>
+                <select id="filtro-mes-pessoais" onchange="atualizarPessoaisUI()" style="max-width: 180px; font-weight: 800; border-color: var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 12px;"></select>
+            </div>
+
             <div class="resumo">
                 <span id="total-pessoais-display" class="saida-casa">Gastos de Casa / Pessoais<br><b style="font-size: 26px;">R$ 0.00</b></span>
             </div>
@@ -692,7 +701,7 @@
     let estoque = [];
     let fiados = [];
     let despesas = [];
-    let pessoais = []; // NOVO ARRAY PARA GASTOS DE CASA
+    let pessoais = []; 
     let cofre = []; 
     let usuarios = [
         { nome: "Lucas", senha: "123456" },
@@ -715,11 +724,12 @@
     // FUNÇÃO QUE LIGA TODAS AS ABAS IMEDIATAMENTE
     // ==========================================
     function sincronizarTelas() {
+        atualizarOpcoesMeses();
         atualizarEstoqueUI();
         atualizarCaixaUI();
         atualizarCofreUI();
         atualizarDespesasUI();
-        atualizarPessoaisUI(); // NOVA ABA
+        atualizarPessoaisUI(); 
         atualizarFiadosUI();
         atualizarUsuariosUI();
         if (document.getElementById('lucro').classList.contains('active')) calcularLucroMensal();
@@ -780,7 +790,7 @@
         localStorage.setItem('dadosUsuarios', JSON.stringify(usuarios));
         localStorage.setItem('dadosMoedas', JSON.stringify(contagemMoedas));
 
-        sincronizarTelas(); // ATUALIZA TUDO IMEDIATAMENTE ANTES MESMO DA INTERNET RESPONDER
+        sincronizarTelas(); 
 
         db.collection("sistema").doc("dados_loja").set({
             caixa: caixa,
@@ -1159,9 +1169,6 @@
             tbody.appendChild(tr);
         });
 
-        // ==========================================
-        // CÁLCULO INTELIGENTE DO TURNO ATUAL
-        // ==========================================
         let indexUltimoFechamento = -1;
         for (let i = caixa.length - 1; i >= 0; i--) {
             if (caixa[i].descricao.includes('🔒 FECHAMENTO DE TURNO REGISTRADO')) {
@@ -1181,7 +1188,6 @@
                     saldoGavetaTurno += item.valor;
                 }
             } else if (item.tipo === 'saida') {
-                // AGORA ABATE TAMBÉM OS GASTOS DE CASA FEITOS NO DINHEIRO
                 if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:') || item.descricao.includes('Gasto Casa:') || item.descricao.includes('Sangria')) {
                     saldoGavetaTurno -= item.valor;
                 }
@@ -1194,8 +1200,6 @@
         
         document.getElementById('saldo-total').innerHTML = `Dinheiro na Gaveta<br><b style="font-size: 26px;">R$ ${saldoGavetaTurno.toFixed(2)}</b><br><span id="display-moedas-gaveta" style="font-size: 13px; color: var(--warning); display: block; margin-top: 4px; font-weight: 800;">🪙 R$ ${totalMoedas.toFixed(2)} em moedas</span>`;
         document.getElementById('saldo-total').style.color = saldoGavetaTurno >= 0 ? 'var(--dark)' : 'var(--danger)';
-        
-        atualizarOpcoesMeses();
     }
 
     function excluirCaixa(index) {
@@ -1232,7 +1236,6 @@
                 else totalDinheiro += item.valor; 
             } else if (item.tipo === 'saida') {
                 totalSaidas += item.valor;
-                // Conta saídas para Casa também no resumo da Gaveta
                 if (item.descricao.includes('Dinheiro') || item.descricao.includes('Despesa:') || item.descricao.includes('Gasto Casa:') || item.descricao.includes('Sangria')) {
                     saidasGaveta += item.valor;
                 }
@@ -1409,29 +1412,75 @@
     }
 
     // ==========================================
+    // SISTEMA DE OPÇÕES DE MÊS
+    // ==========================================
+    function atualizarOpcoesMeses() {
+        let selectMes = document.getElementById('filtro-mes');
+        let selectMesDespesas = document.getElementById('filtro-mes-despesas');
+        let selectMesPessoais = document.getElementById('filtro-mes-pessoais');
+        
+        let mesesSet = new Set();
+
+        caixa.forEach(c => { if(c.data && c.data.length >= 10) { let mesAno = c.data.substring(3, 10); if (mesAno.length === 7 && mesAno.includes('/')) mesesSet.add(mesAno); } });
+        despesas.forEach(d => { if(d.data && d.data.length >= 10) { let mesAno = d.data.substring(3, 10); if (mesAno.length === 7 && mesAno.includes('/')) mesesSet.add(mesAno); } });
+        pessoais.forEach(p => { if(p.data && p.data.length >= 10) { let mesAno = p.data.substring(3, 10); if (mesAno.length === 7 && mesAno.includes('/')) mesesSet.add(mesAno); } });
+
+        let mesesArray = Array.from(mesesSet).sort((a, b) => {
+            return b.split('/').reverse().join('').localeCompare(a.split('/').reverse().join('')); 
+        });
+
+        let htmlOpcoes = '<option value="todos">Todo o Período</option>';
+        mesesArray.forEach(m => { htmlOpcoes += `<option value="${m}">${m}</option>`; });
+
+        if (selectMes) {
+            let valorAtual = selectMes.value;
+            selectMes.innerHTML = htmlOpcoes;
+            if(mesesArray.includes(valorAtual) || valorAtual === 'todos') selectMes.value = valorAtual;
+        }
+        if (selectMesDespesas) {
+            let valorAtual = selectMesDespesas.value;
+            selectMesDespesas.innerHTML = htmlOpcoes;
+            if(mesesArray.includes(valorAtual) || valorAtual === 'todos') selectMesDespesas.value = valorAtual;
+        }
+        if (selectMesPessoais) {
+            let valorAtual = selectMesPessoais.value;
+            selectMesPessoais.innerHTML = htmlOpcoes;
+            if(mesesArray.includes(valorAtual) || valorAtual === 'todos') selectMesPessoais.value = valorAtual;
+        }
+    }
+
+    // ==========================================
     // SISTEMA DE DESPESAS DA LOJA
     // ==========================================
     function atualizarDespesasUI() {
         let tbody = document.getElementById('tabela-despesas');
+        if (!tbody) return;
         tbody.innerHTML = '';
         let totalDespesas = 0;
 
+        let selectMes = document.getElementById('filtro-mes-despesas');
+        let mesSelecionado = selectMes && selectMes.value ? selectMes.value : 'todos';
+
         despesas.forEach((item, index) => {
-            totalDespesas += item.valor;
             let dataCurta = item.data.split(',')[0]; 
+            let mesAno = item.data.length >= 10 ? item.data.substring(3, 10) : "";
             
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}</td>
-                <td style="color: var(--dark); font-weight: 800;">${item.descricao}</td>
-                <td class="saida" style="font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
-                <td><button class="btn-delete" onclick="excluirDespesa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
-            `;
-            tbody.appendChild(tr);
+            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
+                totalDespesas += item.valor;
+                
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}</td>
+                    <td style="color: var(--dark); font-weight: 800;">${item.descricao}</td>
+                    <td class="saida" style="font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
+                    <td><button class="btn-delete" onclick="excluirDespesa(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
+                `;
+                tbody.appendChild(tr);
+            }
         });
 
-        document.getElementById('total-despesas-display').innerHTML = `Gastos da Mercearia<br><b style="font-size: 26px;">R$ ${totalDespesas.toFixed(2)}</b>`;
-        atualizarOpcoesMeses();
+        let display = document.getElementById('total-despesas-display');
+        if(display) display.innerHTML = `Gastos da Mercearia<br><b style="font-size: 26px;">R$ ${totalDespesas.toFixed(2)}</b>`;
     }
 
     function adicionarDespesa() {
@@ -1472,7 +1521,7 @@
     }
 
     // ==========================================
-    // SISTEMA DE GASTOS DE CASA / PESSOAIS (NOVO)
+    // SISTEMA DE GASTOS DE CASA / PESSOAIS 
     // ==========================================
     function atualizarPessoaisUI() {
         let tbody = document.getElementById('tabela-pessoais');
@@ -1480,22 +1529,29 @@
         tbody.innerHTML = '';
         let totalPessoais = 0;
 
+        let selectMes = document.getElementById('filtro-mes-pessoais');
+        let mesSelecionado = selectMes && selectMes.value ? selectMes.value : 'todos';
+
         pessoais.forEach((item, index) => {
-            totalPessoais += item.valor;
             let dataCurta = item.data.split(',')[0]; 
-            
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}</td>
-                <td style="color: var(--dark); font-weight: 800;">${item.descricao}</td>
-                <td style="color: #b45309; font-weight: 800; font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
-                <td><button class="btn-delete" onclick="excluirPessoal(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
-            `;
-            tbody.appendChild(tr);
+            let mesAno = item.data.length >= 10 ? item.data.substring(3, 10) : "";
+
+            if (mesSelecionado === 'todos' || mesAno === mesSelecionado) {
+                totalPessoais += item.valor;
+                
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="color: var(--gray-light); font-weight: 700;">${dataCurta}</td>
+                    <td style="color: var(--dark); font-weight: 800;">${item.descricao}</td>
+                    <td style="color: #b45309; font-weight: 800; font-size: 16px;">R$ ${item.valor.toFixed(2)}</td>
+                    <td><button class="btn-delete" onclick="excluirPessoal(${index})" style="padding: 6px 12px; font-size: 12px;">Apagar</button></td>
+                `;
+                tbody.appendChild(tr);
+            }
         });
 
-        document.getElementById('total-pessoais-display').innerHTML = `Gastos de Casa / Pessoais<br><b style="font-size: 26px;">R$ ${totalPessoais.toFixed(2)}</b>`;
-        atualizarOpcoesMeses();
+        let display = document.getElementById('total-pessoais-display');
+        if(display) display.innerHTML = `Gastos de Casa / Pessoais<br><b style="font-size: 26px;">R$ ${totalPessoais.toFixed(2)}</b>`;
     }
 
     function adicionarPessoal() {
@@ -1592,25 +1648,6 @@
     // ==========================================
     // DASHBOARD E RELATÓRIOS INTELIGENTES
     // ==========================================
-    function atualizarOpcoesMeses() {
-        let selectMes = document.getElementById('filtro-mes');
-        if (!selectMes) return;
-        let mesesSet = new Set();
-
-        caixa.forEach(c => { if(c.data) { let mesAno = c.data.substring(3, 10); if (mesAno.length === 7) mesesSet.add(mesAno); } });
-        despesas.forEach(d => { if(d.data) { let mesAno = d.data.substring(3, 10); if (mesAno.length === 7) mesesSet.add(mesAno); } });
-        pessoais.forEach(p => { if(p.data) { let mesAno = p.data.substring(3, 10); if (mesAno.length === 7) mesesSet.add(mesAno); } });
-
-        let mesesArray = Array.from(mesesSet).sort((a, b) => {
-            return b.split('/').reverse().join('').localeCompare(a.split('/').reverse().join('')); 
-        });
-
-        let valorAtual = selectMes.value;
-        selectMes.innerHTML = '<option value="todos">Todo o Período</option>';
-        mesesArray.forEach(m => { selectMes.innerHTML += `<option value="${m}">${m}</option>`; });
-        if(mesesArray.includes(valorAtual)) selectMes.value = valorAtual;
-    }
-
     function calcularLucroMensal() {
         let mesSelecionado = document.getElementById('filtro-mes').value;
         let totalEntradas = 0, totalGastoDespesasLoja = 0, totalGastosCasa = 0;
@@ -1649,9 +1686,8 @@
 
         let saidasTotaisLoja = saidasPuramenteDoCaixa + totalGastoDespesasLoja;
         
-        // CÁLCULO MESTRE
-        let lucroLiquidoLoja = totalEntradas - saidasTotaisLoja; // O que a loja deu de dinheiro real
-        let saldoLivreFinal = lucroLiquidoLoja - totalGastosCasa; // O que sobrou pra você guardar / investir
+        let lucroLiquidoLoja = totalEntradas - saidasTotaisLoja; 
+        let saldoLivreFinal = lucroLiquidoLoja - totalGastosCasa; 
 
         document.getElementById('resumo-entradas').innerHTML = `Faturamento<br><b style="font-size: 24px;">R$ ${totalEntradas.toFixed(2)}</b>`;
         document.getElementById('resumo-saidas-loja').innerHTML = `Gastos da Loja<br><b style="font-size: 24px;">R$ ${saidasTotaisLoja.toFixed(2)}</b>`;
