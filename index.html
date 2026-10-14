@@ -4,16 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sistema de Gestão Comercial — PDV, Fiados & Caixa</title>
+
+  <!-- SDK do Firebase (Compatível com Nuvem + Cache Offline IndexedDB) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <style>
     :root {
       --bg-dark: #0b1120;
-      --bg-card: rgba(30, 41, 59, 0.78);
-      --bg-input: rgba(15, 23, 42, 0.85);
+      --bg-card: rgba(30, 41, 59, 0.82);
+      --bg-input: rgba(15, 23, 42, 0.9);
       --border-glass: rgba(255, 255, 255, 0.12);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
 
-      /* Cores e Gradientes Vibrantes por Setor */
       --pdv-color: #10b981;
       --pdv-grad: linear-gradient(135deg, #10b981 0%, #059669 100%);
       --fiado-color: #f59e0b;
@@ -24,191 +28,114 @@
       --estoque-grad: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       --despesa-color: #ec4899;
       --despesa-grad: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
-      --historico-color: #06b6d4;
-      --historico-grad: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       --perigo-grad: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--bg-dark);
-      /* Textura combinada: luzes ambiente + micro-grade pontilhada */
       background-image:
         radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.16) 0px, transparent 48%),
         radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.15) 0px, transparent 48%),
         radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.16) 0px, transparent 48%),
-        radial-gradient(at 0% 100%, rgba(59, 130, 246, 0.12) 0px, transparent 48%),
         radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 22px 22px;
+      background-size: 100% 100%, 100% 100%, 100% 100%, 22px 22px;
       background-attachment: fixed;
       color: var(--text-main);
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       min-height: 100vh;
-      padding: 18px;
+      padding: 16px;
     }
 
-    .container {
-      max-width: 1280px;
-      margin: 0 auto;
-    }
+    .container { max-width: 1280px; margin: 0 auto; }
 
-    /* CABEÇALHO SUPERIOR */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 14px;
+      gap: 12px;
       background: var(--bg-card);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border-glass);
       border-radius: 18px;
-      padding: 18px 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      padding: 16px 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
     }
 
-    .brand-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
+    .brand-title { display: flex; align-items: center; gap: 12px; }
     .brand-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 44px; height: 44px; border-radius: 12px;
       background: var(--pdv-grad);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
     }
+    .brand-title h1 { font-size: 19px; font-weight: 800; }
+    .brand-title small { color: var(--text-muted); font-size: 12px; display: block; margin-top: 2px; }
 
-    .brand-title h1 {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-    }
-
-    .brand-title small {
-      color: var(--text-muted);
-      font-size: 12px;
-      display: block;
-      margin-top: 2px;
-    }
-
-    .header-badges {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    .header-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 14px;
-      border-radius: 999px;
-      font-size: 12.5px;
-      font-weight: 700;
-      background: rgba(16, 185, 129, 0.14);
-      color: #34d399;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 13px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      background: rgba(16, 185, 129, 0.14); color: #34d399;
       border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
     .ponto-pulsante {
-      width: 8px;
-      height: 8px;
-      background-color: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #10b981;
+      width: 8px; height: 8px; background-color: #10b981;
+      border-radius: 50%; box-shadow: 0 0 8px #10b981;
       animation: pulsar 1.6s infinite;
     }
 
     @keyframes pulsar {
-      0% { transform: scale(0.95); opacity: 0.7; }
+      0%, 100% { transform: scale(0.95); opacity: 0.7; }
       50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.95); opacity: 0.7; }
     }
 
-    /* NAVEGAÇÃO DE ABAS */
+    /* BARRA DE CONTAGEM RÁPIDA */
+    .resumo-topo {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
     .nav-tabs {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 22px;
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
     }
 
     .tab-btn {
-      flex: 1;
-      min-width: 145px;
-      background: rgba(30, 41, 59, 0.65);
+      flex: 1; min-width: 140px;
+      background: rgba(30, 41, 59, 0.7);
       border: 1px solid var(--border-glass);
       color: var(--text-muted);
-      padding: 13px 16px;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 12px 14px; border-radius: 13px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s ease;
     }
 
-    .tab-btn:hover {
-      color: #fff;
-      transform: translateY(-2px);
-      background: rgba(51, 65, 85, 0.75);
-    }
+    .tab-btn:hover { color: #fff; transform: translateY(-2px); }
+    .tab-btn.active[data-tab="pdv"] { background: var(--pdv-grad); color: #fff; border-color: transparent; }
+    .tab-btn.active[data-tab="fiados"] { background: var(--fiado-grad); color: #fff; border-color: transparent; }
+    .tab-btn.active[data-tab="caixa"] { background: var(--caixa-grad); color: #fff; border-color: transparent; }
+    .tab-btn.active[data-tab="estoque"] { background: var(--estoque-grad); color: #fff; border-color: transparent; }
+    .tab-btn.active[data-tab="despesas"] { background: var(--despesa-grad); color: #fff; border-color: transparent; }
 
-    .tab-btn.active[data-tab="pdv"] { background: var(--pdv-grad); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35); }
-    .tab-btn.active[data-tab="fiados"] { background: var(--fiado-grad); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35); }
-    .tab-btn.active[data-tab="caixa"] { background: var(--caixa-grad); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.35); }
-    .tab-btn.active[data-tab="estoque"] { background: var(--estoque-grad); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35); }
-    .tab-btn.active[data-tab="despesas"] { background: var(--despesa-grad); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(236, 72, 153, 0.35); }
-    .tab-btn.active[data-tab="historico"] { background: var(--historico-grad); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(6, 182, 212, 0.35); }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
 
-    /* SEÇÕES / ABAS */
-    .tab-section {
-      display: none;
-      animation: fadeSection 0.25s ease forwards;
-    }
-
-    .tab-section.active {
-      display: block;
-    }
-
-    @keyframes fadeSection {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* CARTÕES COM TEXTURA GLASSMORPHISM */
     .card-painel {
       background: var(--bg-card);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border-glass);
       border-radius: 18px;
-      padding: 22px;
+      padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 12px 32px -6px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      transition: transform 0.22s ease, box-shadow 0.22s ease;
-    }
-
-    .card-painel:hover {
-      box-shadow: 0 16px 38px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      box-shadow: 0 12px 32px -6px rgba(0, 0, 0, 0.45);
     }
 
     .borda-pdv { border-top: 4px solid var(--pdv-color); }
@@ -216,334 +143,199 @@
     .borda-caixa { border-top: 4px solid var(--caixa-color); }
     .borda-estoque { border-top: 4px solid var(--estoque-color); }
     .borda-despesa { border-top: 4px solid var(--despesa-color); }
-    .borda-historico { border-top: 4px solid var(--historico-color); }
 
     .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px; margin-bottom: 16px; padding-bottom: 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .card-header h2 {
-      font-size: 18px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .card-header h2 { font-size: 17px; font-weight: 800; }
 
-    /* GRIDS E FORMULÁRIOS */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
     .grid-add-item {
       display: grid;
       grid-template-columns: 2.2fr 0.8fr 1fr auto;
-      gap: 12px;
-      align-items: end;
+      gap: 10px; align-items: end;
       background: rgba(15, 23, 42, 0.55);
-      padding: 16px;
-      border-radius: 14px;
+      padding: 14px; border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.07);
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     @media (max-width: 820px) {
-      .grid-2, .grid-3, .grid-4, .grid-add-item {
-        grid-template-columns: 1fr;
-      }
+      .resumo-topo, .grid-2, .grid-3, .grid-4, .grid-add-item { grid-template-columns: 1fr; }
     }
 
-    label {
-      display: block;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
 
     input, select {
       background: var(--bg-input);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #fff;
-      padding: 11px 14px;
-      border-radius: 10px;
-      font-size: 14.5px;
-      width: 100%;
-      outline: none;
-      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff; padding: 10px 13px; border-radius: 10px;
+      font-size: 14px; width: 100%; outline: none;
     }
 
     input:focus, select:focus {
       border-color: #38bdf8;
       box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
-      background: rgba(15, 23, 42, 0.98);
     }
 
-    /* BOTÕES E ATALHOS */
     .btn-acao {
-      border: none;
-      color: #fff;
-      font-weight: 700;
-      font-size: 14px;
-      padding: 11px 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      border: none; color: #fff; font-weight: 700; font-size: 13.5px;
+      padding: 10px 16px; border-radius: 10px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
       white-space: nowrap;
     }
-
-    .btn-acao:hover {
-      filter: brightness(1.12);
-      transform: translateY(-2px);
-    }
-
-    .btn-acao:active {
-      transform: scale(0.97);
-    }
+    .btn-acao:hover { filter: brightness(1.12); transform: translateY(-1px); }
+    .btn-acao:active { transform: scale(0.97); }
 
     .btn-pdv { background: var(--pdv-grad); }
     .btn-fiado { background: var(--fiado-grad); }
     .btn-caixa { background: var(--caixa-grad); }
     .btn-estoque { background: var(--estoque-grad); }
     .btn-despesa { background: var(--despesa-grad); }
-    .btn-historico { background: var(--historico-grad); }
     .btn-perigo { background: var(--perigo-grad); }
-    .btn-neutro { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); }
+    .btn-neutro { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.18); }
 
     .atalho-enter {
-      background: rgba(0, 0, 0, 0.35);
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-family: monospace;
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(0, 0, 0, 0.35); padding: 2px 6px;
+      border-radius: 5px; font-size: 10.5px; font-family: monospace;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    /* KPIs / CARTÕES DE RESUMO */
     .kpi-box {
       background: rgba(15, 23, 42, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      padding: 16px;
-      position: relative;
-      overflow: hidden;
+      border-radius: 14px; padding: 14px;
     }
+    .kpi-box span { font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; }
+    .kpi-box strong { font-size: 20px; font-weight: 800; margin-top: 4px; display: block; }
 
-    .kpi-box span {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      font-weight: 600;
-      display: block;
-    }
-
-    .kpi-box strong {
-      font-size: 22px;
-      font-weight: 800;
-      margin-top: 6px;
-      display: block;
-    }
-
-    /* TABELAS */
     .table-wrap {
-      overflow-x: auto;
-      border-radius: 12px;
+      overflow-x: auto; border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.07);
       background: rgba(15, 23, 42, 0.4);
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 14px;
-    }
-
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
     th {
-      background: rgba(15, 23, 42, 0.8);
-      color: var(--text-muted);
-      font-weight: 700;
-      font-size: 12.5px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      padding: 12px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(15, 23, 42, 0.85); color: var(--text-muted);
+      font-weight: 700; font-size: 12px; text-transform: uppercase;
+      padding: 11px 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
-
-    td {
-      padding: 12px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      vertical-align: middle;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    tr:hover td {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    @keyframes slideInRow {
-      from { opacity: 0; transform: translateX(-12px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    .linha-animada {
-      animation: slideInRow 0.22s ease forwards;
-    }
+    td { padding: 11px 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 
     .rodape-carrinho {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-top: 18px;
-      padding-top: 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px; margin-top: 16px; padding-top: 14px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .valor-destaque {
-      font-size: 22px;
-      font-weight: 800;
-    }
-
-    /* MODAL DE CONFIRMAÇÃO E RECEBIMENTO */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 16px;
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(5px); display: none;
+      align-items: center; justify-content: center; z-index: 1000; padding: 16px;
     }
-
-    .modal-overlay.ativo {
-      display: flex;
-    }
-
+    .modal-overlay.ativo { display: flex; }
     .modal-card {
-      background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 18px;
-      max-width: 460px;
-      width: 100%;
-      padding: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      animation: fadeSection 0.2s ease;
+      background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 18px; max-width: 480px; width: 100%; padding: 22px;
     }
 
-    /* TOAST DE NOTIFICAÇÃO RÁPIDA */
     #toast-container {
-      position: fixed;
-      bottom: 22px;
-      right: 22px;
-      z-index: 2000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      position: fixed; bottom: 20px; right: 20px; z-index: 2000;
+      display: flex; flex-direction: column; gap: 8px;
     }
-
     .toast {
-      background: rgba(15, 23, 42, 0.95);
-      border-left: 4px solid #10b981;
-      color: #fff;
-      padding: 13px 18px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
-      animation: slideInRow 0.25s ease;
+      background: rgba(15, 23, 42, 0.96); border-left: 4px solid #10b981;
+      color: #fff; padding: 12px 16px; border-radius: 10px;
+      font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- CABEÇALHO -->
   <header>
     <div class="brand-title">
       <div class="brand-icon">🛒</div>
       <div>
-        <h1>Gestão Comercial & PDV</h1>
-        <small>Atalhos Rápidos: <b>Enter ↵</b> executa a ação | <b>Shift + Enter ↵</b> finaliza carrinhos</small>
+        <h1>Gestão Comercial — PDV, Fiados & Caixa</h1>
+        <small id="status-sincronizacao">Conectando ao banco de dados e memória local...</small>
       </div>
     </div>
 
     <div class="header-badges">
-      <div class="status-badge" title="O caixa do dia anterior fecha sozinho à meia-noite (00:00)">
+      <div class="status-badge">
         <span class="ponto-pulsante"></span>
-        <span>Caixa Ativo: <b id="header-data-caixa">--/--/----</b></span>
+        <span>Data do Caixa: <b id="header-data-caixa">--/--/----</b></span>
       </div>
-      <button type="button" class="btn-acao btn-neutro" onclick="exportarBackupJSON()" title="Baixar cópia de segurança dos dados">
+      <button type="button" class="btn-acao btn-fiado" onclick="resgatarDadosAntigos(true)" title="Procura dados no Firebase e em todas as chaves antigas do navegador">
+        🔍 Resgatar Dados Antigos
+      </button>
+      <button type="button" class="btn-acao btn-neutro" onclick="exportarBackupJSON()">
         💾 Backup
       </button>
-      <button type="button" class="btn-acao btn-neutro" onclick="document.getElementById('input-importar-json').click()" title="Restaurar dados de um arquivo JSON">
+      <button type="button" class="btn-acao btn-neutro" onclick="document.getElementById('input-importar-json').click()">
         📂 Restaurar
       </button>
       <input type="file" id="input-importar-json" accept=".json" style="display:none" onchange="importarBackupJSON(event)" />
     </div>
   </header>
 
-  <!-- ABAS DE NAVEGAÇÃO -->
+  <!-- RESUMO GLOBAL NO TOPO -->
+  <div class="resumo-topo">
+    <div class="kpi-box">
+      <span>💰 Saldo Caixa de Hoje</span>
+      <strong id="topo-saldo-hoje" style="color:#34d399;">R$ 0,00</strong>
+    </div>
+    <div class="kpi-box">
+      <span>📒 Total em Fiados Abertos</span>
+      <strong id="topo-total-fiados" style="color:#fbbf24;">R$ 0,00</strong>
+    </div>
+    <div class="kpi-box">
+      <span>📦 Produtos no Estoque</span>
+      <strong id="topo-total-estoque" style="color:#60a5fa;">0 itens</strong>
+    </div>
+    <div class="kpi-box">
+      <span>🏦 Reserva no Cofre</span>
+      <strong id="topo-total-cofre" style="color:#c4b5fd;">R$ 0,00</strong>
+    </div>
+  </div>
+
+  <!-- NAVEGAÇÃO -->
   <nav class="nav-tabs">
-    <button type="button" class="tab-btn active" data-tab="pdv" onclick="trocarAba('pdv')">
-      🛍️ PDV Vendas
-    </button>
-    <button type="button" class="tab-btn" data-tab="fiados" onclick="trocarAba('fiados')">
-      📒 Fiados (Carrinho)
-    </button>
-    <button type="button" class="tab-btn" data-tab="caixa" onclick="trocarAba('caixa')">
-      💰 Caixa & Cofre
-    </button>
-    <button type="button" class="tab-btn" data-tab="estoque" onclick="trocarAba('estoque')">
-      📦 Estoque
-    </button>
-    <button type="button" class="tab-btn" data-tab="despesas" onclick="trocarAba('despesas')">
-      📉 Despesas
-    </button>
-    <button type="button" class="tab-btn" data-tab="historico" onclick="trocarAba('historico')">
-      🗂️ Caixas Fechados
-    </button>
+    <button type="button" class="tab-btn active" data-tab="pdv" onclick="trocarAba('pdv')">🛍️ PDV Vendas</button>
+    <button type="button" class="tab-btn" data-tab="fiados" onclick="trocarAba('fiados')">📒 Fiados (Carrinho)</button>
+    <button type="button" class="tab-btn" data-tab="caixa" onclick="trocarAba('caixa')">💰 Caixa & Histórico</button>
+    <button type="button" class="tab-btn" data-tab="estoque" onclick="trocarAba('estoque')">📦 Estoque</button>
+    <button type="button" class="tab-btn" data-tab="despesas" onclick="trocarAba('despesas')">📉 Despesas (Loja/Casa)</button>
   </nav>
 
-  <!-- ==================================================================== -->
-  <!-- ABA 1: PDV DE VENDAS RÁPIDAS                                         -->
-  <!-- ==================================================================== -->
+  <!-- ABA 1: PDV -->
   <section id="sec-pdv" class="tab-section active" data-context="pdv">
     <div class="card-painel borda-pdv">
       <div class="card-header">
-        <h2 style="color: #34d399;">🛍️ PDV — Carrinho de Venda Rápida</h2>
-        <span style="color: var(--text-muted); font-size: 13px;">
-          Digite o produto e aperte <b>Enter ↵</b>. Com o produto em branco, aperte <b>Enter ↵</b> para fechar a venda!
+        <h2 style="color: #34d399;">🛍️ PDV — Venda Rápida</h2>
+        <span style="color: var(--text-muted); font-size: 12.5px;">
+          Digite o produto e aperte <b>Enter ↵</b>. Com o produto vazio, aperte <b>Enter ↵</b> para finalizar a venda!
         </span>
       </div>
 
       <div class="grid-add-item">
         <div>
           <label>Produto (Estoque ou Avulso)</label>
-          <input type="text" id="pdv-produto" list="datalist-estoque" placeholder="Digite o nome ou código do produto..." oninput="preencherPrecoAutomatico('pdv')" />
+          <input type="text" id="pdv-produto" list="datalist-estoque" placeholder="Digite o nome do produto..." oninput="preencherPrecoAutomatico('pdv')" />
         </div>
         <div>
-          <label>Quantidade</label>
+          <label>Qtd</label>
           <input type="number" id="pdv-qtd" value="1" min="1" step="1" />
         </div>
         <div>
-          <label>Valor Unit. (R\$)</label>
+          <label>Valor Unit. (R$)</label>
           <input type="number" id="pdv-valor" placeholder="0.00" step="0.01" />
         </div>
         <button type="button" class="btn-acao btn-pdv" onclick="adicionarItemPDV()">
@@ -566,7 +358,7 @@
         </table>
       </div>
 
-      <div class="grid-3" style="margin-top: 18px;">
+      <div class="grid-3" style="margin-top: 16px;">
         <div>
           <label>Forma de Pagamento</label>
           <select id="pdv-forma-pgto" onchange="calcularTrocoPDV()">
@@ -576,46 +368,44 @@
           </select>
         </div>
         <div>
-          <label>Valor Recebido em Dinheiro (Opcional p/ Troco)</label>
+          <label>Valor Recebido (Opcional p/ Troco)</label>
           <input type="number" id="pdv-recebido" placeholder="0.00" step="0.01" oninput="calcularTrocoPDV()" />
         </div>
-        <div class="kpi-box" style="display:flex; flex-direction:column; justify-content:center;">
+        <div class="kpi-box">
           <span>Troco a Devolver</span>
-          <strong id="pdv-troco" style="color:#38bdf8; font-size:19px;">R\$ 0,00</strong>
+          <strong id="pdv-troco" style="color:#38bdf8;">R$ 0,00</strong>
         </div>
       </div>
 
       <div class="rodape-carrinho">
-        <div class="valor-destaque" style="color: #34d399;">
+        <div style="font-size: 22px; font-weight: 800; color: #34d399;">
           Total da Venda: R$ <span id="total-carrinho-pdv">0,00</span>
         </div>
-        <button type="button" id="btn-finalizar-pdv" class="btn-acao btn-pdv" onclick="finalizarVendaPDV()">
+        <button type="button" class="btn-acao btn-pdv" onclick="finalizarVendaPDV()">
           ✅ Finalizar Venda <span class="atalho-enter">Shift + Enter ↵</span>
         </button>
       </div>
     </div>
   </section>
 
-  <!-- ==================================================================== -->
-  <!-- ABA 2: FIADOS COM CARRINHO DE COMPRAS                                -->
-  <!-- ==================================================================== -->
+  <!-- ABA 2: FIADOS COM CARRINHO -->
   <section id="sec-fiados" class="tab-section" data-context="fiado">
     <div class="card-painel borda-fiado">
       <div class="card-header">
         <h2 style="color: #fbbf24;">📒 Carrinho de Compras no Fiado</h2>
-        <span style="color: var(--text-muted); font-size: 13px;">
-          Adicione vários produtos para o mesmo cliente com <b>Enter ↵</b> e finalize com <b>Shift + Enter ↵</b>
+        <span style="color: var(--text-muted); font-size: 12.5px;">
+          Adicione vários itens para o mesmo cliente com <b>Enter ↵</b> e finalize com <b>Shift + Enter ↵</b>
         </span>
       </div>
 
-      <div class="grid-2" style="margin-bottom: 16px;">
+      <div class="grid-2" style="margin-bottom: 14px;">
         <div>
           <label>Nome do Cliente</label>
           <input type="text" id="fiado-cliente" list="datalist-clientes" placeholder="Digite ou selecione o cliente..." />
           <datalist id="datalist-clientes"></datalist>
         </div>
         <div>
-          <label>Data de Vencimento Combinada (Opcional)</label>
+          <label>Vencimento (Opcional)</label>
           <input type="date" id="fiado-vencimento" />
         </div>
       </div>
@@ -623,14 +413,14 @@
       <div class="grid-add-item">
         <div>
           <label>Produto (Estoque ou Avulso)</label>
-          <input type="text" id="fiado-produto" list="datalist-estoque" placeholder="Ex: Arroz 5kg, Café, Pão..." oninput="preencherPrecoAutomatico('fiado')" />
+          <input type="text" id="fiado-produto" list="datalist-estoque" placeholder="Digite o produto..." oninput="preencherPrecoAutomatico('fiado')" />
         </div>
         <div>
-          <label>Quantidade</label>
+          <label>Qtd</label>
           <input type="number" id="fiado-qtd" value="1" min="1" step="1" />
         </div>
         <div>
-          <label>Valor Unit. (R\$)</label>
+          <label>Valor Unit. (R$)</label>
           <input type="number" id="fiado-valor" placeholder="0.00" step="0.01" />
         </div>
         <button type="button" class="btn-acao btn-estoque" onclick="adicionarItemCarrinhoFiado()">
@@ -654,20 +444,19 @@
       </div>
 
       <div class="rodape-carrinho">
-        <div class="valor-destaque" style="color: #fbbf24;">
+        <div style="font-size: 22px; font-weight: 800; color: #fbbf24;">
           Total do Carrinho: R$ <span id="total-carrinho-fiado">0,00</span>
         </div>
-        <button type="button" id="btn-finalizar-fiado" class="btn-acao btn-fiado" onclick="finalizarCarrinhoFiado()">
+        <button type="button" class="btn-acao btn-fiado" onclick="finalizarCarrinhoFiado()">
           ✅ Lançar Tudo na Conta do Cliente <span class="atalho-enter">Shift + Enter ↵</span>
         </button>
       </div>
     </div>
 
-    <!-- LISTA DE CLIENTES PENDENTES -->
     <div class="card-painel">
       <div class="card-header">
-        <h2>👥 Contas de Clientes em Aberto</h2>
-        <div style="font-weight:700; color:#fbbf24;">
+        <h2>👥 Clientes com Fiado em Aberto</h2>
+        <div style="font-weight:800; color:#fbbf24;">
           Total a Receber: R$ <span id="total-geral-fiados">0,00</span>
         </div>
       </div>
@@ -676,9 +465,9 @@
           <thead>
             <tr>
               <th>Cliente</th>
-              <th>Últimos Produtos / Histórico</th>
+              <th>Produtos / Histórico</th>
               <th>Vencimento</th>
-              <th>Total Devido</th>
+              <th>Valor Devido</th>
               <th style="text-align:right;">Ações</th>
             </tr>
           </thead>
@@ -688,60 +477,55 @@
     </div>
   </section>
 
-  <!-- ==================================================================== -->
-  <!-- ABA 3: CONTROLE DE CAIXA DIÁRIO & COFRE                              -->
-  <!-- ==================================================================== -->
+  <!-- ABA 3: CAIXA DIÁRIO + COFRE + HISTÓRICO DE DIAS ANTERIORES -->
   <section id="sec-caixa" class="tab-section" data-context="caixa">
     <div class="card-painel borda-caixa">
       <div class="card-header">
         <div>
-          <h2 style="color: #c4b5fd;">💰 Movimento do Caixa de Hoje (<span id="titulo-data-caixa">--/--/----</span>)</h2>
+          <h2 style="color: #c4b5fd;">💰 Caixa do Dia (<span id="titulo-data-caixa">--/--/----</span>)</h2>
           <small style="color: var(--text-muted);">
-            O caixa fecha automaticamente à meia-noite (00:00) e arquiva o dia anterior sem misturar as contas.
+            À meia-noite (00:00), o caixa do dia que passou é fechado e salvo na tabela de Histórico logo abaixo.
           </small>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button" class="btn-acao btn-caixa" onclick="abrirModalFecharCaixa()">
-            🔒 Fechar Caixa de Hoje <span class="atalho-enter">Enter ↵</span>
-          </button>
-        </div>
+        <button type="button" class="btn-acao btn-caixa" onclick="abrirModalFecharCaixa()">
+          🔒 Fechar Caixa de Hoje <span class="atalho-enter">Enter ↵</span>
+        </button>
       </div>
 
-      <div class="grid-4" style="margin-bottom: 20px;">
+      <div class="grid-4" style="margin-bottom: 16px;">
         <div class="kpi-box">
-          <span>Entradas em Dinheiro</span>
-          <strong id="kpi-caixa-dinheiro" style="color: #34d399;">R\$ 0,00</strong>
+          <span>Entradas Dinheiro</span>
+          <strong id="kpi-caixa-dinheiro" style="color: #34d399;">R$ 0,00</strong>
         </div>
         <div class="kpi-box">
           <span>Entradas PIX / Cartão</span>
-          <strong id="kpi-caixa-digital" style="color: #38bdf8;">R\$ 0,00</strong>
+          <strong id="kpi-caixa-digital" style="color: #38bdf8;">R$ 0,00</strong>
         </div>
         <div class="kpi-box">
-          <span>Saídas / Sangrias do Dia</span>
-          <strong id="kpi-caixa-saidas" style="color: #f87171;">R\$ 0,00</strong>
+          <span>Saídas / Sangrias</span>
+          <strong id="kpi-caixa-saidas" style="color: #f87171;">R$ 0,00</strong>
         </div>
         <div class="kpi-box">
-          <span>Saldo Líquido do Dia</span>
-          <strong id="kpi-caixa-saldo" style="color: #c4b5fd;">R\$ 0,00</strong>
+          <span>Saldo Líquido Hoje</span>
+          <strong id="kpi-caixa-saldo" style="color: #c4b5fd;">R$ 0,00</strong>
         </div>
       </div>
 
-      <!-- LANÇAMENTO MANUAL NO CAIXA / TRANSFERÊNCIA PARA COFRE -->
       <div class="grid-add-item" style="grid-template-columns: 1.5fr 1fr 1fr auto;">
         <div>
-          <label>Descrição (Suprimento, Troco Inicial, Sangria...)</label>
-          <input type="text" id="caixa-desc" placeholder="Ex: Troco inicial da gaveta, Sangria para o cofre..." />
+          <label>Descrição (Troco Inicial, Entrada Avulsa, Sangria...)</label>
+          <input type="text" id="caixa-desc" placeholder="Ex: Suprimento de troco, Sangria..." />
         </div>
         <div>
-          <label>Tipo de Movimento</label>
+          <label>Tipo</label>
           <select id="caixa-tipo">
-            <option value="entrada">➕ Entrada (Dinheiro)</option>
+            <option value="entrada">➕ Entrada no Caixa</option>
             <option value="saida">➖ Saída / Sangria</option>
-            <option value="cofre">🏦 Enviar Notas para o Cofre</option>
+            <option value="cofre">🏦 Transferir para o Cofre</option>
           </select>
         </div>
         <div>
-          <label>Valor (R\$)</label>
+          <label>Valor (R$)</label>
           <input type="number" id="caixa-valor" placeholder="0.00" step="0.01" />
         </div>
         <button type="button" class="btn-acao btn-caixa" onclick="adicionarMovimentoCaixa()">
@@ -749,15 +533,12 @@
         </button>
       </div>
 
-      <!-- SALDO DO COFRE -->
-      <div class="kpi-box" style="margin-bottom: 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background: rgba(139, 92, 246, 0.12); border-color: rgba(139, 92, 246, 0.3);">
+      <div class="kpi-box" style="margin-bottom: 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background: rgba(139, 92, 246, 0.12);">
         <div>
-          <span style="color:#ddd6fe;">🏦 Reserva Acumulada no Cofre</span>
-          <strong id="kpi-cofre-total" style="color:#fff;">R\$ 0,00</strong>
+          <span style="color:#ddd6fe;">🏦 Saldo Guardado no Cofre</span>
+          <strong id="kpi-cofre-total" style="color:#fff;">R$ 0,00</strong>
         </div>
-        <button type="button" class="btn-acao btn-neutro" onclick="zerarOuAjustarCofre()">
-          Ajustar Cofre
-        </button>
+        <button type="button" class="btn-acao btn-neutro" onclick="zerarOuAjustarCofre()">Ajustar Cofre</button>
       </div>
 
       <div class="table-wrap">
@@ -776,31 +557,50 @@
         </table>
       </div>
     </div>
+
+    <!-- HISTÓRICO DE CAIXAS FECHADOS NA MESMA TELA PARA NÃO PERDER NADA DE VISTA -->
+    <div class="card-painel">
+      <div class="card-header">
+        <h2 style="color: #22d3ee;">🗂️ Histórico de Caixas de Dias Anteriores (Fechados)</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data do Caixa</th>
+              <th>Fechado em</th>
+              <th>Tipo</th>
+              <th>Entradas</th>
+              <th>Saídas</th>
+              <th>Saldo Final</th>
+              <th style="text-align:right;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-historico-fechamentos"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
-  <!-- ==================================================================== -->
-  <!-- ABA 4: CONTROLE DE ESTOQUE                                           -->
-  <!-- ==================================================================== -->
+  <!-- ABA 4: ESTOQUE -->
   <section id="sec-estoque" class="tab-section" data-context="estoque">
     <div class="card-painel borda-estoque">
       <div class="card-header">
-        <h2 style="color: #60a5fa;">📦 Cadastro e Controle de Estoque</h2>
-        <span style="color: var(--text-muted); font-size: 13px;">
-          Preencha os campos e pressione <b>Enter ↵</b> para salvar ou atualizar um produto
-        </span>
+        <h2 style="color: #60a5fa;">📦 Controle de Estoque</h2>
+        <span style="color: var(--text-muted); font-size: 12.5px;">Preencha e aperte <b>Enter ↵</b> para salvar</span>
       </div>
 
       <div class="grid-add-item">
         <div>
           <label>Nome do Produto</label>
-          <input type="text" id="est-nome" placeholder="Ex: Arroz 5kg, Refrigerante 2L..." />
+          <input type="text" id="est-nome" placeholder="Ex: Arroz 5kg, Óleo, Refrigerante..." />
         </div>
         <div>
-          <label>Quantidade em Estoque</label>
+          <label>Quantidade</label>
           <input type="number" id="est-qtd" placeholder="0" step="1" />
         </div>
         <div>
-          <label>Preço de Venda (R\$)</label>
+          <label>Preço de Venda (R$)</label>
           <input type="number" id="est-preco" placeholder="0.00" step="0.01" />
         </div>
         <button type="button" class="btn-acao btn-estoque" onclick="salvarProdutoEstoque()">
@@ -813,7 +613,7 @@
           <thead>
             <tr>
               <th>Produto</th>
-              <th>Qtd Atual</th>
+              <th>Qtd em Estoque</th>
               <th>Preço de Venda</th>
               <th style="text-align:right;">Ações</th>
             </tr>
@@ -824,30 +624,27 @@
     </div>
   </section>
 
-  <!-- ==================================================================== -->
-  <!-- ABA 5: DESPESAS (COMÉRCIO E CASA)                                    -->
-  <!-- ==================================================================== -->
+  <!-- ABA 5: DESPESAS (LOJA E CASA) -->
   <section id="sec-despesas" class="tab-section" data-context="despesas">
     <div class="card-painel borda-despesa">
       <div class="card-header">
-        <h2 style="color: #f472b6;">📉 Controle de Despesas (Comércio & Casa)</h2>
-        <span style="color: var(--text-muted); font-size: 13px;">Pressione <b>Enter ↵</b> para registrar a despesa</span>
+        <h2 style="color: #f472b6;">📉 Despesas da Loja e Pessoais (Casa)</h2>
       </div>
 
       <div class="grid-add-item">
         <div>
           <label>Descrição da Despesa</label>
-          <input type="text" id="desp-desc" placeholder="Ex: Energia, Fornecedor de Bebidas, Mercado..." />
+          <input type="text" id="desp-desc" placeholder="Ex: Fornecedor, Energia, Despesa de Casa..." />
         </div>
         <div>
           <label>Categoria</label>
           <select id="desp-cat">
-            <option value="Comércio">🏪 Comércio / Fornecedor</option>
-            <option value="Casa">🏠 Despesa Pessoal / Casa</option>
+            <option value="Comércio">🏪 Loja / Comércio</option>
+            <option value="Casa">🏠 Pessoal / Casa</option>
           </select>
         </div>
         <div>
-          <label>Valor (R\$)</label>
+          <label>Valor (R$)</label>
           <input type="number" id="desp-valor" placeholder="0.00" step="0.01" />
         </div>
         <button type="button" class="btn-acao btn-despesa" onclick="adicionarDespesa()">
@@ -871,70 +668,51 @@
       </div>
     </div>
   </section>
-
-  <!-- ==================================================================== -->
-  <!-- ABA 6: HISTÓRICO DE CAIXAS FECHADOS (DIAS ANTERIORES)                -->
-  <!-- ==================================================================== -->
-  <section id="sec-historico" class="tab-section" data-context="historico">
-    <div class="card-painel borda-historico">
-      <div class="card-header">
-        <h2 style="color: #22d3ee;">🗂️ Histórico de Fechamentos Diários</h2>
-        <span style="color: var(--text-muted); font-size: 13px;">
-          Aqui ficam guardados os caixas de cada dia fechado (manualmente ou automaticamente às 00:00)
-        </span>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Data do Caixa</th>
-              <th>Fechado em</th>
-              <th>Tipo</th>
-              <th>Entradas</th>
-              <th>Saídas</th>
-              <th>Saldo Final</th>
-              <th style="text-align:right;">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-historico-fechamentos"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
 </div>
 
-<!-- DATALIST GLOBAL DE PRODUTOS DO ESTOQUE -->
 <datalist id="datalist-estoque"></datalist>
 
-<!-- MODAL UNIVERSAL DE CONFIRMAÇÃO / RECEBIMENTO (SUPORTA ENTER) -->
+<!-- MODAL UNIVERSAL -->
 <div id="modal-sistema" class="modal-overlay">
   <div class="modal-card">
-    <h3 id="modal-titulo" style="margin-bottom: 10px; font-size: 18px;">Confirmação</h3>
+    <h3 id="modal-titulo" style="margin-bottom: 10px;">Confirmação</h3>
     <p id="modal-mensagem" style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;"></p>
     <div id="modal-input-wrap" style="display: none; margin-bottom: 16px;">
-      <label id="modal-input-label">Valor (R\$)</label>
+      <label>Valor (R$)</label>
       <input type="number" id="modal-input-valor" step="0.01" />
     </div>
     <div style="display: flex; justify-content: flex-end; gap: 10px;">
-      <button type="button" class="btn-acao btn-neutro btn-cancelar" onclick="fecharModalSistema()">
-        Cancelar (Esc)
-      </button>
-      <button type="button" id="modal-btn-confirmar" class="btn-acao btn-pdv">
-        Confirmar <span class="atalho-enter">Enter ↵</span>
-      </button>
+      <button type="button" class="btn-acao btn-neutro" onclick="fecharModalSistema()">Cancelar (Esc)</button>
+      <button type="button" id="modal-btn-confirmar" class="btn-acao btn-pdv">Confirmar <span class="atalho-enter">Enter ↵</span></button>
     </div>
   </div>
 </div>
 
-<!-- CONTAINER DE NOTIFICAÇÕES RÁPIDAS -->
 <div id="toast-container"></div>
 
 <script>
   // ============================================================================
-  // 1. BANCO DE DADOS LOCAL + ESTRUTURA DE ESTADO
+  // 1. CONFIGURAÇÃO DO FIREBASE + MEMÓRIA LOCAL
   // ============================================================================
   const CHAVE_STORAGE = 'sistema_comercio_dados_v2';
+  let db = null;
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAXvbmwTh_UqWTYRvkYCAmtYpA41XRkP1Y",
+    authDomain: "despesascasa-79901.firebaseapp.com",
+    projectId: "despesascasa-79901"
+  };
+
+  try {
+    if (typeof firebase !== 'undefined') {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      // Habilita persistência offline para ler o cache local mesmo se a nuvem falhar
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    }
+  } catch (e) {
+    console.warn('Modo local ativo:', e);
+  }
 
   let estado = {
     dataCaixaAtivo: obterDataHojeBR(),
@@ -942,6 +720,7 @@
     estoque: [],
     fiados: [],
     despesas: [],
+    pessoais: [],
     cofre: 0,
     historicoFechamentos: []
   };
@@ -973,66 +752,239 @@
     toast.style.borderLeftColor = corBorda;
     toast.textContent = mensagem;
     container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3200);
+    setTimeout(() => toast.remove(), 3500);
   }
 
-  function carregarDados() {
-    try {
-      const salvo = localStorage.getItem(CHAVE_STORAGE);
-      if (salvo) {
-        const parseado = JSON.parse(salvo);
-        estado = { ...estado, ...parseado };
-      }
-    } catch (e) {
-      console.error('Erro ao carregar dados:', e);
+  // ============================================================================
+  // 2. NORMALIZADOR E RESGATADOR AUTOMÁTICO DE DADOS ANTIGOS
+  // ============================================================================
+  function normalizarEImportarPacote(dadosBrutos) {
+    if (!dadosBrutos || typeof dadosBrutos !== 'object') return false;
+    let importouAlgo = false;
+
+    // 1. Estoque
+    if (Array.isArray(dadosBrutos.estoque) && dadosBrutos.estoque.length > 0) {
+      dadosBrutos.estoque.forEach(item => {
+        const nome = String(item.nome || item.produto || item.descricao || '').trim();
+        if (!nome) return;
+        const preco = Number(item.preco ?? item.valor ?? item.precoVenda ?? 0);
+        const qtd = Number(item.qtd ?? item.quantidade ?? item.estoque ?? 0);
+        const jaExiste = estado.estoque.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+        if (!jaExiste) {
+          estado.estoque.push({ id: item.id || Date.now() + Math.random(), nome, qtd, preco });
+          importouAlgo = true;
+        }
+      });
     }
-    verificarViradaDeDiaAutomatica();
+
+    // 2. Fiados
+    if (Array.isArray(dadosBrutos.fiados) && dadosBrutos.fiados.length > 0) {
+      dadosBrutos.fiados.forEach(f => {
+        if (f.pago === true) return;
+        const cliente = String(f.cliente || f.nome || '').trim();
+        if (!cliente) return;
+        const valor = Number(f.valorTotal ?? f.valor ?? f.total ?? 0);
+        if (valor <= 0) return;
+
+        const jaExiste = estado.fiados.find(x => x.cliente.toLowerCase() === cliente.toLowerCase());
+        const desc = f.descricao || (Array.isArray(f.historico) ? f.historico.join(' | ') : 'Saldo anterior');
+        if (!jaExiste) {
+          estado.fiados.push({
+            id: f.id || Date.now() + Math.random(),
+            cliente,
+            vencimento: f.vencimento || f.dataVencimento || '',
+            valorTotal: valor,
+            historico: Array.isArray(f.historico) ? f.historico : [`[${f.data || obterDataHojeBR()}] ${desc}`]
+          });
+          importouAlgo = true;
+        }
+      });
+    }
+
+    // 3. Caixa
+    const listaCaixa = Array.isArray(dadosBrutos.caixa)
+      ? dadosBrutos.caixa
+      : (dadosBrutos.caixa && Array.isArray(dadosBrutos.caixa.historico) ? dadosBrutos.caixa.historico : []);
+
+    if (listaCaixa.length > 0 && estado.caixa.length === 0) {
+      listaCaixa.forEach(c => {
+        const val = Number(c.valor ?? c.total ?? 0);
+        if (val <= 0) return;
+        estado.caixa.push({
+          id: c.id || Date.now() + Math.random(),
+          data: c.data || obterDataHojeBR(),
+          hora: c.hora || c.horario || '--:--',
+          descricao: c.descricao || c.produto || 'Lançamento',
+          forma: c.forma || c.pagamento || 'Dinheiro',
+          tipo: (c.tipo === 'saida' || c.tipo === 'sangria' || c.tipo === 'despesa') ? 'saida' : 'entrada',
+          valor: val
+        });
+        importouAlgo = true;
+      });
+    }
+
+    // 4. Despesas (Loja e Casa/Pessoais)
+    const todasDesp = [
+      ...(Array.isArray(dadosBrutos.despesas) ? dadosBrutos.despesas : []),
+      ...(Array.isArray(dadosBrutos.pessoais) ? dadosBrutos.pessoais.map(p => ({ ...p, categoria: 'Casa' })) : [])
+    ];
+    if (todasDesp.length > 0 && estado.despesas.length === 0) {
+      todasDesp.forEach(d => {
+        const val = Number(d.valor ?? d.total ?? 0);
+        if (val <= 0) return;
+        estado.despesas.push({
+          id: d.id || Date.now() + Math.random(),
+          data: d.data || obterDataHojeBR(),
+          descricao: d.descricao || d.nome || 'Despesa',
+          categoria: d.categoria || (d.tipo === 'pessoal' ? 'Casa' : 'Comércio'),
+          valor: val
+        });
+        importouAlgo = true;
+      });
+    }
+
+    // 5. Cofre
+    if (dadosBrutos.cofre && !estado.cofre) {
+      if (typeof dadosBrutos.cofre === 'number' || typeof dadosBrutos.cofre === 'string') {
+        estado.cofre = Number(dadosBrutos.cofre) || 0;
+        importouAlgo = true;
+      } else if (typeof dadosBrutos.cofre === 'object' && dadosBrutos.cofre.saldo) {
+        estado.cofre = Number(dadosBrutos.cofre.saldo) || 0;
+        importouAlgo = true;
+      }
+    }
+
+    // 6. Histórico de Fechamentos
+    if (Array.isArray(dadosBrutos.historicoFechamentos) && dadosBrutos.historicoFechamentos.length > 0 && estado.historicoFechamentos.length === 0) {
+      estado.historicoFechamentos = dadosBrutos.historicoFechamentos;
+      importouAlgo = true;
+    }
+
+    return importouAlgo;
+  }
+
+  async function resgatarDadosAntigos(mostrarAviso = false) {
+    let recuperou = false;
+
+    // 1º: Varre TODAS as chaves salvas no LocalStorage deste navegador
+    try {
+      const pacoteLocal = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const chave = localStorage.key(i);
+        const valorBruto = localStorage.getItem(chave);
+        if (!valorBruto) continue;
+
+        try {
+          const json = JSON.parse(valorBruto);
+          const k = chave.toLowerCase();
+          if (k.includes('estoque') && Array.isArray(json)) pacoteLocal.estoque = json;
+          else if (k.includes('fiado') && Array.isArray(json)) pacoteLocal.fiados = json;
+          else if (k.includes('caixa') && (Array.isArray(json) || typeof json === 'object')) pacoteLocal.caixa = json;
+          else if (k.includes('despesa') && Array.isArray(json)) pacoteLocal.despesas = json;
+          else if (k.includes('pessoa') && Array.isArray(json)) pacoteLocal.pessoais = json;
+          else if (k.includes('cofre')) pacoteLocal.cofre = json;
+          else if (json && typeof json === 'object') {
+            if (normalizarEImportarPacote(json)) recuperou = true;
+          }
+        } catch (err) {}
+      }
+      if (normalizarEImportarPacote(pacoteLocal)) recuperou = true;
+    } catch (e) {}
+
+    // 2º: Tenta buscar do Firebase (primeiro do Cache Local IndexedDB e depois da Nuvem)
+    if (db) {
+      const docRef = db.collection('sistema').doc('dados_loja');
+      try {
+        const snapCache = await docRef.get({ source: 'cache' });
+        if (snapCache.exists && normalizarEImportarPacote(snapCache.data())) {
+          recuperou = true;
+        }
+      } catch (e) {}
+
+      try {
+        const snapNuvem = await docRef.get();
+        if (snapNuvem.exists && normalizarEImportarPacote(snapNuvem.data())) {
+          recuperou = true;
+        }
+        document.getElementById('status-sincronizacao').textContent = '☁️ Sincronizado com Firebase + Memória Local';
+      } catch (err) {
+        document.getElementById('status-sincronizacao').textContent = '💾 Modo Local Ativo (Suas vendas estão sendo salvas neste aparelho)';
+      }
+    }
+
+    salvarDados();
     atualizarTodaInterface();
+
+    if (mostrarAviso) {
+      if (recuperou || estado.estoque.length > 0 || estado.fiados.length > 0 || estado.caixa.length > 0) {
+        mostrarToast(`✅ Dados ativos: ${estado.estoque.length} produtos, ${estado.fiados.length} fiados e ${estado.caixa.length} lançamentos!`);
+      } else {
+        mostrarToast('ℹ️ Nenhum dado extra encontrado no cache deste navegador.', '#38bdf8');
+      }
+    }
   }
 
   function salvarDados() {
     try {
+      // Salva no pacote unificado e também nas chaves individuais tradicionais
       localStorage.setItem(CHAVE_STORAGE, JSON.stringify(estado));
-    } catch (e) {
-      console.error('Erro ao salvar dados:', e);
+      localStorage.setItem('estoque', JSON.stringify(estado.estoque));
+      localStorage.setItem('fiados', JSON.stringify(estado.fiados));
+      localStorage.setItem('caixa', JSON.stringify(estado.caixa));
+      localStorage.setItem('despesas', JSON.stringify(estado.despesas));
+      localStorage.setItem('cofre', JSON.stringify(estado.cofre));
+    } catch (e) {}
+
+    // Salva também no Firebase se estiver disponível
+    if (db) {
+      db.collection('sistema').doc('dados_loja').set({
+        caixa: estado.caixa,
+        estoque: estado.estoque,
+        fiados: estado.fiados,
+        despesas: estado.despesas,
+        cofre: estado.cofre,
+        historicoFechamentos: estado.historicoFechamentos,
+        ultimaAtualizacao: new Date().toISOString()
+      }, { merge: true }).catch(() => {});
     }
   }
 
+  async function inicializarSistema() {
+    try {
+      const salvo = localStorage.getItem(CHAVE_STORAGE);
+      if (salvo) {
+        estado = { ...estado, ...JSON.parse(salvo) };
+      }
+    } catch (e) {}
+
+    await resgatarDadosAntigos(false);
+    verificarViradaDeDiaAutomatica();
+    atualizarTodaInterface();
+  }
+
   // ============================================================================
-  // 2. NAVEGAÇÃO ENTRE ABAS
+  // 3. NAVEGAÇÃO E AUTOPREENCHIMENTO
   // ============================================================================
   function trocarAba(abaId) {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tab === abaId);
-    });
-    document.querySelectorAll('.tab-section').forEach(sec => {
-      sec.classList.toggle('active', sec.id === `sec-${abaId}`);
-    });
-
-    // Foca automaticamente no primeiro campo da aba aberta para agilizar o uso sem mouse
-    const secaoAtiva = document.getElementById(`sec-${abaId}`);
-    if (secaoAtiva) {
-      const primeiroInput = secaoAtiva.querySelector('input');
-      if (primeiroInput) setTimeout(() => primeiroInput.focus(), 60);
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === abaId));
+    document.querySelectorAll('.tab-section').forEach(sec => sec.classList.toggle('active', sec.id === `sec-${abaId}`));
+    const secao = document.getElementById(`sec-${abaId}`);
+    if (secao) {
+      const inp = secao.querySelector('input');
+      if (inp) setTimeout(() => inp.focus(), 50);
     }
   }
 
-  // ============================================================================
-  // 3. AUTOPREENCHIMENTO DE PREÇO (PDV E FIADOS)
-  // ============================================================================
   function preencherPrecoAutomatico(origem) {
     const idProd = origem === 'pdv' ? 'pdv-produto' : 'fiado-produto';
     const idVal = origem === 'pdv' ? 'pdv-valor' : 'fiado-valor';
     const texto = document.getElementById(idProd).value.trim().toLowerCase();
-
-    const item = estado.estoque.find(p => p.nome.toLowerCase() === texto);
-    if (item) {
-      document.getElementById(idVal).value = Number(item.preco).toFixed(2);
-    }
+    const item = estado.estoque.find(p => (p.nome || '').toLowerCase() === texto);
+    if (item) document.getElementById(idVal).value = Number(item.preco).toFixed(2);
   }
 
   // ============================================================================
-  // 4. PDV DE VENDAS RÁPIDAS
+  // 4. PDV DE VENDAS
   // ============================================================================
   function adicionarItemPDV() {
     const inpProd = document.getElementById('pdv-produto');
@@ -1074,7 +1026,7 @@
     const spanTotal = document.getElementById('total-carrinho-pdv');
 
     if (carrinhoPDV.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:18px;">Carrinho vazio. Digite um produto acima e aperte Enter ↵</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">Carrinho vazio. Digite o produto acima e aperte Enter ↵</td></tr>`;
       spanTotal.textContent = '0,00';
       calcularTrocoPDV();
       return;
@@ -1084,13 +1036,13 @@
     tbody.innerHTML = carrinhoPDV.map((item, i) => {
       total += item.subtotal;
       return `
-        <tr class="linha-animada">
+        <tr>
           <td><b>${item.nome}</b></td>
           <td>${item.qtd}x</td>
           <td>R$ ${formatarMoeda(item.valorUnit)}</td>
           <td style="color:#34d399; font-weight:700;">R$ ${formatarMoeda(item.subtotal)}</td>
           <td style="text-align:right;">
-            <button type="button" class="btn-acao btn-perigo" style="padding:5px 10px; font-size:12px;" onclick="removerItemPDV(${i})">✖</button>
+            <button type="button" class="btn-acao btn-perigo" style="padding:4px 9px; font-size:12px;" onclick="removerItemPDV(${i})">✖</button>
           </td>
         </tr>`;
     }).join('');
@@ -1118,13 +1070,11 @@
     const formaPgto = document.getElementById('pdv-forma-pgto').value;
     const resumo = carrinhoPDV.map(i => `${i.qtd}x ${i.nome}`).join(', ');
 
-    // Dá baixa no estoque
     carrinhoPDV.forEach(item => {
-      const prod = estado.estoque.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
+      const prod = estado.estoque.find(p => (p.nome || '').toLowerCase() === item.nome.toLowerCase());
       if (prod) prod.qtd = Math.max(0, Number(prod.qtd) - item.qtd);
     });
 
-    // Registra no caixa do dia atual
     estado.caixa.push({
       id: Date.now(),
       data: obterDataHojeBR(),
@@ -1139,7 +1089,7 @@
     document.getElementById('pdv-recebido').value = '';
     salvarDados();
     atualizarTodaInterface();
-    mostrarToast(`✅ Venda de R$ ${formatarMoeda(total)} registrada no caixa!`);
+    mostrarToast(`✅ Venda de R$ ${formatarMoeda(total)} registrada!`);
     document.getElementById('pdv-produto').focus();
   }
 
@@ -1156,7 +1106,7 @@
     const valorUnit = parseFloat(inpVal.value);
 
     if (!nome || isNaN(valorUnit) || valorUnit <= 0) {
-      mostrarToast('⚠️ Informe o nome do produto e o valor unitário!', '#f59e0b');
+      mostrarToast('⚠️ Informe o produto e o valor unitário!', '#f59e0b');
       inpProd.focus();
       return;
     }
@@ -1186,7 +1136,7 @@
     const spanTotal = document.getElementById('total-carrinho-fiado');
 
     if (carrinhoFiado.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:18px;">Nenhum produto adicionado ao carrinho deste cliente ainda.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">Nenhum item no carrinho deste cliente ainda.</td></tr>`;
       spanTotal.textContent = '0,00';
       return;
     }
@@ -1195,13 +1145,13 @@
     tbody.innerHTML = carrinhoFiado.map((item, i) => {
       total += item.subtotal;
       return `
-        <tr class="linha-animada">
+        <tr>
           <td><b>${item.nome}</b></td>
           <td>${item.qtd}x</td>
           <td>R$ ${formatarMoeda(item.valorUnit)}</td>
           <td style="color:#fbbf24; font-weight:700;">R$ ${formatarMoeda(item.subtotal)}</td>
           <td style="text-align:right;">
-            <button type="button" class="btn-acao btn-perigo" style="padding:5px 10px; font-size:12px;" onclick="removerItemCarrinhoFiado(${i})">✖</button>
+            <button type="button" class="btn-acao btn-perigo" style="padding:4px 9px; font-size:12px;" onclick="removerItemCarrinhoFiado(${i})">✖</button>
           </td>
         </tr>`;
     }).join('');
@@ -1215,13 +1165,13 @@
     const cliente = inpCliente.value.trim();
 
     if (!cliente) {
-      mostrarToast('⚠️ Digite o nome do cliente antes de finalizar!', '#f59e0b');
+      mostrarToast('⚠️ Informe o nome do cliente!', '#f59e0b');
       inpCliente.focus();
       return;
     }
 
     if (carrinhoFiado.length === 0) {
-      mostrarToast('⚠️ Adicione pelo menos 1 produto ao carrinho de fiado!', '#f59e0b');
+      mostrarToast('⚠️ Adicione pelo menos 1 produto ao carrinho!', '#f59e0b');
       document.getElementById('fiado-produto').focus();
       return;
     }
@@ -1230,17 +1180,16 @@
     const totalCompra = carrinhoFiado.reduce((acc, i) => acc + i.subtotal, 0);
     const resumoItens = carrinhoFiado.map(i => `${i.qtd}x ${i.nome} (R$ ${formatarMoeda(i.subtotal)})`).join(', ');
 
-    // Baixa automática no estoque
     carrinhoFiado.forEach(item => {
-      const prod = estado.estoque.find(p => p.nome.toLowerCase() === item.nome.toLowerCase());
+      const prod = estado.estoque.find(p => (p.nome || '').toLowerCase() === item.nome.toLowerCase());
       if (prod) prod.qtd = Math.max(0, Number(prod.qtd) - item.qtd);
     });
 
-    // Procura se o cliente já tem conta aberta para somar
-    let ficha = estado.fiados.find(f => f.cliente.toLowerCase() === cliente.toLowerCase());
+    let ficha = estado.fiados.find(f => (f.cliente || '').toLowerCase() === cliente.toLowerCase());
     if (ficha) {
       ficha.valorTotal = Number(ficha.valorTotal || 0) + totalCompra;
       if (inpVenc.value) ficha.vencimento = inpVenc.value;
+      if (!Array.isArray(ficha.historico)) ficha.historico = [];
       ficha.historico.push(`[${dataHoje} ${obterHoraAgoraBR()}] ${resumoItens}`);
     } else {
       estado.fiados.push({
@@ -1257,7 +1206,7 @@
     inpVenc.value = '';
     salvarDados();
     atualizarTodaInterface();
-    mostrarToast(`📒 R$ ${formatarMoeda(totalCompra)} lançado na conta de ${cliente}!`, '#f59e0b');
+    mostrarToast(`📒 R$ ${formatarMoeda(totalCompra)} lançado para ${cliente}!`, '#f59e0b');
     inpCliente.focus();
   }
 
@@ -1267,36 +1216,32 @@
 
     abrirModalSistema({
       titulo: `💵 Receber Fiado — ${ficha.cliente}`,
-      mensagem: `Total devido: R$ ${formatarMoeda(ficha.valorTotal)}. Informe quanto o cliente está pagando agora (aperte Enter ↵ para confirmar):`,
+      mensagem: `Total devido: R$ ${formatarMoeda(ficha.valorTotal)}. Digite o valor recebido e aperte Enter ↵:`,
       comInput: true,
       valorInicial: Number(ficha.valorTotal).toFixed(2),
       aoConfirmar: (valorDigitado) => {
         const valorPago = parseFloat(valorDigitado);
-        if (isNaN(valorPago) || valorPago <= 0) {
-          mostrarToast('⚠️ Digite um valor válido!', '#ef4444');
-          return;
-        }
+        if (isNaN(valorPago) || valorPago <= 0) return;
 
         verificarViradaDeDiaAutomatica();
-
-        // Lança entrada no caixa do dia
         estado.caixa.push({
           id: Date.now(),
           data: obterDataHojeBR(),
           hora: obterHoraAgoraBR(),
           descricao: `Recebimento Fiado: ${ficha.cliente}`,
-          forma: 'Dinheiro/PIX',
+          forma: 'Dinheiro',
           tipo: 'entrada',
           valor: valorPago
         });
 
         if (valorPago >= ficha.valorTotal - 0.009) {
           estado.fiados = estado.fiados.filter(f => f.id !== idCliente);
-          mostrarToast(`✅ Conta de ${ficha.cliente} quitada e lançada no caixa!`);
+          mostrarToast(`✅ Conta de ${ficha.cliente} quitada!`);
         } else {
           ficha.valorTotal -= valorPago;
-          ficha.historico.push(`[${obterDataHojeBR()}] Pagou parcial: -R$ ${formatarMoeda(valorPago)}`);
-          mostrarToast(`✅ Pagamento parcial de R$ ${formatarMoeda(valorPago)} abatido!`);
+          if (!Array.isArray(ficha.historico)) ficha.historico = [];
+          ficha.historico.push(`[${obterDataHojeBR()}] Pagou: -R$ ${formatarMoeda(valorPago)}`);
+          mostrarToast(`✅ Abatimento de R$ ${formatarMoeda(valorPago)} registrado!`);
         }
 
         salvarDados();
@@ -1312,40 +1257,37 @@
 
     datalistClientes.innerHTML = estado.fiados.map(f => `<option value="${f.cliente}">`).join('');
 
+    let somaGeral = estado.fiados.reduce((acc, f) => acc + Number(f.valorTotal ?? f.valor ?? 0), 0);
+    spanTotalGeral.textContent = formatarMoeda(somaGeral);
+    document.getElementById('topo-total-fiados').textContent = `R$ ${formatarMoeda(somaGeral)}`;
+
     if (estado.fiados.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:18px;">Nenhum cliente com fiado pendente.</td></tr>`;
-      spanTotalGeral.textContent = '0,00';
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">Nenhum cliente com fiado em aberto.</td></tr>`;
       return;
     }
 
-    let somaGeral = 0;
     tbody.innerHTML = estado.fiados.map(f => {
-      somaGeral += Number(f.valorTotal || 0);
-      const ultimosItens = (f.historico || []).slice(-3).join('<br>');
-      const vencFormatado = f.vencimento ? f.vencimento.split('-').reverse().join('/') : '—';
+      const val = Number(f.valorTotal ?? f.valor ?? 0);
+      const hist = Array.isArray(f.historico) ? f.historico.slice(-3).join('<br>') : (f.descricao || '');
+      const venc = f.vencimento ? f.vencimento.split('-').reverse().join('/') : '—';
       return `
         <tr>
-          <td><b>${f.cliente}</b></td>
-          <td style="font-size:12.5px; color:var(--text-muted); max-width:420px;">${ultimosItens}</td>
-          <td>${vencFormatado}</td>
-          <td style="color:#fbbf24; font-weight:800;">R$ ${formatarMoeda(f.valorTotal)}</td>
+          <td><b>${f.cliente || f.nome}</b></td>
+          <td style="font-size:12px; color:var(--text-muted); max-width:420px;">${hist}</td>
+          <td>${venc}</td>
+          <td style="color:#fbbf24; font-weight:800;">R$ ${formatarMoeda(val)}</td>
           <td style="text-align:right;">
-            <button type="button" class="btn-acao btn-pdv" style="padding:6px 12px; font-size:12.5px;" onclick="abrirModalReceberFiado(${f.id})">
-              💵 Receber
-            </button>
+            <button type="button" class="btn-acao btn-pdv" style="padding:6px 12px; font-size:12px;" onclick="abrirModalReceberFiado(${f.id})">💵 Receber</button>
           </td>
         </tr>`;
     }).join('');
-
-    spanTotalGeral.textContent = formatarMoeda(somaGeral);
   }
 
   // ============================================================================
-  // 6. CAIXA DIÁRIO + FECHAMENTO AUTOMÁTICO À MEIA-NOITE (00:00)
+  // 6. CAIXA DIÁRIO + FECHAMENTO AUTOMÁTICO ÀS 00:00
   // ============================================================================
   function adicionarMovimentoCaixa() {
     verificarViradaDeDiaAutomatica();
-
     const inpDesc = document.getElementById('caixa-desc');
     const selTipo = document.getElementById('caixa-tipo');
     const inpVal = document.getElementById('caixa-valor');
@@ -1355,7 +1297,7 @@
     const valor = parseFloat(inpVal.value);
 
     if (!descricao || isNaN(valor) || valor <= 0) {
-      mostrarToast('⚠️ Preencha a descrição e o valor do lançamento!', '#f59e0b');
+      mostrarToast('⚠️ Informe a descrição e o valor!', '#f59e0b');
       inpDesc.focus();
       return;
     }
@@ -1366,12 +1308,11 @@
         id: Date.now(),
         data: obterDataHojeBR(),
         hora: obterHoraAgoraBR(),
-        descricao: `Transferência p/ Cofre: ${descricao}`,
-        forma: 'Sangria Cofre',
+        descricao: `Envio p/ Cofre: ${descricao}`,
+        forma: 'Cofre',
         tipo: 'saida',
         valor
       });
-      mostrarToast(`🏦 R$ ${formatarMoeda(valor)} transferido para o Cofre!`, '#8b5cf6');
     } else {
       estado.caixa.push({
         id: Date.now(),
@@ -1382,13 +1323,13 @@
         tipo: tipoSelecionado,
         valor
       });
-      mostrarToast('✅ Movimento registrado no caixa!');
     }
 
     inpDesc.value = '';
     inpVal.value = '';
     salvarDados();
     atualizarTodaInterface();
+    mostrarToast('✅ Lançamento registrado no caixa!');
     inpDesc.focus();
   }
 
@@ -1401,7 +1342,7 @@
   function zerarOuAjustarCofre() {
     abrirModalSistema({
       titulo: '🏦 Ajustar Saldo do Cofre',
-      mensagem: 'Digite o novo valor total guardado no cofre:',
+      mensagem: 'Informe o valor atual guardado no cofre:',
       comInput: true,
       valorInicial: Number(estado.cofre || 0).toFixed(2),
       aoConfirmar: (novoValor) => {
@@ -1410,7 +1351,6 @@
           estado.cofre = val;
           salvarDados();
           atualizarTodaInterface();
-          mostrarToast('🏦 Saldo do cofre atualizado!', '#8b5cf6');
         }
       }
     });
@@ -1418,13 +1358,12 @@
 
   function abrirModalFecharCaixa() {
     if (estado.caixa.length === 0) {
-      mostrarToast('ℹ️ O caixa de hoje já está vazio/fechado!', '#38bdf8');
+      mostrarToast('ℹ️ O caixa de hoje já está limpo/fechado!', '#38bdf8');
       return;
     }
-
     abrirModalSistema({
-      titulo: `🔒 Fechar Caixa do Dia (${obterDataHojeBR()})`,
-      mensagem: `Deseja encerrar e arquivar os ${estado.caixa.length} lançamento(s) de hoje? O caixa ficará limpo para o próximo turno/dia.`,
+      titulo: `🔒 Fechar Caixa de Hoje (${obterDataHojeBR()})`,
+      mensagem: `Confirma o fechamento e arquivamento dos ${estado.caixa.length} lançamento(s) de hoje?`,
       comInput: false,
       aoConfirmar: () => executarFechamentoDeCaixa(false, obterDataHojeBR())
     });
@@ -1432,10 +1371,8 @@
 
   function executarFechamentoDeCaixa(automatico = false, dataReferencia = null) {
     const hoje = obterDataHojeBR();
-
-    // Se for automático na virada do dia, fecha apenas os lançamentos de datas anteriores a hoje
     const itensParaArquivar = automatico
-      ? estado.caixa.filter(item => (item.data || estado.dataCaixaAtivo) !== hoje)
+      ? estado.caixa.filter(item => (item.data || hoje) !== hoje)
       : [...estado.caixa];
 
     if (itensParaArquivar.length === 0) {
@@ -1444,63 +1381,61 @@
       return;
     }
 
-    let entradas = 0;
-    let saidas = 0;
+    let entradas = 0, saidas = 0;
     itensParaArquivar.forEach(i => {
       if (i.tipo === 'saida') saidas += Number(i.valor || 0);
       else entradas += Number(i.valor || 0);
     });
 
-    const dataDoCaixaFechado = itensParaArquivar[0]?.data || dataReferencia || estado.dataCaixaAtivo;
+    const dataFechada = itensParaArquivar[0]?.data || dataReferencia || estado.dataCaixaAtivo;
 
     estado.historicoFechamentos.unshift({
       id: Date.now(),
-      dataCaixa: dataDoCaixaFechado,
+      dataCaixa: dataFechada,
       fechadoEm: `${obterDataHojeBR()} às ${obterHoraAgoraBR()}`,
       tipoFechamento: automatico ? '⚡ Automático (00:00)' : '👤 Manual',
       entradas,
       saidas,
       saldoFinal: entradas - saidas,
-      qtdLancamentos: itensParaArquivar.length,
       itens: itensParaArquivar
     });
 
-    // Remove do caixa aberto os itens arquivados para NÃO MISTURAR com o novo dia
     const idsArquivados = new Set(itensParaArquivar.map(i => i.id));
     estado.caixa = estado.caixa.filter(i => !idsArquivados.has(i.id));
     estado.dataCaixaAtivo = hoje;
 
     salvarDados();
     atualizarTodaInterface();
-
-    if (automatico) {
-      mostrarToast(`🌙 Caixa do dia ${dataDoCaixaFechado} fechado automaticamente à meia-noite!`, '#8b5cf6');
-    } else {
-      mostrarToast(`🔒 Caixa de ${dataDoCaixaFechado} fechado e arquivado com sucesso!`, '#8b5cf6');
-    }
   }
 
-  // Verifica se deu meia-noite (00:00) ou se o sistema foi aberto no dia seguinte
+  function reabrirCaixaDoHistorico(idHistorico) {
+    const reg = estado.historicoFechamentos.find(h => h.id === idHistorico);
+    if (!reg || !Array.isArray(reg.itens)) return;
+    const hoje = obterDataHojeBR();
+    reg.itens.forEach(item => {
+      estado.caixa.push({ ...item, data: hoje });
+    });
+    estado.historicoFechamentos = estado.historicoFechamentos.filter(h => h.id !== idHistorico);
+    salvarDados();
+    atualizarTodaInterface();
+    mostrarToast('↩️ Lançamentos restaurados para o caixa de hoje!');
+  }
+
   function verificarViradaDeDiaAutomatica() {
     const hoje = obterDataHojeBR();
-
-    // Garante que todo item no caixa possua data
     estado.caixa.forEach(item => {
       if (!item.data) item.data = estado.dataCaixaAtivo || hoje;
     });
 
-    const possuiItensDeOutroDia = estado.caixa.some(item => item.data !== hoje);
-
-    if (possuiItensDeOutroDia) {
+    const temDiaAnterior = estado.caixa.some(item => item.data !== hoje);
+    if (temDiaAnterior) {
       executarFechamentoDeCaixa(true, estado.dataCaixaAtivo);
     } else if (estado.dataCaixaAtivo !== hoje) {
       estado.dataCaixaAtivo = hoje;
       salvarDados();
-      atualizarTodaInterface();
     }
   }
 
-  // Checa a cada 15 segundos se o relógio passou da meia-noite (00:00)
   setInterval(verificarViradaDeDiaAutomatica, 15000);
 
   function renderizarCaixa() {
@@ -1508,6 +1443,7 @@
     document.getElementById('header-data-caixa').textContent = hoje;
     document.getElementById('titulo-data-caixa').textContent = hoje;
     document.getElementById('kpi-cofre-total').textContent = `R$ ${formatarMoeda(estado.cofre)}`;
+    document.getElementById('topo-total-cofre').textContent = `R$ ${formatarMoeda(estado.cofre)}`;
 
     let din = 0, dig = 0, sai = 0;
     estado.caixa.forEach(i => {
@@ -1517,36 +1453,56 @@
       else dig += v;
     });
 
+    const saldoHoje = din + dig - sai;
     document.getElementById('kpi-caixa-dinheiro').textContent = `R$ ${formatarMoeda(din)}`;
     document.getElementById('kpi-caixa-digital').textContent = `R$ ${formatarMoeda(dig)}`;
     document.getElementById('kpi-caixa-saidas').textContent = `R$ ${formatarMoeda(sai)}`;
-    document.getElementById('kpi-caixa-saldo').textContent = `R$ ${formatarMoeda(din + dig - sai)}`;
+    document.getElementById('kpi-caixa-saldo').textContent = `R$ ${formatarMoeda(saldoHoje)}`;
+    document.getElementById('topo-saldo-hoje').textContent = `R$ ${formatarMoeda(saldoHoje)}`;
 
     const tbody = document.getElementById('tabela-movimento-caixa');
     if (estado.caixa.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:18px;">Nenhum movimento aberto no caixa de hoje (${hoje}).</td></tr>`;
-      return;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:16px;">Nenhuma venda registrada no caixa de hoje (${hoje}) ainda.</td></tr>`;
+    } else {
+      tbody.innerHTML = [...estado.caixa].reverse().map(i => {
+        const cor = i.tipo === 'saida' ? '#f87171' : '#34d399';
+        const sinal = i.tipo === 'saida' ? '-' : '+';
+        return `
+          <tr>
+            <td>${i.hora || '--:--'}</td>
+            <td>${i.data || hoje}</td>
+            <td><b>${i.descricao}</b></td>
+            <td>${i.forma || i.tipo}</td>
+            <td style="color:${cor}; font-weight:700;">${sinal} R$ ${formatarMoeda(i.valor)}</td>
+            <td style="text-align:right;">
+              <button type="button" class="btn-acao btn-perigo" style="padding:4px 9px; font-size:12px;" onclick="removerItemCaixa(${i.id})">✖</button>
+            </td>
+          </tr>`;
+      }).join('');
     }
 
-    tbody.innerHTML = [...estado.caixa].reverse().map(i => {
-      const cor = i.tipo === 'saida' ? '#f87171' : '#34d399';
-      const sinal = i.tipo === 'saida' ? '-' : '+';
-      return `
+    const tbodyHist = document.getElementById('tabela-historico-fechamentos');
+    if (estado.historicoFechamentos.length === 0) {
+      tbodyHist.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:16px;">Nenhum caixa de dia anterior arquivado ainda.</td></tr>`;
+    } else {
+      tbodyHist.innerHTML = estado.historicoFechamentos.map(h => `
         <tr>
-          <td>${i.hora || '--:--'}</td>
-          <td>${i.data || hoje}</td>
-          <td><b>${i.descricao}</b></td>
-          <td>${i.forma || i.tipo}</td>
-          <td style="color:${cor}; font-weight:700;">${sinal} R$ ${formatarMoeda(i.valor)}</td>
+          <td><b>📅 ${h.dataCaixa}</b></td>
+          <td>${h.fechadoEm}</td>
+          <td>${h.tipoFechamento}</td>
+          <td style="color:#34d399;">+ R$ ${formatarMoeda(h.entradas)}</td>
+          <td style="color:#f87171;">- R$ ${formatarMoeda(h.saidas)}</td>
+          <td style="color:#22d3ee; font-weight:800;">R$ ${formatarMoeda(h.saldoFinal)}</td>
           <td style="text-align:right;">
-            <button type="button" class="btn-acao btn-perigo" style="padding:4px 9px; font-size:12px;" onclick="removerItemCaixa(${i.id})">✖</button>
+            <button type="button" class="btn-acao btn-neutro" style="padding:4px 9px; font-size:12px;" onclick="reabrirCaixaDoHistorico(${h.id})" title="Trazer lançamentos de volta para hoje">↩️ Reabrir</button>
           </td>
-        </tr>`;
-    }).join('');
+        </tr>
+      `).join('');
+    }
   }
 
   // ============================================================================
-  // 7. ESTOQUE DE PRODUTOS
+  // 7. ESTOQUE E DESPESAS
   // ============================================================================
   function salvarProdutoEstoque() {
     const inpNome = document.getElementById('est-nome');
@@ -1558,19 +1514,17 @@
     const preco = parseFloat(inpPreco.value);
 
     if (!nome || isNaN(preco) || preco <= 0) {
-      mostrarToast('⚠️ Informe o nome e o preço de venda do produto!', '#f59e0b');
+      mostrarToast('⚠️ Informe o nome e o preço do produto!', '#f59e0b');
       inpNome.focus();
       return;
     }
 
-    const existente = estado.estoque.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+    const existente = estado.estoque.find(p => (p.nome || '').toLowerCase() === nome.toLowerCase());
     if (existente) {
       existente.qtd = Number(existente.qtd || 0) + qtd;
       existente.preco = preco;
-      mostrarToast(`📦 Estoque de "${nome}" atualizado!`, '#3b82f6');
     } else {
       estado.estoque.push({ id: Date.now(), nome, qtd, preco });
-      mostrarToast(`📦 Produto "${nome}" cadastrado no estoque!`, '#3b82f6');
     }
 
     inpNome.value = '';
@@ -1578,6 +1532,7 @@
     inpPreco.value = '';
     salvarDados();
     atualizarTodaInterface();
+    mostrarToast(`📦 Produto "${nome}" salvo!`);
     inpNome.focus();
   }
 
@@ -1591,10 +1546,11 @@
     const tbody = document.getElementById('tabela-estoque');
     const datalist = document.getElementById('datalist-estoque');
 
+    document.getElementById('topo-total-estoque').textContent = `${estado.estoque.length} itens`;
     datalist.innerHTML = estado.estoque.map(p => `<option value="${p.nome}">R$ ${formatarMoeda(p.preco)} (${p.qtd} un.)</option>`).join('');
 
     if (estado.estoque.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:18px;">Nenhum produto cadastrado no estoque.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:16px;">Nenhum produto cadastrado no estoque.</td></tr>`;
       return;
     }
 
@@ -1610,9 +1566,6 @@
     `).join('');
   }
 
-  // ============================================================================
-  // 8. DESPESAS (LOJA E CASA)
-  // ============================================================================
   function adicionarDespesa() {
     const inpDesc = document.getElementById('desp-desc');
     const selCat = document.getElementById('desp-cat');
@@ -1623,24 +1576,17 @@
     const valor = parseFloat(inpVal.value);
 
     if (!descricao || isNaN(valor) || valor <= 0) {
-      mostrarToast('⚠️ Informe a descrição e o valor da despesa!', '#f59e0b');
+      mostrarToast('⚠️ Informe a descrição e o valor!', '#f59e0b');
       inpDesc.focus();
       return;
     }
 
-    estado.despesas.unshift({
-      id: Date.now(),
-      data: obterDataHojeBR(),
-      descricao,
-      categoria,
-      valor
-    });
-
+    estado.despesas.unshift({ id: Date.now(), data: obterDataHojeBR(), descricao, categoria, valor });
     inpDesc.value = '';
     inpVal.value = '';
     salvarDados();
     atualizarTodaInterface();
-    mostrarToast('📉 Despesa registrada!', '#ec4899');
+    mostrarToast('📉 Despesa salva!', '#ec4899');
     inpDesc.focus();
   }
 
@@ -1653,10 +1599,9 @@
   function renderizarDespesas() {
     const tbody = document.getElementById('tabela-despesas');
     if (estado.despesas.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:18px;">Nenhuma despesa registrada.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">Nenhuma despesa registrada.</td></tr>`;
       return;
     }
-
     tbody.innerHTML = estado.despesas.map(d => `
       <tr>
         <td>${d.data}</td>
@@ -1671,38 +1616,7 @@
   }
 
   // ============================================================================
-  // 9. HISTÓRICO DE CAIXAS FECHADOS
-  // ============================================================================
-  function renderizarHistoricoFechamentos() {
-    const tbody = document.getElementById('tabela-historico-fechamentos');
-    if (estado.historicoFechamentos.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:18px;">Nenhum caixa fechado no histórico ainda.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = estado.historicoFechamentos.map(h => `
-      <tr>
-        <td><b>📅 ${h.dataCaixa}</b></td>
-        <td>${h.fechadoEm}</td>
-        <td>${h.tipoFechamento}</td>
-        <td style="color:#34d399;">+ R$ ${formatarMoeda(h.entradas)}</td>
-        <td style="color:#f87171;">- R$ ${formatarMoeda(h.saidas)}</td>
-        <td style="color:#22d3ee; font-weight:800;">R$ ${formatarMoeda(h.saldoFinal)}</td>
-        <td style="text-align:right;">
-          <button type="button" class="btn-acao btn-perigo" style="padding:4px 9px; font-size:12px;" onclick="excluirRegistroHistorico(${h.id})">✖</button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  function excluirRegistroHistorico(id) {
-    estado.historicoFechamentos = estado.historicoFechamentos.filter(h => h.id !== id);
-    salvarDados();
-    atualizarTodaInterface();
-  }
-
-  // ============================================================================
-  // 10. MODAL UNIVERSAL E BACKUP JSON
+  // 8. MODAL, BACKUP E TECLA ENTER GLOBAL
   // ============================================================================
   function abrirModalSistema({ titulo, mensagem, comInput = false, valorInicial = '', aoConfirmar }) {
     document.getElementById('modal-titulo').textContent = titulo;
@@ -1723,12 +1637,8 @@
     document.getElementById('modal-sistema').classList.add('ativo');
 
     setTimeout(() => {
-      if (comInput) {
-        inpValor.focus();
-        inpValor.select();
-      } else {
-        document.getElementById('modal-btn-confirmar').focus();
-      }
+      if (comInput) { inpValor.focus(); inpValor.select(); }
+      else document.getElementById('modal-btn-confirmar').focus();
     }, 50);
   }
 
@@ -1745,7 +1655,6 @@
     a.download = `backup_comercio_${obterDataHojeBR().replace(/\//g, '-')}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    mostrarToast('💾 Backup exportado com sucesso!');
   }
 
   function importarBackupJSON(event) {
@@ -1754,13 +1663,12 @@
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const importado = JSON.parse(e.target.result);
-        estado = { ...estado, ...importado };
+        normalizarEImportarPacote(JSON.parse(e.target.result));
         salvarDados();
         atualizarTodaInterface();
-        mostrarToast('📂 Dados restaurados com sucesso!');
+        mostrarToast('📂 Backup restaurado com sucesso!');
       } catch (err) {
-        mostrarToast('❌ Arquivo de backup inválido!', '#ef4444');
+        mostrarToast('❌ Arquivo inválido!', '#ef4444');
       }
     };
     reader.readAsText(file);
@@ -1773,23 +1681,13 @@
     renderizarCaixa();
     renderizarEstoque();
     renderizarDespesas();
-    renderizarHistoricoFechamentos();
   }
 
-  // ============================================================================
-  // 11. ATALHO GLOBAL DA TECLA ENTER (OPERAÇÃO 100% PELO TECLADO)
-  // ============================================================================
   document.addEventListener('keydown', function (event) {
     const modalAtivo = document.getElementById('modal-sistema').classList.contains('ativo');
-
-    if (event.key === 'Escape' && modalAtivo) {
-      fecharModalSistema();
-      return;
-    }
-
+    if (event.key === 'Escape' && modalAtivo) { fecharModalSistema(); return; }
     if (event.key !== 'Enter') return;
 
-    // 1. Se o Modal estiver aberto, Enter confirma imediatamente
     if (modalAtivo) {
       event.preventDefault();
       if (acaoConfirmacaoModal) acaoConfirmacaoModal();
@@ -1798,12 +1696,10 @@
 
     const el = document.activeElement;
     if (!el || el.tagName.toLowerCase() === 'textarea') return;
-
     const secao = el.closest('.tab-section');
     if (!secao) return;
     const contexto = secao.dataset.context;
 
-    // 2. Contexto PDV
     if (contexto === 'pdv') {
       event.preventDefault();
       if (event.shiftKey || el.id === 'pdv-recebido' || el.id === 'pdv-forma-pgto') {
@@ -1811,63 +1707,36 @@
         return;
       }
       const prodVazio = !document.getElementById('pdv-produto').value.trim();
-      if (prodVazio && carrinhoPDV.length > 0) {
-        finalizarVendaPDV();
-      } else {
-        adicionarItemPDV();
-      }
+      if (prodVazio && carrinhoPDV.length > 0) finalizarVendaPDV();
+      else adicionarItemPDV();
       return;
     }
 
-    // 3. Contexto FIADOS (Carrinho de Compras)
     if (contexto === 'fiado') {
       event.preventDefault();
-      if (event.shiftKey) {
-        finalizarCarrinhoFiado();
-        return;
-      }
+      if (event.shiftKey) { finalizarCarrinhoFiado(); return; }
       if (el.id === 'fiado-cliente' || el.id === 'fiado-vencimento') {
         document.getElementById('fiado-produto').focus();
         return;
       }
-      const prodFiadoVazio = !document.getElementById('fiado-produto').value.trim();
-      if (prodFiadoVazio && carrinhoFiado.length > 0) {
-        finalizarCarrinhoFiado();
-      } else {
-        adicionarItemCarrinhoFiado();
-      }
+      const prodVazio = !document.getElementById('fiado-produto').value.trim();
+      if (prodVazio && carrinhoFiado.length > 0) finalizarCarrinhoFiado();
+      else adicionarItemCarrinhoFiado();
       return;
     }
 
-    // 4. Contexto CAIXA
     if (contexto === 'caixa') {
       event.preventDefault();
-      const descCaixa = document.getElementById('caixa-desc').value.trim();
-      if (descCaixa) {
-        adicionarMovimentoCaixa();
-      } else {
-        abrirModalFecharCaixa();
-      }
+      if (document.getElementById('caixa-desc').value.trim()) adicionarMovimentoCaixa();
+      else abrirModalFecharCaixa();
       return;
     }
 
-    // 5. Contexto ESTOQUE
-    if (contexto === 'estoque') {
-      event.preventDefault();
-      salvarProdutoEstoque();
-      return;
-    }
-
-    // 6. Contexto DESPESAS
-    if (contexto === 'despesas') {
-      event.preventDefault();
-      adicionarDespesa();
-      return;
-    }
+    if (contexto === 'estoque') { event.preventDefault(); salvarProdutoEstoque(); return; }
+    if (contexto === 'despesas') { event.preventDefault(); adicionarDespesa(); return; }
   });
 
-  // Inicializa o sistema ao abrir
-  window.addEventListener('DOMContentLoaded', carregarDados);
+  window.addEventListener('DOMContentLoaded', inicializarSistema);
 </script>
 </body>
 </html>
